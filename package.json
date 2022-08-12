@@ -1,0 +1,26 @@
+{
+  "name": "@rouby/space",
+  "packageManager": "yarn@3.2.2",
+  "scripts": {
+    "dev": "concurrently -n frontend,backend \"yarn workspace frontend dev\" \"yarn workspace backend dev\""
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "concurrently": "^7.3.0",
+    "prettier": "^2.7.1",
+    "typescript": "^4.6.4"
+  },
+  "dependenciesMeta": {
+    "@prisma/client@4.1.1": {
+      "unplugged": true
+    },
+    "prisma@4.1.1": {
+      "unplugged": true
+    },
+    "ts-node@10.9.1": {
+      "unplugged": true
+    }
+  }
+}

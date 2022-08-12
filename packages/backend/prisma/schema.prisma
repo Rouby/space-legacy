@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../../.yarn/unplugged/@prisma-client-virtual-96ec63d4fc/node_modules/@prisma/client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    String @id @default(cuid())
+  email String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  password Password?
+
+  name String
+}
+
+model Password {
+  hash String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String @unique
+}
+
+model GameEvent {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+
+  correlatedTo  GameEvent @relation(name: "conversation", fields: [correlationId], references: [id])
+  correlationId String
+
+  causedBy    GameEvent @relation(name: "descendants", fields: [causationId], references: [id])
+  causationId String
+
+  correlated GameEvent[] @relation(name: "conversation")
+  caused     GameEvent[] @relation(name: "descendants")
+
+  type    String
+  version Int
+
+  // payload Json
+  payload String @default("{}")
+}

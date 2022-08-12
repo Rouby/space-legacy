@@ -1,0 +1,13 @@
+overwrite: true
+schema: '../backend/src/graphql/schema'
+documents: './src/**/*.{gql,graphql,ts,tsx}'
+generates:
+  ./src/graphql/generated/index.ts:
+    plugins:
+      - 'typescript'
+      - 'typescript-operations'
+      - 'typescript-urql'
+      - 'urql-introspection'
+    config:
+      scalars:
+        JWT: string
