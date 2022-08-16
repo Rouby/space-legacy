@@ -1,5 +1,4 @@
 import { Button } from '@mantine/core';
-import { gql } from 'urql';
 import {
   useCurrentRoundQuery,
   useDeleteGameMutation,
@@ -10,14 +9,14 @@ import {
 import { useAbility } from '../utility';
 
 export function Dashboard() {
-  gql`
+  /* GraphQL */ `
     mutation EndTurn {
       endTurn
     }
   `;
   const [endTurnResult, endTurn] = useEndTurnMutation();
 
-  gql`
+  /* GraphQL */ `
     query CurrentRound {
       currentRound {
         id
@@ -27,7 +26,7 @@ export function Dashboard() {
   `;
   const [currentRound] = useCurrentRoundQuery();
 
-  gql`
+  /* GraphQL */ `
     query GameList {
       games {
         __typename
@@ -42,7 +41,7 @@ export function Dashboard() {
   `;
   const [games] = useGameListQuery();
 
-  gql`
+  /* GraphQL */ `
     mutation NewGame {
       createGame(input: { name: "New Game", maxPlayers: 2 }) {
         id
@@ -56,7 +55,7 @@ export function Dashboard() {
   `;
   const [createGameResult, createGame] = useNewGameMutation();
 
-  gql`
+  /* GraphQL */ `
     mutation DeleteGame($id: ID!) {
       deleteGame(input: { id: $id }) {
         id

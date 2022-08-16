@@ -11,3 +11,10 @@ generates:
     config:
       scalars:
         JWT: string
+      gqlImport: urql#gql
+      documentMode: documentNode
+      pureMagicComment: true
+      strictScalars: true
+hooks:
+  afterOneFileWrite:
+    - prettier --write

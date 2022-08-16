@@ -12,7 +12,6 @@ import {
 import { useForm } from '@mantine/form';
 import { IconLogin } from '@tabler/icons';
 import { useState } from 'react';
-import { gql } from 'urql';
 import { useLoginMutation } from '../graphql';
 import { useAbility, useToken } from '../utility';
 
@@ -22,7 +21,7 @@ export function UserInfo() {
 
   const [loginShown, setLoginShown] = useState(false);
 
-  gql`
+  /* GraphQL */ `
     mutation Login($email: String!, $password: String!, $rememberMe: Boolean) {
       login(email: $email, password: $password, rememberMe: $rememberMe)
     }

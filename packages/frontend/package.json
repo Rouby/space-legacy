@@ -3,7 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "concurrently vite \"yarn codegen --watch\"",
+    "dev": "concurrently -n server,codegen \"yarn dev:code\" \"yarn codegen --watch --silent --errors-only\"",
+    "dev:code": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "codegen": "graphql-codegen --config codegen.yml"

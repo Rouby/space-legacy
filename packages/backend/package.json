@@ -3,7 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "concurrently \"tsc-watch --noClear -p ./tsconfig.json --onSuccess 'node ./dist/src/main.js'\" \"yarn codegen --watch\"",
+    "dev": "concurrently -n server,codegen \"yarn dev:code\" \"yarn codegen --watch --silent --errors-only\"",
+    "dev:code": "tsc-watch --noClear -p ./tsconfig.json --onSuccess 'node ./dist/src/main.js' --onFailure 'echo Compilation failed'",
     "build": "echo tbd",
     "preview": "echo tbd",
     "codegen": "graphql-codegen --config codegen.yml"
@@ -27,6 +28,7 @@
     "@casl/prisma": "^1.0.4",
     "@graphql-tools/load-files": "^6.6.0",
     "@graphql-tools/schema": "^8.5.1",
+    "@graphql-yoga/common": "^2.12.6",
     "@graphql-yoga/node": "^2.13.6",
     "@prisma/client": "^4.1.1",
     "async-await-queue": "^1.2.1",

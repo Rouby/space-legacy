@@ -4,7 +4,6 @@ import {
   createClient,
   dedupExchange,
   fetchExchange,
-  gql,
   makeOperation,
 } from 'urql';
 import schema, { UpdateMutationCreateGameQuery } from './generated';
@@ -21,7 +20,7 @@ export const client = createClient({
             if (result.createGame) {
               cache.updateQuery<UpdateMutationCreateGameQuery>(
                 {
-                  query: gql`
+                  query: /* GraphQL */ `
                     query UpdateMutationCreateGame {
                       games {
                         id
@@ -40,7 +39,7 @@ export const client = createClient({
             if (result.deleteGame) {
               cache.updateQuery<UpdateMutationCreateGameQuery>(
                 {
-                  query: gql`
+                  query: /* GraphQL */ `
                     query UpdateMutationCreateGame {
                       games {
                         id

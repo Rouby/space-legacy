@@ -1,6 +1,5 @@
 import decode, { JwtPayload } from 'jwt-decode';
 import { useEffect, useReducer } from 'react';
-import { gql } from 'urql';
 import { useRefreshTokenQuery } from '../graphql';
 
 export function useToken() {
@@ -19,7 +18,7 @@ export function useToken() {
     }
   });
 
-  gql`
+  /* GraphQL */ `
     query RefreshToken {
       token
     }

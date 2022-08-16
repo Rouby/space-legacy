@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 
 import { createServer } from '@graphql-yoga/node';
 import { context, schema } from './graphql';
+import { logger } from './logger';
 import { initializeStores } from './logic';
 
 declare global {
@@ -15,8 +16,10 @@ const server = createServer({
   context,
 });
 
-server.start();
-initializeStores().then(() => console.log('Stores initialized'));
+initializeStores().then(() => {
+  logger.info('Stores initialized');
+  return server.start();
+});
 
 process.once('SIGINT', gracefulShutdown);
 process.once('SIGTERM', gracefulShutdown);
