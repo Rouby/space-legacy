@@ -12,7 +12,7 @@ export const typeDefs = /* GraphQL */ `
 export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Mutation: {
     endTurn: async (_, __, { publishEvent, ability }) => {
-      if (!ability.can('endTurn', 'Game')) {
+      if (ability.cannot('endTurn', 'Game')) {
         throw new GraphQLYogaError('Unauthorized');
       }
 

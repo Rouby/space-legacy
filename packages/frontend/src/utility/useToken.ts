@@ -1,3 +1,4 @@
+import type { TokenInfo } from 'backend/src/util';
 import decode, { JwtPayload } from 'jwt-decode';
 import { useEffect, useReducer } from 'react';
 import { useRefreshTokenQuery } from '../graphql';
@@ -31,6 +32,7 @@ export function useToken() {
       } else {
         localStorage.setItem('token', refreshToken.data.token);
       }
+      trigger();
     }
   }, [refreshToken.data?.token]);
 
@@ -62,8 +64,6 @@ export function useToken() {
   }
 }
 
-function isCorrectJWT(
-  obj: unknown,
-): obj is JwtPayload & { space: { id: string; permissions: any } } {
+function isCorrectJWT(obj: unknown): obj is TokenInfo {
   return !!obj && typeof obj === 'object' && 'space' in obj;
 }

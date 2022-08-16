@@ -3,7 +3,7 @@ import { User } from '@prisma/client';
 
 type Abilities =
   | [
-      'read',
+      'read' | 'create' | 'update' | 'delete' | 'login',
       (
         | 'User'
         | (User & {
@@ -11,6 +11,7 @@ type Abilities =
           })
       ),
     ]
+  | ['read', 'GamesList']
   | [
       'create' | 'delete' | 'join' | 'leave' | 'enter' | 'endTurn',
       (

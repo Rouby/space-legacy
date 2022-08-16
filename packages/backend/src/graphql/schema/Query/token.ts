@@ -1,5 +1,4 @@
-import { sign } from 'jsonwebtoken';
-import { createAbilityFor } from '../../../ability';
+import { signToken } from '../../../util';
 import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
@@ -20,22 +19,7 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
         return null;
       }
 
-      const token = sign(
-        {
-          space: {
-            id: user.id,
-            permissions: (await createAbilityFor(user)).rules,
-          },
-        },
-        process.env.SESSION_SECRET!,
-        {
-          algorithm: 'HS256',
-          subject: user.id,
-          expiresIn: '1y',
-        },
-      );
-
-      return token;
+      return signToken(user);
     },
   },
 };

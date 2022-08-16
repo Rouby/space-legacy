@@ -12,7 +12,7 @@ import {
 import { useForm } from '@mantine/form';
 import { IconLogin } from '@tabler/icons';
 import { useState } from 'react';
-import { useLoginMutation } from '../graphql';
+import { useLoginMutation, useRegisterMutation } from '../graphql';
 import { useAbility, useToken } from '../utility';
 
 export function UserInfo() {
@@ -27,12 +27,20 @@ export function UserInfo() {
     }
   `;
   const [loginResult, login] = useLoginMutation();
-  const [, setToken] = useToken();
+
+  /* GraphQL */ `#graphql
+    mutation Register($email: String!, $password: String!, $name:String!) {
+      signup(email: $email, password: $password, name: $name)
+    }
+  `;
+  const [registerResult, register] = useRegisterMutation();
+
+  const [token, setToken] = useToken();
 
   return (
     <>
       {isSignedIn ? (
-        'hello user'
+        `Hello ${token?.space.name}`
       ) : (
         <UnstyledButton
           sx={(theme) => ({
@@ -69,9 +77,18 @@ export function UserInfo() {
       >
         <LoginForm
           onSubmit={(values) =>
-            login(values).then((result) => {
-              if (result.data?.login) {
-                setToken(result.data.login, !values.rememberMe);
+            (values.mode === 'login'
+              ? login(values).then((result) => ({
+                  token: result.data?.login,
+                  rememberMe: values.rememberMe,
+                }))
+              : register(values).then((result) => ({
+                  token: result.data?.signup,
+                  rememberMe: false,
+                }))
+            ).then((result) => {
+              if (result.token) {
+                setToken(result.token, !result.rememberMe);
                 setLoginShown(false);
               }
             })
@@ -93,6 +110,8 @@ function LoginForm({
     email: string;
     password: string;
     rememberMe: boolean;
+    name: string;
+    mode: 'login' | 'register';
   }) => void;
   loading: boolean;
   error?: React.ReactNode;
@@ -102,18 +121,29 @@ function LoginForm({
       email: '',
       password: '',
       rememberMe: false,
+
+      name: '',
+
+      mode: 'login' as 'login' | 'register',
     },
 
     validate: {
       email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
+      name: (value, values) =>
+        values.mode === 'register'
+          ? value.length > 2
+            ? null
+            : 'Name must be at least 3 characters'
+          : null,
     },
   });
 
   return (
-    <form onSubmit={form.onSubmit(onSubmit)}>
+    <form id="login" onSubmit={form.onSubmit(onSubmit)}>
       <TextInput
         required
         name="login"
+        autoComplete="username"
         label="Email"
         placeholder="your@email.com"
         {...form.getInputProps('email')}
@@ -122,21 +152,49 @@ function LoginForm({
       <PasswordInput
         required
         name="password"
+        autoComplete={
+          form.values.mode === 'login' ? 'current-password' : 'new-password'
+        }
         label="Password"
         {...form.getInputProps('password')}
       />
 
-      <Checkbox
-        mt="md"
-        label="Remember me"
-        {...form.getInputProps('rememberMe', { type: 'checkbox' })}
-      />
+      {form.values.mode === 'login' && (
+        <Checkbox
+          mt="md"
+          label="Remember me"
+          {...form.getInputProps('rememberMe', { type: 'checkbox' })}
+        />
+      )}
 
-      <Group position="apart" mt="md">
+      {form.values.mode === 'register' && (
+        <TextInput
+          required
+          minLength={3}
+          name="name"
+          label="Name"
+          placeholder="Your name"
+          {...form.getInputProps('name')}
+        />
+      )}
+
+      <Group position="apart" mt="md" noWrap>
         <Text color="red">{error}</Text>
-        <Group position="right">
+        <Group position="right" noWrap>
+          <Button
+            variant="subtle"
+            disabled={loading}
+            onClick={() =>
+              form.setFieldValue(
+                'mode',
+                form.values.mode === 'login' ? 'register' : 'login',
+              )
+            }
+          >
+            {form.values.mode === 'register' ? 'Login' : 'Create Account'}
+          </Button>
           <Button type="submit" loading={loading}>
-            Login
+            {form.values.mode === 'login' ? 'Login' : 'Register'}
           </Button>
         </Group>
       </Group>

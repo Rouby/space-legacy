@@ -1,3 +1,4 @@
+import { GraphQLYogaError } from '@graphql-yoga/node';
 import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
@@ -20,7 +21,11 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Query: {
-    games: async (_, __, { stores }) => {
+    games: async (_, __, { stores, ability }) => {
+      if (ability.cannot('read', 'GamesList')) {
+        throw new GraphQLYogaError('Unauthorized');
+      }
+
       return stores.games.list;
     },
   },

@@ -27,7 +27,7 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
       { input: { name, maxPlayers } },
       { publishEvent, stores, userId, ability },
     ) => {
-      if (!ability.can('create', 'Game')) {
+      if (ability.cannot('create', 'Game')) {
         throw new GraphQLYogaError('Unauthorized');
       }
 
@@ -37,7 +37,6 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
           maxPlayers,
           creatorId: userId!,
         }),
-        awaitQueue: true,
       });
       const gameId = createEvent.payload.id;
 
@@ -46,7 +45,6 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
           gameId,
           userId: userId!,
         }),
-        awaitQueue: true,
       });
 
       return stores.games.list.find((d) => d.id === gameId)!;

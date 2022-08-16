@@ -1,7 +1,7 @@
+import { subject } from '@casl/ability';
 import { GraphQLYogaError } from '@graphql-yoga/node';
 import { compare } from 'bcryptjs';
-import { sign } from 'jsonwebtoken';
-import { createAbilityFor } from '../../../ability';
+import { signToken } from '../../../util';
 import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
@@ -13,7 +13,7 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Mutation: {
-    login: async (_, { email, password, rememberMe }, { prisma, http }) => {
+    login: async (_, { email, password, rememberMe }, { prisma, ability }) => {
       const userWithPassword = await prisma.user.findUnique({
         where: { email },
         include: {
@@ -30,22 +30,12 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
       if (!isValid) {
         throw new GraphQLYogaError('Invalid login');
       }
-      const token = sign(
-        {
-          space: {
-            id: userWithPassword.id,
-            permissions: (await createAbilityFor(userWithPassword)).rules,
-          },
-        },
-        process.env.SESSION_SECRET!,
-        {
-          algorithm: 'HS256',
-          subject: userWithPassword.id,
-          expiresIn: '1y',
-        },
-      );
 
-      return token;
+      if (ability.cannot('login', subject('User', userWithPassword as any))) {
+        throw new GraphQLYogaError('User suspended');
+      }
+
+      return signToken(userWithPassword);
     },
   },
 };

@@ -1,24 +1,30 @@
+import { GraphQLYogaError } from '@graphql-yoga/node';
 import { User } from '@prisma/client';
 import { hash } from 'bcryptjs';
 import { sign } from 'jsonwebtoken';
 import { createAbilityFor } from '../../../ability';
+import { signToken } from '../../../util';
 import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
   type Mutation {
-    signup(email: String!, password: String!): JWT!
+    signup(email: String!, password: String!, name: String!): JWT!
   }
 `;
 
 export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Mutation: {
-    signup: async (_, { email, password }, { prisma, http }) => {
+    signup: async (_, { email, password, name }, { prisma, ability }) => {
+      if (ability.cannot('create', 'User')) {
+        throw new GraphQLYogaError('Unauthorized');
+      }
+
       const hashedPassword = await hash(password, 10);
 
       const user = await prisma.user.create({
         data: {
-          name: 'new user',
+          name,
           email,
           password: {
             create: {
@@ -28,21 +34,7 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
         },
       });
 
-      const token = sign(
-        {
-          space: {
-            id: user.id,
-            permissions: (await createAbilityFor(user)).rules,
-          },
-        },
-        process.env.SESSION_SECRET!,
-        {
-          algorithm: 'HS256',
-          subject: user.id,
-        },
-      );
-
-      return token;
+      return signToken(user);
     },
   },
 };

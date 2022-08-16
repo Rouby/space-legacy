@@ -1,71 +1,18 @@
 import { authExchange } from '@urql/exchange-auth';
-import { cacheExchange } from '@urql/exchange-graphcache';
 import {
   createClient,
   dedupExchange,
   fetchExchange,
   makeOperation,
+  subscriptionExchange,
 } from 'urql';
-import schema, { UpdateMutationCreateGameQuery } from './generated';
+import { cacheExchange } from './cache';
 
 export const client = createClient({
   url: '/graphql',
   exchanges: [
     dedupExchange,
-    cacheExchange({
-      schema,
-      updates: {
-        Mutation: {
-          createGame: (result, args, cache, info) => {
-            if (result.createGame) {
-              cache.updateQuery<UpdateMutationCreateGameQuery>(
-                {
-                  query: /* GraphQL */ `
-                    #graphql
-                    query UpdateMutationCreateGame {
-                      games {
-                        id
-                      }
-                    }
-                  `,
-                },
-                (data) => {
-                  data?.games.push(result.createGame as any);
-                  return data;
-                },
-              );
-            }
-          },
-          deleteGame: (result, args, cache, info) => {
-            if (result.deleteGame) {
-              cache.updateQuery<UpdateMutationCreateGameQuery>(
-                {
-                  query: /* GraphQL */ `
-                    #graphql
-                    query UpdateMutationCreateGame {
-                      games {
-                        id
-                      }
-                    }
-                  `,
-                },
-                (data) => {
-                  if (data?.games) {
-                    data.games = data.games.filter(
-                      (g) => g.id !== (result.deleteGame as any).id,
-                    );
-                  }
-                  return data;
-                },
-              );
-            }
-          },
-          endTurn: (result, args, cache, info) => {
-            cache.invalidate('Query', 'currentRound');
-          },
-        },
-      },
-    }),
+    cacheExchange,
     authExchange<{ token: string }>({
       getAuth: async ({ authState }) => {
         if (!authState) {
@@ -102,5 +49,37 @@ export const client = createClient({
       },
     }),
     fetchExchange,
+    subscriptionExchange({
+      forwardSubscription(operation) {
+        const url = new URL(`${location.protocol}//${location.host}/graphql`);
+        url.searchParams.append('query', operation.query);
+        if (operation.variables) {
+          url.searchParams.append(
+            'variables',
+            JSON.stringify(operation.variables),
+          );
+        }
+        return {
+          subscribe: (sink) => {
+            const eventsource = new EventSource(url.toString(), {
+              withCredentials: true,
+            });
+            eventsource.onmessage = (event) => {
+              const data = JSON.parse(event.data);
+              sink.next(data);
+              if (eventsource.readyState === 2) {
+                sink.complete();
+              }
+            };
+            eventsource.onerror = (error) => {
+              sink.error(error);
+            };
+            return {
+              unsubscribe: () => eventsource.close(),
+            };
+          },
+        };
+      },
+    }),
   ],
 });

@@ -1,9 +1,14 @@
+import { createPubSub } from '@graphql-yoga/node';
 import { CookieSerializeOptions, serialize } from 'cookie';
 import { IncomingMessage, ServerResponse } from 'http';
 import { decode, JwtPayload, verify } from 'jsonwebtoken';
-import { AppAbility } from '../ability';
+import { AppAbility, createDefaultAbility } from '../ability';
 import { publishEvent, stores } from '../logic';
 import { getDbClient } from '../prisma';
+
+export const pubSub = createPubSub<{
+  gameCreated: [payload: { id: string }];
+}>();
 
 export async function context({
   req,
@@ -43,8 +48,9 @@ export async function context({
   return {
     prisma,
     userId: user?.id,
-    ability: new AppAbility(user?.permissions),
+    ability: user ? new AppAbility(user.permissions) : createDefaultAbility(),
     publishEvent,
+    pubSub,
     stores,
     http: {
       setCookie: (
