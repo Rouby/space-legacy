@@ -21,7 +21,7 @@ export function UserInfo() {
 
   const [loginShown, setLoginShown] = useState(false);
 
-  /* GraphQL */ `
+  /* GraphQL */ `#graphql
     mutation Login($email: String!, $password: String!, $rememberMe: Boolean) {
       login(email: $email, password: $password, rememberMe: $rememberMe)
     }

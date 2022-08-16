@@ -18,7 +18,7 @@ export function useToken() {
     }
   });
 
-  /* GraphQL */ `
+  /* GraphQL */ `#graphql
     query RefreshToken {
       token
     }

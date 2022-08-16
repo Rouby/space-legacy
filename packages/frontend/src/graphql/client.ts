@@ -21,6 +21,7 @@ export const client = createClient({
               cache.updateQuery<UpdateMutationCreateGameQuery>(
                 {
                   query: /* GraphQL */ `
+                    #graphql
                     query UpdateMutationCreateGame {
                       games {
                         id
@@ -40,6 +41,7 @@ export const client = createClient({
               cache.updateQuery<UpdateMutationCreateGameQuery>(
                 {
                   query: /* GraphQL */ `
+                    #graphql
                     query UpdateMutationCreateGame {
                       games {
                         id

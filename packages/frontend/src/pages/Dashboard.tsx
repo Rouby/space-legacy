@@ -1,32 +1,13 @@
 import { Button } from '@mantine/core';
 import {
-  useCurrentRoundQuery,
   useDeleteGameMutation,
-  useEndTurnMutation,
   useGameListQuery,
   useNewGameMutation,
 } from '../graphql';
 import { useAbility } from '../utility';
 
 export function Dashboard() {
-  /* GraphQL */ `
-    mutation EndTurn {
-      endTurn
-    }
-  `;
-  const [endTurnResult, endTurn] = useEndTurnMutation();
-
-  /* GraphQL */ `
-    query CurrentRound {
-      currentRound {
-        id
-        count
-      }
-    }
-  `;
-  const [currentRound] = useCurrentRoundQuery();
-
-  /* GraphQL */ `
+  /* GraphQL */ `#graphql
     query GameList {
       games {
         __typename
@@ -41,7 +22,7 @@ export function Dashboard() {
   `;
   const [games] = useGameListQuery();
 
-  /* GraphQL */ `
+  /* GraphQL */ `#graphql
     mutation NewGame {
       createGame(input: { name: "New Game", maxPlayers: 2 }) {
         id
@@ -55,7 +36,7 @@ export function Dashboard() {
   `;
   const [createGameResult, createGame] = useNewGameMutation();
 
-  /* GraphQL */ `
+  /* GraphQL */ `#graphql
     mutation DeleteGame($id: ID!) {
       deleteGame(input: { id: $id }) {
         id
@@ -68,14 +49,6 @@ export function Dashboard() {
 
   return (
     <>
-      Dashboard {currentRound.data?.currentRound?.count}
-      <Button
-        onClick={() => endTurn()}
-        loading={endTurnResult.fetching}
-        disabled={ability.cannot('endTurn', 'Game')}
-      >
-        End Turn
-      </Button>
       <Button
         onClick={() => createGame()}
         loading={createGameResult.fetching}
