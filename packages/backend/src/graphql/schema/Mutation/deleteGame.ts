@@ -23,11 +23,12 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
     deleteGame: async (
       _,
       { input: { id } },
-      { publishEvent, stores, userId, ability },
+      { publishEvent, retrieveState, userId, ability },
     ) => {
-      const game = stores.games.list.find((d) => d.id === id)!;
+      const { list } = await retrieveState('games');
+      const game = list.find((d) => d.id === id);
 
-      if (ability.cannot('delete', subject('Game', game))) {
+      if (!game || ability.cannot('delete', subject('Game', game))) {
         throw new GraphQLYogaError('Unauthorized');
       }
 

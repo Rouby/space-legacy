@@ -14,6 +14,7 @@ let prisma: PrismaClient;
 const server = createServer({
   schema,
   context,
+  logging: logger,
 });
 
 initializeStores().then(() => {
@@ -25,6 +26,7 @@ process.once('SIGINT', gracefulShutdown);
 process.once('SIGTERM', gracefulShutdown);
 
 function gracefulShutdown(signal: any) {
+  console.log('grace');
   Promise.all([prisma?.$disconnect(), server.stop()]).finally(() => {
     process.kill(process.pid, signal);
   });

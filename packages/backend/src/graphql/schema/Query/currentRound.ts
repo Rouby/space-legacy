@@ -14,10 +14,10 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Query: {
-    currentRound: async (_, __, { stores }) => {
+    currentRound: async (_, __, { retrieveState }) => {
       return {
         id: '1',
-        count: stores.turnTracker.turnsEnded,
+        count: (await retrieveState('turnTracker')).turnsEnded,
       };
     },
   },

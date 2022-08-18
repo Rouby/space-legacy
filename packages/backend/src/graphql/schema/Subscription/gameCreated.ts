@@ -19,13 +19,15 @@ export const typeDefs = /* GraphQL */ `
 export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Subscription: {
     gameCreated: {
-      subscribe: (_, { filter: inputFilter }, { pubSub, stores }) => {
+      subscribe: (_, { filter: inputFilter }, { pubSub, retrieveState }) => {
         return pipe(
           pubSub.subscribe('gameCreated'),
           filter(
             (game) => !inputFilter?.id?.eq || game.id === inputFilter?.id?.eq,
           ),
-          map((game) => stores.games.list.find((g) => g.id === game.id)),
+          map(async (game) =>
+            (await retrieveState('games')).list.find((g) => g.id === game.id),
+          ),
         );
       },
       resolve: (payload: any) => payload,

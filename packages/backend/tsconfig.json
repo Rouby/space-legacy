@@ -3,7 +3,7 @@
     "composite": true,
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "target": "ES2022",
+    "target": "ES2021",
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "strict": true,

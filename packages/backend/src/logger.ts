@@ -1,3 +1,3 @@
-import { defaultYogaLogger } from '@graphql-yoga/common';
+import pino from 'pino';
 
-export const logger = defaultYogaLogger;
+export const logger = pino();

@@ -6,10 +6,10 @@ import { context } from './context';
 export { context };
 
 export const schema = makeExecutableSchema({
-  resolvers: loadFilesSync(resolve(__dirname, './schema/**/*.js'), {
+  resolvers: loadFilesSync(resolve(__dirname, './schema/**/*.{ts,js}'), {
     extractExports: (fileExport) => fileExport.resolvers,
   }) as any,
-  typeDefs: loadFilesSync(resolve(__dirname, './schema/**/*.js'), {
+  typeDefs: loadFilesSync(resolve(__dirname, './schema/**/*.{ts,js}'), {
     extractExports: (fileExport) => fileExport.typeDefs,
   }),
 });

@@ -3,7 +3,7 @@ import { CookieSerializeOptions, serialize } from 'cookie';
 import { IncomingMessage, ServerResponse } from 'http';
 import { decode, JwtPayload, verify } from 'jsonwebtoken';
 import { AppAbility, createDefaultAbility } from '../ability';
-import { publishEvent, stores } from '../logic';
+import { publishEvent, retrieveState } from '../logic';
 import { getDbClient } from '../prisma';
 
 export const pubSub = createPubSub<{
@@ -50,8 +50,8 @@ export async function context({
     userId: user?.id,
     ability: user ? new AppAbility(user.permissions) : createDefaultAbility(),
     publishEvent,
+    retrieveState,
     pubSub,
-    stores,
     http: {
       setCookie: (
         name: string,

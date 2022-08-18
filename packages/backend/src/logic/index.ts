@@ -1,18 +1,19 @@
 import { GameEvent } from '@prisma/client';
-import * as Queue from 'async-await-queue';
-import * as cuid from 'cuid';
+import Queue from 'async-await-queue';
+import cuid from 'cuid';
+import { logger } from '../logger';
 import { getDbClient } from '../prisma';
 import { effects } from './effects';
 import { AppEvent } from './events';
 import { games, turnTracker } from './reducer';
 
 const reducer = [games, turnTracker];
-export const stores = {
+const stores = {
   games: games.initialState,
   turnTracker: turnTracker.initialState,
 };
 
-const eventQueue = new (Queue as any as typeof Queue.default)();
+const eventQueue = new Queue();
 
 export async function initializeStores() {
   const prisma = await getDbClient();
@@ -40,14 +41,20 @@ export async function initializeStores() {
   await eventQueue.flush();
 }
 
+export async function retrieveState<
+  TKey extends keyof typeof stores = keyof typeof stores,
+>(key: TKey) {
+  await eventQueue.flush();
+
+  return stores[key];
+}
+
 export async function publishEvent<TEvent extends AppEvent>({
   event,
   trigger,
-  awaitQueue,
 }: {
   event: TEvent;
   trigger?: { id: string; correlationId: string };
-  awaitQueue?: boolean;
 }) {
   const prisma = await getDbClient();
 
@@ -66,14 +73,17 @@ export async function publishEvent<TEvent extends AppEvent>({
     },
   });
 
+  logger.info(
+    { ...gameEvent, payload: 'payload' in event && event.payload },
+    `Published event`,
+  );
+
   const parsedEvent = {
     ...gameEvent,
     payload: JSON.parse(gameEvent.payload),
   } as any as Omit<GameEvent, 'payload'> & TEvent;
-  const promise = eventQueue.run(() => handleEvent(parsedEvent as any));
-  if (awaitQueue) {
-    await promise;
-  }
+
+  eventQueue.run(() => handleEvent(parsedEvent as any));
 
   return parsedEvent;
 }
@@ -92,6 +102,6 @@ async function handleEvent(
     }),
   );
   if (!replay) {
-    await Promise.all(effects.map((effect) => effect(event)));
+    effects.map((effect) => effect(event));
   }
 }
