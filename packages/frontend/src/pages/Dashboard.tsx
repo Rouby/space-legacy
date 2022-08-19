@@ -4,16 +4,82 @@ import {
   useGameCreatedSubscription,
   useGameListQuery,
   useNewGameMutation,
+  useStarSystemListQuery,
+  useStartGameMutation,
 } from '../graphql';
-import { useAbility } from '../utility';
+import { useAbility, useGame } from '../utility';
 
 export function Dashboard() {
+  const [game, setGameId] = useGame();
+
+  /* GraphQL */ `#graphql
+    mutation StartGame($id: ID!) {
+      startGame(input: { id:$id }) {
+        id
+        state
+      }
+    }
+  `;
+  const [startGameResult, startGame] = useStartGameMutation();
+
+  const ability = useAbility();
+
+  if (game) {
+    return (
+      <>
+        your ingame!
+        <Button onClick={() => setGameId(null)}>Return</Button>
+        {ability.can('start', 'Game') && (
+          <Button onClick={() => startGame({ id: game })}>Start</Button>
+        )}
+        <StarSystemList />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <GameList />
+    </>
+  );
+}
+
+function StarSystemList() {
+  const [game] = useGame();
+
+  /* GraphQL */ `#graphql
+    query StarSystemList($gameId: ID!) {
+      starSystems(gameId: $gameId) {
+        id
+        name
+      }
+    }
+  `;
+  const [starSystems] = useStarSystemListQuery({
+    variables: { gameId: game! },
+  });
+
+  return (
+    <>
+      list
+      {starSystems.data?.starSystems.map((starSystem) => (
+        <div key={starSystem.id}>{starSystem.name}</div>
+      ))}
+    </>
+  );
+}
+
+function GameList() {
   /* GraphQL */ `#graphql
     query GameList {
       games {
         __typename
         id
         name
+        state
+        creator {
+          id
+        }
         maxPlayers
         players {
           id
@@ -28,6 +94,10 @@ export function Dashboard() {
       createGame(input: { name: "New Game", maxPlayers: 2 }) {
         id
         name
+        state
+        creator {
+          id
+        }
         maxPlayers
         players {
           id
@@ -59,6 +129,8 @@ function GameListItem(game: {
   __typename: 'Game';
   id: string;
   name: string;
+  state: 'CREATED' | 'STARTED' | 'ENDED';
+  creator: { id: string };
   maxPlayers: number;
   players: { id: string }[];
 }) {
@@ -88,11 +160,15 @@ function GameListItem(game: {
     variables: { id: game.id },
   });
 
+  const [, setGameId] = useGame();
+
   return (
     <Group key={game.id} sx={{ position: 'relative' }}>
-      {game.name}, {`${game.players.length} / ${game.maxPlayers}`}
+      {game.name}, {`${game.players.length} / ${game.maxPlayers}`} {game.state}
       {ability.can('join', game) && <Button>Join</Button>}
-      {ability.can('enter', game) && <Button>Enter</Button>}
+      {ability.can('enter', game) && (
+        <Button onClick={() => setGameId(game.id)}>Enter</Button>
+      )}
       {ability.can('delete', game) && (
         <Button
           onClick={() => deleteGame({ id: game.id })}

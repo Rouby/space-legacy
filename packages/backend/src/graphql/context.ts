@@ -4,10 +4,11 @@ import { IncomingMessage, ServerResponse } from 'http';
 import { decode, JwtPayload, verify } from 'jsonwebtoken';
 import { AppAbility, createDefaultAbility } from '../ability';
 import { publishEvent, retrieveState } from '../logic';
-import { getDbClient } from '../prisma';
+import { getDbClient } from '../util';
 
 export const pubSub = createPubSub<{
   gameCreated: [payload: { id: string }];
+  gameStarted: [payload: { id: string }];
 }>();
 
 export async function context({

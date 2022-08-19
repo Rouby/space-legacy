@@ -9,7 +9,7 @@ import {
 import { Provider } from 'urql';
 import { parse, stringify } from 'zipson';
 import { Navigation } from './components';
-import { client } from './graphql';
+import { useClient } from './graphql';
 import { Dashboard } from './pages';
 
 const reactLocation = new ReactLocation({
@@ -22,6 +22,7 @@ const reactLocation = new ReactLocation({
 });
 
 export default function App() {
+  const client = useClient();
   return (
     <Provider value={client}>
       <Router

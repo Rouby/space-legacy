@@ -10,12 +10,16 @@ export async function createAbilityFor(user: User) {
 
   can('create', 'Game');
   can('delete', 'Game', { 'players.id': user.id, players: { $size: 1 } });
-  can('join', 'Game');
+  can('join', 'Game', { state: 'CREATED' });
   cannot('join', 'Game', { 'players.id': user.id });
   can('leave', 'Game', { 'players.id': user.id });
   can('enter', 'Game', { 'players.id': user.id });
+  can('start', 'Game', { 'creator.id': user.id });
+  cannot('start', 'Game', { state: { $ne: 'CREATED' } });
 
   can('endTurn', 'Game', { 'players.id': user.id });
+
+  can('view', 'System', { 'habitablePlanets.owner.id': user.id });
 
   return new AppAbility([
     ...(createDefaultAbility().rules as typeof rules),

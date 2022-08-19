@@ -8,6 +8,7 @@ export const typeDefs = /* GraphQL */ `
     id: ID!
     name: String!
     maxPlayers: Int!
+    creator: Player!
   }
 
   input CreateGameInput {

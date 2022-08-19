@@ -2,15 +2,15 @@ import { GameEvent } from '@prisma/client';
 import Queue from 'async-await-queue';
 import cuid from 'cuid';
 import { logger } from '../logger';
-import { getDbClient } from '../prisma';
+import { getDbClient } from '../util';
+import { aggregates } from './aggregates';
 import { effects } from './effects';
 import { AppEvent } from './events';
-import { games, turnTracker } from './reducer';
 
-const reducer = [games, turnTracker];
 const stores = {
-  games: games.initialState,
-  turnTracker: turnTracker.initialState,
+  games: aggregates[0].initialState,
+  turnTracker: aggregates[1].initialState,
+  starSystems: aggregates[2].initialState,
 };
 
 const eventQueue = new Queue();
@@ -39,6 +39,8 @@ export async function initializeStores() {
   );
 
   await eventQueue.flush();
+
+  logger.info({ stores }, 'Stores initialized');
 }
 
 export async function retrieveState<
@@ -73,17 +75,16 @@ export async function publishEvent<TEvent extends AppEvent>({
     },
   });
 
-  logger.info(
-    { ...gameEvent, payload: 'payload' in event && event.payload },
-    `Published event`,
-  );
-
   const parsedEvent = {
     ...gameEvent,
     payload: JSON.parse(gameEvent.payload),
   } as any as Omit<GameEvent, 'payload'> & TEvent;
 
-  eventQueue.run(() => handleEvent(parsedEvent as any));
+  eventQueue.run(() =>
+    handleEvent(parsedEvent as Omit<GameEvent, 'payload'> & AppEvent),
+  );
+
+  logger.info(parsedEvent, 'Published event');
 
   return parsedEvent;
 }
@@ -92,16 +93,17 @@ async function handleEvent(
   event: Omit<GameEvent, 'payload'> & AppEvent,
   replay = false,
 ) {
-  await Promise.all(
-    reducer.map(async (reducer) => {
-      (stores as any)[reducer.name] = await reducer(
-        (stores as any)[reducer.name],
-        event,
-        replay,
-      );
-    }),
-  );
-  if (!replay) {
-    effects.map((effect) => effect(event));
+  for (const aggregate of aggregates) {
+    (stores as any)[aggregate.name] = aggregate(
+      (stores as any)[aggregate.name],
+      event,
+    );
   }
+  if (!replay) {
+    for (const effect of effects) {
+      effect(event);
+    }
+  }
+
+  logger.debug(event, 'Handled event');
 }

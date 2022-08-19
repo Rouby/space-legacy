@@ -17,16 +17,12 @@ const server = createServer({
   logging: logger,
 });
 
-initializeStores().then(() => {
-  logger.info('Stores initialized');
-  return server.start();
-});
+initializeStores().then(() => server.start());
 
 process.once('SIGINT', gracefulShutdown);
 process.once('SIGTERM', gracefulShutdown);
 
 function gracefulShutdown(signal: any) {
-  console.log('grace');
   Promise.all([prisma?.$disconnect(), server.stop()]).finally(() => {
     process.kill(process.pid, signal);
   });

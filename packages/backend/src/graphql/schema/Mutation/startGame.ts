@@ -1,44 +1,49 @@
 import { subject } from '@casl/ability';
-import { GraphQLYogaError } from '@graphql-yoga/common';
-import { joinGame } from '../../../logic/events';
+import { GraphQLYogaError } from '@graphql-yoga/node';
+import { startGame } from '../../../logic/events';
 import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
   type Game {
     id: ID!
-    players: [Player!]!
+    state: GameState!
   }
 
-  input JoinGameInput {
+  enum GameState {
+    CREATED
+    STARTED
+    ENDED
+  }
+
+  input StartGameInput {
     id: ID!
   }
 
   type Mutation {
-    joinGame(input: JoinGameInput!): Game!
+    startGame(input: StartGameInput!): Game!
   }
 `;
 
 export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Mutation: {
-    joinGame: async (
+    startGame: async (
       _,
       { input: { id } },
-      { publishEvent, retrieveState, userId, ability },
+      { publishEvent, retrieveState, ability },
     ) => {
       {
         const { list } = await retrieveState('games');
         const game = list.find((d) => d.id === id);
 
-        if (!game || ability.cannot('join', subject('Game', game))) {
+        if (!game || ability.cannot('start', subject('Game', game))) {
           throw new GraphQLYogaError('Unauthorized');
         }
       }
 
       await publishEvent({
-        event: joinGame({
+        event: startGame({
           gameId: id,
-          userId: userId!,
         }),
       });
 

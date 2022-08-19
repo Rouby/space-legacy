@@ -6,22 +6,40 @@ type Abilities =
       'read' | 'create' | 'update' | 'delete' | 'login',
       (
         | 'User'
-        | (User & {
+        | ({
             __typename: 'User';
-          })
+          } & User)
       ),
     ]
   | ['read', 'GamesList']
   | [
-      'create' | 'delete' | 'join' | 'leave' | 'enter' | 'endTurn',
+      'create' | 'delete' | 'join' | 'leave' | 'enter' | 'start' | 'endTurn',
       (
         | 'Game'
         | {
             __typename: 'Game';
 
             id: string;
+            creator: { id: string };
+            'creator.id'?: string;
             players: { id: string }[];
             'players.id'?: string;
+            state: 'CREATED' | 'STARTED' | 'ENDED';
+          }
+      ),
+    ]
+  | [
+      'view',
+      (
+        | 'System'
+        | {
+            __typename: 'System';
+
+            id: string;
+            habitablePlanets: {
+              owner: { id: string };
+            }[];
+            'habitablePlanets.owner.id'?: string;
           }
       ),
     ];

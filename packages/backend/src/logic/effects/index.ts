@@ -1,3 +1,4 @@
 import { gameCreated } from './gameCreated';
+import { gameStarted } from './gameStarted';
 
-export const effects = [gameCreated];
+export const effects = [gameCreated, gameStarted];

@@ -15,6 +15,7 @@ generates:
       documentMode: documentNode
       pureMagicComment: true
       strictScalars: true
+      allowEnumStringTypes: true
 hooks:
   afterOneFileWrite:
     - prettier --write

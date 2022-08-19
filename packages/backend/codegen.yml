@@ -6,6 +6,8 @@ generates:
     plugins:
       - 'typescript'
       - 'typescript-resolvers'
+    config:
+      allowEnumStringTypes: true
 hooks:
   afterOneFileWrite:
     - prettier --write
