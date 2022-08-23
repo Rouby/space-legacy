@@ -24,6 +24,7 @@
     "@tanstack/react-location": "^3.7.4",
     "@urql/exchange-auth": "^0.1.7",
     "@urql/exchange-graphcache": "^4.4.3",
+    "alea": "^1.0.1",
     "cookie-storage": "^6.1.0",
     "dayjs": "^1.11.4",
     "graphql": "^16.5.0",

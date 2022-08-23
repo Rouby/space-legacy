@@ -24,7 +24,6 @@ export function useClient() {
           cacheExchange,
           authExchange<typeof tokenRef | null>({
             getAuth: async ({ authState }) => {
-              console.log('getAuth', authState);
               if (!authState) {
                 if (tokenRef.current) {
                   return tokenRef;
@@ -35,7 +34,6 @@ export function useClient() {
               return null;
             },
             addAuthToOperation: ({ authState, operation }) => {
-              console.log('addAuthToOperation', authState, operation);
               if (!authState || !authState.current) {
                 return operation;
               }

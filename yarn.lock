@@ -2846,6 +2846,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"alea@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "alea@npm:1.0.1"
+  checksum: b699177496913b3ea0c1e329e13cb164befb5e5a906b46299e375465a697613e6294e1d617008438d0a714c397ad17ce292ef10126fa76c1ca913e90ef28e81d
+  languageName: node
+  linkType: hard
+
 "ansi-escapes@npm:^4.2.1, ansi-escapes@npm:^4.3.0, ansi-escapes@npm:^4.3.1":
   version: 4.3.2
   resolution: "ansi-escapes@npm:4.3.2"
@@ -3089,6 +3096,7 @@ __metadata:
     "@types/jsonwebtoken": ^8.5.8
     "@types/node": ^18.6.4
     "@yarnpkg/pnpify": ^4.0.0-rc.14
+    alea: ^1.0.1
     async-await-queue: ^1.2.1
     bcryptjs: ^2.4.3
     concurrently: ^7.3.0
@@ -4862,6 +4870,7 @@ __metadata:
     "@urql/exchange-auth": ^0.1.7
     "@urql/exchange-graphcache": ^4.4.3
     "@vitejs/plugin-react": ^2.0.0
+    alea: ^1.0.1
     concurrently: ^7.3.0
     cookie-storage: ^6.1.0
     dayjs: ^1.11.4

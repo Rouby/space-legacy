@@ -10,7 +10,7 @@ import { Provider } from 'urql';
 import { parse, stringify } from 'zipson';
 import { Navigation } from './components';
 import { useClient } from './graphql';
-import { Dashboard } from './pages';
+import { Dashboard, StarSystemView } from './pages';
 
 const reactLocation = new ReactLocation({
   parseSearch: parseSearchWith((value) =>
@@ -27,7 +27,13 @@ export default function App() {
     <Provider value={client}>
       <Router
         location={reactLocation}
-        routes={[{ path: '/', element: <Dashboard /> }]}
+        routes={[
+          { path: '/', element: <Dashboard /> },
+          {
+            path: 'star-system',
+            children: [{ path: ':starSystemId', element: <StarSystemView /> }],
+          },
+        ]}
       >
         <MantineProvider
           withGlobalStyles

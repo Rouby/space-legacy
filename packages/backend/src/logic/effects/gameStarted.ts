@@ -14,12 +14,60 @@ export async function gameStarted(
       event: createStarSystem({
         gameId: event.payload.gameId,
         name: 'System One',
+        sunClass: 'F',
         coordinates: { x: 0, y: 0 },
         habitablePlanets: [
           {
-            name: 'Planet One',
+            orbit: 0.1,
             size: 25,
             type: 'continental',
+          },
+          {
+            orbit: 0.3,
+            size: 5,
+            type: 'continental',
+          },
+        ],
+        uninhabitableBodies: [
+          {
+            orbit: 0.2,
+            size: 40,
+            type: 'gas',
+          },
+          {
+            orbit: 0.4,
+            size: 24,
+            type: 'broken',
+          },
+          {
+            orbit: 0.5,
+            size: 20,
+            type: 'asteroids',
+          },
+          {
+            orbit: 0.6,
+            size: 40,
+            type: 'frozen',
+          },
+          {
+            orbit: 0.7,
+            size: 40,
+            type: 'gas',
+          },
+          {
+            orbit: 0.8,
+            size: 40,
+            type: 'gas',
+          },
+          {
+            orbit: 0.9,
+            size: 14,
+            type: 'toxic',
+          },
+          {
+            orbit: 1,
+            size: 12,
+            type: 'frozen',
           },
         ],
       }),

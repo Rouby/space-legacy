@@ -12,8 +12,12 @@ import {
 import { useForm } from '@mantine/form';
 import { IconLogin } from '@tabler/icons';
 import { useState } from 'react';
-import { useLoginMutation, useRegisterMutation } from '../graphql';
-import { useAbility, useToken } from '../utility';
+import {
+  useEndTurnMutation,
+  useLoginMutation,
+  useRegisterMutation,
+} from '../graphql';
+import { useAbility, useGame, useToken } from '../utility';
 
 export function UserInfo() {
   const ability = useAbility();
@@ -37,10 +41,29 @@ export function UserInfo() {
 
   const [token, setToken] = useToken();
 
+  /* GraphQL */ `#graphql
+    mutation EndTurn($gameId: ID!) {
+      endTurn(input: {gameId : $gameId}) 
+    }
+  `;
+  const [endTurnResult, endTurn] = useEndTurnMutation();
+
+  const [game] = useGame();
+
   return (
     <>
       {isSignedIn ? (
-        `Hello ${token?.space.name}`
+        <>
+          {`Hello ${token?.space.name}`}
+          {game && (
+            <Button
+              disabled={ability.cannot('endTurn', game)}
+              onClick={() => endTurn({ gameId: game?.id! })}
+            >
+              End Turn
+            </Button>
+          )}
+        </>
       ) : (
         <UnstyledButton
           sx={(theme) => ({

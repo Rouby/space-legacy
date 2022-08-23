@@ -955,6 +955,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         "npm:3.1.0"\
       ],\
       [\
+        "alea",\
+        "npm:1.0.1"\
+      ],\
+      [\
         "ansi-escapes",\
         "npm:4.3.2"\
       ],\
@@ -7277,6 +7281,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "linkType": "HARD"\
         }]\
       ]],\
+      ["alea", [\
+        ["npm:1.0.1", {\
+          "packageLocation": "./.yarn/cache/alea-npm-1.0.1-014dcdbc12-b699177496.zip/node_modules/alea/",\
+          "packageDependencies": [\
+            ["alea", "npm:1.0.1"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
       ["ansi-escapes", [\
         ["npm:4.3.2", {\
           "packageLocation": "./.yarn/cache/ansi-escapes-npm-4.3.2-3ad173702f-93111c4218.zip/node_modules/ansi-escapes/",\
@@ -7565,6 +7578,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@types/jsonwebtoken", "npm:8.5.8"],\
             ["@types/node", "npm:18.6.4"],\
             ["@yarnpkg/pnpify", "npm:4.0.0-rc.14"],\
+            ["alea", "npm:1.0.1"],\
             ["async-await-queue", "npm:1.2.1"],\
             ["bcryptjs", "npm:2.4.3"],\
             ["concurrently", "npm:7.3.0"],\
@@ -9446,6 +9460,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@urql/exchange-auth", "virtual:a315446cd0626d69c81bb371962241fad2e843699b8251d1a49a3231d7821af7bdb2285677102303361c3219ca15ceeabaa438b7b5ead02c2587180fe2eace6b#npm:0.1.7"],\
             ["@urql/exchange-graphcache", "virtual:a315446cd0626d69c81bb371962241fad2e843699b8251d1a49a3231d7821af7bdb2285677102303361c3219ca15ceeabaa438b7b5ead02c2587180fe2eace6b#npm:4.4.3"],\
             ["@vitejs/plugin-react", "virtual:a315446cd0626d69c81bb371962241fad2e843699b8251d1a49a3231d7821af7bdb2285677102303361c3219ca15ceeabaa438b7b5ead02c2587180fe2eace6b#npm:2.0.0"],\
+            ["alea", "npm:1.0.1"],\
             ["concurrently", "npm:7.3.0"],\
             ["cookie-storage", "npm:6.1.0"],\
             ["dayjs", "npm:1.11.4"],\

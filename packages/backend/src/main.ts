@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-
 import { createServer } from '@graphql-yoga/node';
+import { PrismaClient } from '@prisma/client';
 import { context, schema } from './graphql';
 import { logger } from './logger';
 import { initializeStores } from './logic';

@@ -32,6 +32,7 @@
     "@graphql-yoga/common": "^2.12.6",
     "@graphql-yoga/node": "^2.13.6",
     "@prisma/client": "^4.1.1",
+    "alea": "^1.0.1",
     "async-await-queue": "^1.2.1",
     "bcryptjs": "^2.4.3",
     "concurrently": "^7.3.0",

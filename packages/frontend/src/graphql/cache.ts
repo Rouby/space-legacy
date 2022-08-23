@@ -3,6 +3,10 @@ import schema, { UpdateMutationCreateGameQuery } from './generated';
 
 export const cacheExchange = urlCacheExchange({
   schema,
+  keys: {
+    Planet: () => null,
+    Body: () => null,
+  },
   updates: {
     Mutation: {
       createGame: (result, args, cache, info) => {

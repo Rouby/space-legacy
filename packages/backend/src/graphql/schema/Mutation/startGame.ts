@@ -5,17 +5,6 @@ import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
-  type Game {
-    id: ID!
-    state: GameState!
-  }
-
-  enum GameState {
-    CREATED
-    STARTED
-    ENDED
-  }
-
   input StartGameInput {
     id: ID!
   }

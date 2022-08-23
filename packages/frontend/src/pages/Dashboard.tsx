@@ -1,4 +1,5 @@
 import { Button, Group, LoadingOverlay } from '@mantine/core';
+import { Link } from '@tanstack/react-location';
 import {
   useDeleteGameMutation,
   useGameCreatedSubscription,
@@ -29,8 +30,8 @@ export function Dashboard() {
       <>
         your ingame!
         <Button onClick={() => setGameId(null)}>Return</Button>
-        {ability.can('start', 'Game') && (
-          <Button onClick={() => startGame({ id: game })}>Start</Button>
+        {ability.can('start', game) && (
+          <Button onClick={() => startGame({ id: game.id })}>Start</Button>
         )}
         <StarSystemList />
       </>
@@ -56,14 +57,19 @@ function StarSystemList() {
     }
   `;
   const [starSystems] = useStarSystemListQuery({
-    variables: { gameId: game! },
+    variables: { gameId: game?.id! },
   });
 
   return (
     <>
       list
       {starSystems.data?.starSystems.map((starSystem) => (
-        <div key={starSystem.id}>{starSystem.name}</div>
+        <div key={starSystem.id}>
+          {starSystem.name}
+          <Button component={Link} to={`/star-system/${starSystem.id}`}>
+            View
+          </Button>
+        </div>
       ))}
     </>
   );

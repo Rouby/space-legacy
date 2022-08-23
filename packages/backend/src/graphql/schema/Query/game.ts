@@ -3,19 +3,39 @@ import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
+  type Game {
+    id: ID!
+    name: String!
+    maxPlayers: Int!
+    players: [Player!]!
+    creator: Player!
+    state: GameState!
+  }
+
+  enum GameState {
+    CREATED
+    STARTED
+    ENDED
+  }
+
+  type Player {
+    id: ID!
+    # user: User!
+  }
+
   type Query {
-    games: [Game!]!
+    game(id: ID!): Game
   }
 `;
 
 export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Query: {
-    games: async (_, __, { retrieveState, ability }) => {
+    game: async (_, { id }, { retrieveState, ability }) => {
       if (ability.cannot('read', 'GamesList')) {
         throw new GraphQLYogaError('Unauthorized');
       }
 
-      return (await retrieveState('games')).list;
+      return (await retrieveState('games')).list.find((g) => g.id === id)!;
     },
   },
 };

@@ -5,11 +5,6 @@ import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
-  type Game {
-    id: ID!
-    players: [Player!]!
-  }
-
   input JoinGameInput {
     id: ID!
   }

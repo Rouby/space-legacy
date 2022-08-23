@@ -2,15 +2,6 @@ import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
-  type StarSystem {
-    id: ID!
-    name: String!
-  }
-
-  type Player {
-    id: ID!
-  }
-
   type Query {
     starSystems(gameId: ID!): [StarSystem!]!
   }
