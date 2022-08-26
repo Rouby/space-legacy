@@ -14,6 +14,8 @@ export const typeDefs = /* GraphQL */ `
     orbit: Float!
     size: Int!
     type: String!
+    owner: User
+    population: Int
   }
 
   type Body {
@@ -29,14 +31,12 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Query: {
-    starSystem: async (_, { gameId, id }, { retrieveState, ability }) => {
+    starSystem: async (_, { gameId, id }, { models, ability }) => {
       // if (ability.cannot('read', 'GamesList')) {
       //   throw new GraphQLYogaError('Unauthorized');
       // }
 
-      const { list } = await retrieveState('starSystems');
-
-      return list[gameId].find((s) => s.id === id)!;
+      return models.StarSystem.get(id);
     },
   },
 };

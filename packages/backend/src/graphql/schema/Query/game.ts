@@ -8,8 +8,9 @@ export const typeDefs = /* GraphQL */ `
     name: String!
     maxPlayers: Int!
     players: [Player!]!
-    creator: Player!
+    creator: User!
     state: GameState!
+    round: Int!
   }
 
   enum GameState {
@@ -20,7 +21,7 @@ export const typeDefs = /* GraphQL */ `
 
   type Player {
     id: ID!
-    # user: User!
+    turnEnded: Boolean!
   }
 
   type Query {
@@ -30,12 +31,12 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Query: {
-    game: async (_, { id }, { retrieveState, ability }) => {
+    game: async (_, { id }, { ability, models }) => {
       if (ability.cannot('read', 'GamesList')) {
         throw new GraphQLYogaError('Unauthorized');
       }
 
-      return (await retrieveState('games')).list.find((g) => g.id === id)!;
+      return models.Game.get(id);
     },
   },
 };

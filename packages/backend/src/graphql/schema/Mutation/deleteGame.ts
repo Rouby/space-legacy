@@ -19,10 +19,9 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
     deleteGame: async (
       _,
       { input: { id } },
-      { publishEvent, retrieveState, userId, ability },
+      { publishEvent, ability, models },
     ) => {
-      const { list } = await retrieveState('games');
-      const game = list.find((d) => d.id === id);
+      const game = await models.Game.get(id);
 
       if (!game || ability.cannot('delete', subject('Game', game))) {
         throw new GraphQLYogaError('Unauthorized');
@@ -34,7 +33,7 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
         }),
       });
 
-      return game;
+      return models.Game.get(id);
     },
   },
 };

@@ -1,6 +1,6 @@
 import { useAtom } from 'jotai';
 import { atomWithStorage, createJSONStorage } from 'jotai/utils';
-import { useGameQuery } from '../graphql';
+import { useGameQuery, useGameUpdatesSubscription } from '../graphql';
 
 const gameIdAtom = atomWithStorage(
   'gameId',
@@ -16,13 +16,17 @@ export function useGame() {
     game(id: $gameId) {
       __typename
       id
+      name
+      maxPlayers
       players {
         id
+        turnEnded
       }
       creator {
         id
       }
       state
+      round
     }
   }`;
   const [game] = useGameQuery({
@@ -30,5 +34,18 @@ export function useGame() {
     pause: !gameId,
   });
 
-  return [game.data?.game, setGameId] as const;
+  /* GraphQL */ `#graphql
+    subscription GameUpdates($gameId: ID!) {
+      nextRound(filter: { id: { eq: $gameId}}) {
+        id
+        round
+      }
+    }
+  `;
+  useGameUpdatesSubscription({
+    variables: { gameId: gameId! },
+    pause: !gameId,
+  });
+
+  return [gameId ? game.data?.game : null, setGameId] as const;
 }

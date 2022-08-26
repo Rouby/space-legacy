@@ -1,6 +1,7 @@
 import { Button, Group, LoadingOverlay } from '@mantine/core';
 import { Link } from '@tanstack/react-location';
 import {
+  GameListQuery,
   useDeleteGameMutation,
   useGameCreatedSubscription,
   useGameListQuery,
@@ -28,7 +29,7 @@ export function Dashboard() {
   if (game) {
     return (
       <>
-        your ingame!
+        <div>Round: {game.round}</div>
         <Button onClick={() => setGameId(null)}>Return</Button>
         {ability.can('start', game) && (
           <Button onClick={() => startGame({ id: game.id })}>Start</Button>
@@ -89,7 +90,9 @@ function GameList() {
         maxPlayers
         players {
           id
+          turnEnded
         }
+        round
       }
     }
   `;
@@ -107,6 +110,7 @@ function GameList() {
         maxPlayers
         players {
           id
+          turnEnded
         }
       }
     }
@@ -131,15 +135,7 @@ function GameList() {
   );
 }
 
-function GameListItem(game: {
-  __typename: 'Game';
-  id: string;
-  name: string;
-  state: 'CREATED' | 'STARTED' | 'ENDED';
-  creator: { id: string };
-  maxPlayers: number;
-  players: { id: string }[];
-}) {
+function GameListItem(game: GameListQuery['games'][number]) {
   const ability = useAbility();
 
   /* GraphQL */ `#graphql

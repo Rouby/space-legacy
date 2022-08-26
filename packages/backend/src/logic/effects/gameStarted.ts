@@ -1,8 +1,9 @@
 import { GameEvent } from '@prisma/client';
-import { publishEvent, retrieveState } from '..';
+import { publishEvent } from '..';
 import { pubSub } from '../../graphql/context';
 import { logger } from '../../logger';
 import { AppEvent, colonizePlanet, createStarSystem } from '../events';
+import { Game } from '../models';
 
 export async function gameStarted(
   event: Omit<GameEvent, 'payload'> & AppEvent,
@@ -75,14 +76,12 @@ export async function gameStarted(
     });
 
     {
-      const userId = (await retrieveState('games')).list.find(
-        (g) => g.id === event.payload.gameId,
-      )!.players[0].id;
+      const userId = (await Game.get(event.payload.gameId)).players[0].id;
 
       await publishEvent({
         event: colonizePlanet({
           gameId: event.payload.gameId,
-          systemId: system.id,
+          systemId: system.payload.id,
           planetIndex: 0,
           userId,
         }),

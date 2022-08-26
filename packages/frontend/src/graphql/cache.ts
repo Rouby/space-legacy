@@ -1,4 +1,5 @@
 import { cacheExchange as urlCacheExchange } from '@urql/exchange-graphcache';
+import { gql } from 'urql';
 import schema, { UpdateMutationCreateGameQuery } from './generated';
 
 export const cacheExchange = urlCacheExchange({
@@ -82,6 +83,28 @@ export const cacheExchange = urlCacheExchange({
               return data;
             },
           );
+        }
+      },
+      nextRound: (result, args, cache, info) => {
+        if (result.nextRound) {
+          cache.writeFragment(
+            gql`
+              fragment _ on Game {
+                id
+                round
+              }
+            `,
+            {
+              id: (result.nextRound as any).id,
+              round: (result.nextRound as any).round,
+            },
+          );
+          cache
+            .inspectFields('Query')
+            .filter((field) => field.fieldName === 'starSystem')
+            .forEach((field) =>
+              cache.invalidate('Query', field.fieldName, field.arguments),
+            );
         }
       },
     },

@@ -1,4 +1,4 @@
-import { filter, map, pipe } from '@graphql-yoga/node';
+import { filter, map, pipe } from '@graphql-yoga/common';
 import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
@@ -12,16 +12,16 @@ export const typeDefs = /* GraphQL */ `
   }
 
   type Subscription {
-    gameCreated(filter: GameFilter): Game
+    nextRound(filter: GameFilter): Game
   }
 `;
 
 export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Subscription: {
-    gameCreated: {
+    nextRound: {
       subscribe: (_, { filter: inputFilter }, { pubSub, models }) => {
         return pipe(
-          pubSub.subscribe('gameCreated'),
+          pubSub.subscribe('gameNextRound'),
           filter(
             (game) => !inputFilter?.id?.eq || game.id === inputFilter?.id?.eq,
           ),

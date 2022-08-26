@@ -10,12 +10,12 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Query: {
-    games: async (_, __, { retrieveState, ability }) => {
+    games: async (_, __, { models, ability }) => {
       if (ability.cannot('read', 'GamesList')) {
         throw new GraphQLYogaError('Unauthorized');
       }
 
-      return (await retrieveState('games')).list;
+      return (await models.GameList.get()).list;
     },
   },
 };

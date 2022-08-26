@@ -18,8 +18,11 @@ export async function createAbilityFor(user: User) {
   cannot('start', 'Game', { state: { $ne: 'CREATED' } });
 
   can('endTurn', 'Game', { 'players.id': user.id });
+  cannot('endTurn', 'Game', {
+    players: { $elemMatch: { id: user.id, turnEnded: true } },
+  });
 
-  can('view', 'System', { 'habitablePlanets.owner.id': user.id });
+  can('view', 'StarSystem', { 'habitablePlanets.owner.id': user.id });
 
   return new AppAbility([
     ...(createDefaultAbility().rules as typeof rules),

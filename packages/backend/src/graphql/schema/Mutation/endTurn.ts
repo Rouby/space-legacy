@@ -19,18 +19,15 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
     endTurn: async (
       _,
       { input: { gameId } },
-      { publishEvent, ability, retrieveState },
+      { publishEvent, ability, models, userId },
     ) => {
-      {
-        const { list } = await retrieveState('games');
-        const game = list.find((d) => d.id === gameId);
+      const game = await models.Game.get(gameId);
 
-        if (!game || ability.cannot('endTurn', subject('Game', game))) {
-          throw new GraphQLYogaError('Unauthorized');
-        }
+      if (!game || ability.cannot('endTurn', subject('Game', game))) {
+        throw new GraphQLYogaError('Unauthorized');
       }
 
-      await publishEvent({ event: endTurn() });
+      await publishEvent({ event: endTurn({ gameId, userId }) });
 
       return true;
     },

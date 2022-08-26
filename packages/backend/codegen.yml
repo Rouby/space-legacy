@@ -8,6 +8,10 @@ generates:
       - 'typescript-resolvers'
     config:
       allowEnumStringTypes: true
+      wrapFieldDefinitions: true
+      fieldWrapperValue: T | Promise<T>
+      wrapEntireFieldDefinitions: true
+      entireFieldWrapperValue: T | Promise<T>
 hooks:
   afterOneFileWrite:
     - prettier --write

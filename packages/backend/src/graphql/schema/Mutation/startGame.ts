@@ -19,15 +19,12 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
     startGame: async (
       _,
       { input: { id } },
-      { publishEvent, retrieveState, ability },
+      { publishEvent, models, ability },
     ) => {
-      {
-        const { list } = await retrieveState('games');
-        const game = list.find((d) => d.id === id);
+      const game = await models.Game.get(id);
 
-        if (!game || ability.cannot('start', subject('Game', game))) {
-          throw new GraphQLYogaError('Unauthorized');
-        }
+      if (!game || ability.cannot('start', subject('Game', game))) {
+        throw new GraphQLYogaError('Unauthorized');
       }
 
       await publishEvent({
@@ -36,9 +33,7 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
         }),
       });
 
-      const { list } = await retrieveState('games');
-
-      return list.find((d) => d.id === id)!;
+      return models.Game.get(id);
     },
   },
 };

@@ -1,4 +1,5 @@
 import { GraphQLYogaError } from '@graphql-yoga/node';
+
 import { createGame, joinGame } from '../../../logic/events';
 import { context } from '../../context';
 import { Resolvers } from '../../generated';
@@ -19,7 +20,7 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
     createGame: async (
       _,
       { input: { name, maxPlayers } },
-      { publishEvent, retrieveState, userId, ability },
+      { publishEvent, userId, ability, models },
     ) => {
       if (ability.cannot('create', 'Game')) {
         throw new GraphQLYogaError('Unauthorized');
@@ -41,9 +42,7 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
         }),
       });
 
-      const { list } = await retrieveState('games');
-
-      return list.find((d) => d.id === gameId)!;
+      return models.Game.get(gameId);
     },
   },
 };

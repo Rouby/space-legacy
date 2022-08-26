@@ -3,12 +3,13 @@ import { CookieSerializeOptions, serialize } from 'cookie';
 import { IncomingMessage, ServerResponse } from 'http';
 import { decode, JwtPayload, verify } from 'jsonwebtoken';
 import { AppAbility, createDefaultAbility } from '../ability';
-import { publishEvent, retrieveState } from '../logic';
+import { models, publishEvent } from '../logic';
 import { getDbClient } from '../util';
 
 export const pubSub = createPubSub<{
   gameCreated: [payload: { id: string }];
   gameStarted: [payload: { id: string }];
+  gameNextRound: [payload: { id: string }];
 }>();
 
 export async function context({
@@ -48,11 +49,11 @@ export async function context({
 
   return {
     prisma,
-    userId: user?.id,
+    userId: user?.id ?? '',
     ability: user ? new AppAbility(user.permissions) : createDefaultAbility(),
     publishEvent,
-    retrieveState,
     pubSub,
+    models,
     http: {
       setCookie: (
         name: string,

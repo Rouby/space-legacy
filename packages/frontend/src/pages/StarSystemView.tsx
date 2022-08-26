@@ -18,6 +18,10 @@ export function StarSystemView() {
           orbit
           size
           type
+          owner {
+            name
+          }
+          population
         }
         uninhabitableBodies {
           orbit
@@ -41,7 +45,8 @@ export function StarSystemView() {
       Planets:
       {starSystemResult.data?.starSystem?.habitablePlanets.map((planet) => (
         <div key={planet.orbit}>
-          {planet.type}, Size: {planet.size}
+          {planet.type}, Size: {planet.size}, Pop: {planet.population}, Owner:{' '}
+          {planet.owner?.name}
         </div>
       ))}
       {starSystemResult.data?.starSystem?.uninhabitableBodies.map((body) => (
