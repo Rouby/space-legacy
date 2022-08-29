@@ -1,8 +1,7 @@
-import type { GameEvent, User } from '@prisma/client';
+import type { GameEvent } from '@prisma/client';
 import { getDbClient } from '../../util';
-import { AppEvent } from '../events';
-import { type Promised } from './proxies';
-import { userProxy } from './proxies/user';
+import type { AppEvent } from '../events';
+import { proxies } from './proxies';
 
 export class StarSystem {
   static get modelName() {
@@ -44,7 +43,7 @@ export class StarSystem {
     | 'blackhole' = 'A';
   public coordinates = { x: 0, y: 0 };
   public habitablePlanets = [] as {
-    owner?: Promised<User>;
+    owner?: ReturnType<typeof proxies.userProxy>;
     population?: number;
     orbit: number;
     size: number;
@@ -85,7 +84,7 @@ export class StarSystem {
       this.habitablePlanets
         .filter((_, idx) => idx === event.payload.planetIndex)
         .forEach((planet) => {
-          planet.owner = userProxy(event.payload.userId);
+          planet.owner = proxies.userProxy(event.payload.userId);
           planet.population = 1000;
         });
     }

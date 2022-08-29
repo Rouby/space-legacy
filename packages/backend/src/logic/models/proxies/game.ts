@@ -11,3 +11,4 @@ export function gameProxy(id: string) {
     },
   });
 }
+export type gameProxy = typeof gameProxy;

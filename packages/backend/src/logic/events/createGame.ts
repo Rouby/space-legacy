@@ -7,7 +7,7 @@ export function createGame(options: {
 }) {
   return {
     type: 'createGame' as const,
-    version: 1,
+    version: 1 as const,
     payload: {
       id: cuid(),
       maxPlayers: options.maxPlayers,

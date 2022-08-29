@@ -8,8 +8,10 @@ import {
   makeOperation,
   subscriptionExchange,
 } from 'urql';
+import customScalarsExchange from 'urql-custom-scalars-exchange';
 import { tokenAtom } from '../utility';
 import { cacheExchange } from './cache';
+import schema from './generated';
 
 export function useClient() {
   const token = useAtomValue(tokenAtom);
@@ -21,6 +23,12 @@ export function useClient() {
         url: '/graphql',
         exchanges: [
           dedupExchange,
+          customScalarsExchange({
+            schema,
+            scalars: {
+              Coordinates: (value) => JSON.parse(value),
+            },
+          }),
           cacheExchange,
           authExchange<typeof tokenRef | null>({
             getAuth: async ({ authState }) => {

@@ -11,11 +11,13 @@ generates:
     config:
       scalars:
         JWT: string
+        Coordinates: '{ x: number; y: number }'
       gqlImport: urql#gql
       documentMode: documentNode
       pureMagicComment: true
       strictScalars: true
       allowEnumStringTypes: true
+      includeScalars: true
 hooks:
   afterOneFileWrite:
     - prettier --write

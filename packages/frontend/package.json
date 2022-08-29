@@ -33,6 +33,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "urql": "^2.2.3",
+    "urql-custom-scalars-exchange": "^1.0.1",
     "web-vitals": "^2.1.4",
     "zipson": "^0.2.12"
   },

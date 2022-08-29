@@ -1,7 +1,11 @@
-import { Box } from '@mantine/core';
+import { Box, Button } from '@mantine/core';
 import { useMatch } from '@tanstack/react-location';
 import { useState } from 'react';
-import { useStarSystemQuery } from '../graphql';
+import {
+  useFleetsQuery,
+  useMusterFleetMutation,
+  useStarSystemQuery,
+} from '../graphql';
 import { useGame, useRandom } from '../utility';
 
 export function StarSystemView() {
@@ -19,6 +23,7 @@ export function StarSystemView() {
           size
           type
           owner {
+            id
             name
           }
           population
@@ -124,6 +129,7 @@ export function StarSystemView() {
           ))}
         </Box>
       </svg>
+      <Fleets />
     </>
   );
 }
@@ -348,4 +354,89 @@ function blackBodyToRGB(kelvin: number) {
   }
 
   return `rgb(${r}, ${g}, ${b})`;
+}
+
+function Fleets() {
+  const { params } = useMatch();
+  const [game] = useGame();
+
+  /* GraphQL */ `#graphql
+    mutation MusterFleet($gameId: ID!, $systemId: ID!) {
+      musterFleet(
+        input: {
+          gameId: $gameId
+          systemId: $systemId
+          name: "Fleet One"
+          composition: { squadrons: [{ shipId: "ship1", quantity: 10 }] }
+        }
+      ) {
+        id
+      }
+    }
+  `;
+  const [musterFleetResult, musterFleet] = useMusterFleetMutation();
+
+  /* GraphQL */ `#graphql
+    query Fleets($gameId: ID!) {
+      fleets(gameId: $gameId) {
+        id
+        name
+        coordinates
+        composition {
+          squadrons {
+            shipId
+            quantity
+          }
+        }
+        mustering {
+          squadrons {
+            shipId
+            quantity
+            workLeft
+            materialNeeded
+          }
+        }
+      }
+    }
+  `;
+  const [fleetsResult] = useFleetsQuery({ variables: { gameId: game?.id! } });
+
+  return (
+    <>
+      <Button
+        onClick={() =>
+          musterFleet({ gameId: game?.id!, systemId: params.starSystemId })
+        }
+        loading={musterFleetResult.fetching}
+      >
+        Muster fleet
+      </Button>
+      <div>
+        {fleetsResult.data?.fleets.map((fleet) => (
+          <div key={fleet.id}>
+            {fleet.name},{`${fleet.coordinates.x}/${fleet.coordinates.y}`},{' '}
+            {fleet.composition.squadrons.reduce(
+              (acc, s) => acc + s.quantity,
+              0,
+            )}{' '}
+            ships strong, mustering?{' '}
+            {fleet.mustering.squadrons.length > 0 ? 'yes' : 'no'}
+            <span>
+              (
+              {fleet.mustering.squadrons.reduce(
+                (acc, s) => acc + s.workLeft,
+                0,
+              )}{' '}
+              work left,{' '}
+              {fleet.mustering.squadrons.reduce(
+                (acc, s) => acc + s.materialNeeded,
+                0,
+              )}{' '}
+              material needed)
+            </span>
+          </div>
+        ))}
+      </div>
+    </>
+  );
 }

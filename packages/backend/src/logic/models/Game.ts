@@ -1,12 +1,13 @@
-import { GameEvent } from '@prisma/client';
+import type { GameEvent } from '@prisma/client';
 import { getDbClient } from '../../util';
-import { AppEvent } from '../events';
-import { type Promised } from './proxies';
-import { starSystemProxy } from './proxies/starSystem';
-import { userProxy } from './proxies/user';
-import type { StarSystem } from './StarSystem';
+import type { AppEvent } from '../events';
+import { proxies } from './proxies';
 
 export class Game {
+  static get modelName() {
+    return 'Game';
+  }
+
   static async get(id: string) {
     const game = new Game(id);
 
@@ -30,17 +31,18 @@ export class Game {
 
   public name = '';
   public maxPlayers = 0;
-  public creator = userProxy('');
+  public creator = proxies.userProxy('');
   public state = 'CREATED' as 'CREATED' | 'STARTED' | 'ENDED';
   public round = 0;
   public players = [] as { id: string; turnEnded: boolean }[];
-  public starSystems = [] as Promised<StarSystem>[];
+  public starSystems = [] as ReturnType<typeof proxies.starSystemProxy>[];
+  public fleets = [] as ReturnType<typeof proxies.fleetProxy>[];
 
   private applyEvent(event: AppEvent) {
     if (event.type === 'createGame' && event.payload.id === this.id) {
       this.name = event.payload.name;
       this.maxPlayers = event.payload.maxPlayers;
-      this.creator = userProxy(event.payload.creatorId);
+      this.creator = proxies.userProxy(event.payload.creatorId);
       this.round = 1;
     }
 
@@ -68,7 +70,11 @@ export class Game {
     }
 
     if (event.type === 'createStarSystem' && event.payload.gameId === this.id) {
-      this.starSystems.push(starSystemProxy(event.payload.id));
+      this.starSystems.push(proxies.starSystemProxy(event.payload.id));
+    }
+
+    if (event.type === 'musterFleet' && event.payload.gameId === this.id) {
+      this.fleets.push(proxies.fleetProxy(event.payload.id));
     }
   }
 }

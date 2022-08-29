@@ -3,6 +3,10 @@ import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
+  input GameFilterInput {
+    id: IDFilterInput
+  }
+
   type Query {
     games: [Game!]!
   }

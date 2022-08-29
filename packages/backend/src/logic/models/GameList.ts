@@ -1,11 +1,13 @@
-import { GameEvent } from '@prisma/client';
+import type { GameEvent } from '@prisma/client';
 import { getDbClient } from '../../util';
-import { AppEvent } from '../events';
-import type { Game } from './Game';
-import { type Promised } from './proxies';
-import { gameProxy } from './proxies/game';
+import type { AppEvent } from '../events';
+import { proxies } from './proxies';
 
 export class GameList {
+  static get modelName() {
+    return 'GameList';
+  }
+
   static async get() {
     const gameList = new GameList();
 
@@ -27,11 +29,11 @@ export class GameList {
 
   private constructor() {}
 
-  public list = [] as Promised<Game>[];
+  public list = [] as ReturnType<typeof proxies.gameProxy>[];
 
   #applyEvent(event: AppEvent) {
     if (event.type === 'createGame') {
-      this.list.push(gameProxy(event.payload.id));
+      this.list.push(proxies.gameProxy(event.payload.id));
     }
 
     if (event.type === 'deleteGame') {

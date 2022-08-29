@@ -47,7 +47,7 @@ export function createStarSystem(options: {
 }) {
   return {
     type: 'createStarSystem' as const,
-    version: 1,
+    version: 1 as const,
     payload: {
       id: cuid(),
       gameId: options.gameId,

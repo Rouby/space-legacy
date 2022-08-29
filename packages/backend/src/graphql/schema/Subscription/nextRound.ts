@@ -3,16 +3,8 @@ import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
-  input GameFilter {
-    id: IDFilter
-  }
-
-  input IDFilter {
-    eq: ID
-  }
-
   type Subscription {
-    nextRound(filter: GameFilter): Game
+    nextRound(filter: GameFilterInput): Game
   }
 `;
 

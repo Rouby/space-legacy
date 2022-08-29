@@ -16,3 +16,4 @@ export function userProxy(id: string) {
     },
   });
 }
+export type userProxy = typeof userProxy;

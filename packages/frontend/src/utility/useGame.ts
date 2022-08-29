@@ -47,5 +47,8 @@ export function useGame() {
     pause: !gameId,
   });
 
-  return [gameId ? game.data?.game : null, setGameId] as const;
+  return [
+    gameId ? { id: gameId, ...game.data?.game } : null,
+    setGameId,
+  ] as const;
 }

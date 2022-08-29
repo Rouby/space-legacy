@@ -6,7 +6,7 @@ export function changePopulation(options: {
 }) {
   return {
     type: 'changePopulation' as const,
-    version: 1,
+    version: 1 as const,
     payload: {
       gameId: options.gameId,
       systemId: options.systemId,

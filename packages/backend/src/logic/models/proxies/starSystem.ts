@@ -11,3 +11,4 @@ export function starSystemProxy(id: string) {
     },
   });
 }
+export type starSystemProxy = typeof starSystemProxy;

@@ -11,11 +11,10 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Query: {
     starSystems: async (_, { gameId }, { models, ability }) => {
       return models.Game.get(gameId).then(
-        (game) =>
-          game.starSystems,
-          // .filter((system) =>
-          //   ability.can('view', subject('StarSystem', system)),
-          // )
+        (game) => game.starSystems,
+        // .filter((system) =>
+        //   ability.can('view', subject('StarSystem', system)),
+        // )
       );
     },
   },

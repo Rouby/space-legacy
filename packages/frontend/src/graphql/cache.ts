@@ -7,6 +7,10 @@ export const cacheExchange = urlCacheExchange({
   keys: {
     Planet: () => null,
     Body: () => null,
+    FleetComposition: () => null,
+    FleetSquadron: () => null,
+    FleetMustering: () => null,
+    FleetSquadronMustering: () => null,
   },
   updates: {
     Mutation: {
@@ -102,6 +106,12 @@ export const cacheExchange = urlCacheExchange({
           cache
             .inspectFields('Query')
             .filter((field) => field.fieldName === 'starSystem')
+            .forEach((field) =>
+              cache.invalidate('Query', field.fieldName, field.arguments),
+            );
+          cache
+            .inspectFields('Query')
+            .filter((field) => field.fieldName === 'fleets')
             .forEach((field) =>
               cache.invalidate('Query', field.fieldName, field.arguments),
             );

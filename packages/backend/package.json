@@ -6,6 +6,7 @@
     "dev": "concurrently -n server,codegen \"yarn dev:code\" \"yarn codegen --watch --silent --errors-only\"",
     "dev:code": "wds --watch --esbuild ./src/main.ts | pino-pretty",
     "build": "echo tbd",
+    "test": "vitest",
     "preview": "echo tbd",
     "codegen": "graphql-codegen --config codegen.yml"
   },
@@ -22,6 +23,7 @@
     "pino-pretty": "^9.0.1",
     "prisma": "^4.1.1",
     "typescript": "^4.6.4",
+    "vitest": "^0.22.1",
     "wds": "^0.13.2"
   },
   "dependencies": {

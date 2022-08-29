@@ -6,7 +6,7 @@ export function colonizePlanet(options: {
 }) {
   return {
     type: 'colonizePlanet' as const,
-    version: 1,
+    version: 1 as const,
     payload: {
       gameId: options.gameId,
       systemId: options.systemId,

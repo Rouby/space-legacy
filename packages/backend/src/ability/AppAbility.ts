@@ -1,6 +1,6 @@
 import { Ability, AbilityClass } from '@casl/ability';
 import { User } from '@prisma/client';
-import { Game, GameList, StarSystem } from '../logic/models';
+import { Fleet, Game, GameList, StarSystem } from '../logic/models';
 
 type Abilities =
   | ['read' | 'create' | 'update' | 'delete' | 'login', 'User' | User]
@@ -9,7 +9,8 @@ type Abilities =
       'create' | 'delete' | 'join' | 'leave' | 'enter' | 'start' | 'endTurn',
       'Game' | DeepPartial<Readonly<Game>>,
     ]
-  | ['view', 'StarSystem' | DeepPartial<Readonly<StarSystem>>];
+  | ['view' | 'musterFleet', 'StarSystem' | DeepPartial<Readonly<StarSystem>>]
+  | ['muster', 'Fleet' | DeepPartial<Readonly<Fleet>>];
 
 export type AppAbility = Ability<Abilities>;
 
