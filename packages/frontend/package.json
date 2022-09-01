@@ -22,6 +22,7 @@
     "@mantine/spotlight": "^5.0.0",
     "@tabler/icons": "^1.78.1",
     "@tanstack/react-location": "^3.7.4",
+    "@urql/devtools": "^2.0.3",
     "@urql/exchange-auth": "^0.1.7",
     "@urql/exchange-graphcache": "^4.4.3",
     "alea": "^1.0.1",

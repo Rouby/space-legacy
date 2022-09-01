@@ -2627,6 +2627,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@urql/devtools@npm:^2.0.3":
+  version: 2.0.3
+  resolution: "@urql/devtools@npm:2.0.3"
+  dependencies:
+    wonka: ">= 4.0.9"
+  peerDependencies:
+    "@urql/core": ">= 1.14.0"
+    graphql: ">= 0.11.0"
+  checksum: 9b4a46dd0b6cca5296667bc0e658212c3101cd1c0d01dcc0be736e5b5159beaf6aa982115dd7546ff5425ed91e1688132a82a8f101bf8ad560245b97bb533f59
+  languageName: node
+  linkType: hard
+
 "@urql/exchange-auth@npm:^0.1.7":
   version: 0.1.7
   resolution: "@urql/exchange-auth@npm:0.1.7"
@@ -4922,6 +4934,7 @@ __metadata:
     "@tanstack/react-location": ^3.7.4
     "@types/react": ^18.0.15
     "@types/react-dom": ^18.0.6
+    "@urql/devtools": ^2.0.3
     "@urql/exchange-auth": ^0.1.7
     "@urql/exchange-graphcache": ^4.4.3
     "@vitejs/plugin-react": ^2.0.0
@@ -8141,6 +8154,13 @@ __metadata:
   dependencies:
     string-width: ^1.0.2 || 2 || 3 || 4
   checksum: d5fc37cd561f9daee3c80e03b92ed3e84d80dde3365a8767263d03dacfc8fa06b065ffe1df00d8c2a09f731482fcacae745abfbb478d4af36d0a891fad4834d3
+  languageName: node
+  linkType: hard
+
+"wonka@npm:>= 4.0.9":
+  version: 6.0.0
+  resolution: "wonka@npm:6.0.0"
+  checksum: 1b026c9c7e172a017e2a863147069ff27c02bbb47dfa9ce9ecd5caf3debe2c45acf1382a50eb0023b561444b18186354188df9e222502757001f699c963777ea
   languageName: node
   linkType: hard
 

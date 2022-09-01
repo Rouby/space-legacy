@@ -4,9 +4,7 @@ import type { AppEvent } from '../events';
 import { proxies } from './proxies';
 
 export class Game {
-  static get modelName() {
-    return 'Game';
-  }
+  readonly kind = 'Game';
 
   static async get(id: string) {
     const game = new Game(id);
@@ -27,7 +25,7 @@ export class Game {
     return game;
   }
 
-  private constructor(public id: string) {}
+  constructor(public id: string) {}
 
   public name = '';
   public maxPlayers = 0;
@@ -71,10 +69,6 @@ export class Game {
 
     if (event.type === 'createStarSystem' && event.payload.gameId === this.id) {
       this.starSystems.push(proxies.starSystemProxy(event.payload.id));
-    }
-
-    if (event.type === 'musterFleet' && event.payload.gameId === this.id) {
-      this.fleets.push(proxies.fleetProxy(event.payload.id));
     }
   }
 }

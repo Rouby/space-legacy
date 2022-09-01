@@ -8,28 +8,11 @@ export const typeDefs = /* GraphQL */ `
     name: String!
     coordinates: Coordinates!
     system: StarSystem
-    composition: FleetComposition!
-    mustering: FleetMustering!
+    ships: [FleetShip!]!
   }
 
-  type FleetComposition {
-    squadrons: [FleetSquadron!]!
-  }
-
-  type FleetSquadron {
+  type FleetShip {
     shipId: ID!
-    quantity: Int!
-  }
-
-  type FleetMustering {
-    squadrons: [FleetSquadronMustering!]!
-  }
-
-  type FleetSquadronMustering {
-    shipId: ID!
-    quantity: Int!
-    workLeft: Int!
-    materialNeeded: Int!
   }
 
   input FleetFilterInput {

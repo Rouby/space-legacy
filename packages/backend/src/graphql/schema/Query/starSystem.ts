@@ -7,6 +7,7 @@ export const typeDefs = /* GraphQL */ `
     name: String!
     habitablePlanets: [Planet!]!
     uninhabitableBodies: [Body!]!
+    shipyards: [Shipyard!]!
   }
 
   type Planet {
@@ -22,6 +23,18 @@ export const typeDefs = /* GraphQL */ `
     orbit: Float!
     size: Int!
     type: String!
+  }
+
+  type Shipyard {
+    shipConstructionQueue: [ShipConstruction!]!
+    workLeft: Int!
+    materialsLeft: Int!
+  }
+
+  type ShipConstruction {
+    shipId: ID!
+    workLeft: Int!
+    materialsLeft: Int!
   }
 
   type Query {

@@ -25,11 +25,13 @@ export async function createAbilityFor(user: User) {
   can('view', 'StarSystem', {
     habitablePlanets: { $elemMatch: { 'owner.id': user.id } },
   });
-  can('musterFleet', 'StarSystem', {
+  can('constructShip', 'StarSystem', {
     habitablePlanets: { $elemMatch: { 'owner.id': user.id } },
+    shipyards: { $elemMatch: { workLeft: 0, materialsLeft: 0 } },
   });
-
-  can('muster', 'Fleet');
+  cannot('constructShip', 'StarSystem', {
+    shipyards: { $size: 0 },
+  });
 
   return new AppAbility([
     ...(createDefaultAbility().rules as typeof rules),

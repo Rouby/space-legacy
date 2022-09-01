@@ -2,11 +2,11 @@ import { Box, Button } from '@mantine/core';
 import { useMatch } from '@tanstack/react-location';
 import { useState } from 'react';
 import {
+  useConstructShipMutation,
   useFleetsQuery,
-  useMusterFleetMutation,
   useStarSystemQuery,
 } from '../graphql';
-import { useGame, useRandom } from '../utility';
+import { useAbility, useGame, useRandom } from '../utility';
 
 export function StarSystemView() {
   const { params } = useMatch();
@@ -15,6 +15,7 @@ export function StarSystemView() {
   /* GraphQL */ `#graphql
     query StarSystem($id: ID!, $gameId: ID!) {
       starSystem(id: $id, gameId: $gameId) {
+        __typename
         id
         name
         habitablePlanets {
@@ -32,6 +33,15 @@ export function StarSystemView() {
           orbit
           size
           type
+        }
+        shipyards {
+          shipConstructionQueue {
+            shipId
+            workLeft
+            materialsLeft
+          }
+          workLeft
+          materialsLeft
         }
       }
     }
@@ -361,20 +371,22 @@ function Fleets() {
   const [game] = useGame();
 
   /* GraphQL */ `#graphql
-    mutation MusterFleet($gameId: ID!, $systemId: ID!) {
-      musterFleet(
+    mutation constructShip($gameId: ID!, $systemId: ID!) {
+      constructShip(
         input: {
           gameId: $gameId
           systemId: $systemId
-          name: "Fleet One"
-          composition: { squadrons: [{ shipId: "ship1", quantity: 10 }] }
+          shipyardIndex: 0
+          shipId: ""
         }
       ) {
-        id
+        shipId
+        workLeft
+        materialsLeft
       }
     }
   `;
-  const [musterFleetResult, musterFleet] = useMusterFleetMutation();
+  const [constructShipResult, constructShip] = useConstructShipMutation();
 
   /* GraphQL */ `#graphql
     query Fleets($gameId: ID!) {
@@ -382,58 +394,45 @@ function Fleets() {
         id
         name
         coordinates
-        composition {
-          squadrons {
-            shipId
-            quantity
-          }
-        }
-        mustering {
-          squadrons {
-            shipId
-            quantity
-            workLeft
-            materialNeeded
-          }
+        ships {
+          shipId
         }
       }
     }
   `;
   const [fleetsResult] = useFleetsQuery({ variables: { gameId: game?.id! } });
 
+  const [starSystemResult] = useStarSystemQuery({
+    variables: { id: params.starSystemId, gameId: game?.id! },
+  });
+
+  const ability = useAbility();
+
   return (
     <>
       <Button
         onClick={() =>
-          musterFleet({ gameId: game?.id!, systemId: params.starSystemId })
+          constructShip({ gameId: game?.id!, systemId: params.starSystemId })
         }
-        loading={musterFleetResult.fetching}
+        loading={constructShipResult.fetching}
+        disabled={
+          !starSystemResult.data?.starSystem ||
+          ability.cannot('constructShip', starSystemResult.data.starSystem)
+        }
       >
-        Muster fleet
+        Build ship
       </Button>
+      Constructing{' '}
+      {starSystemResult.data?.starSystem?.shipyards.reduce(
+        (acc, shipyard) => acc + shipyard.shipConstructionQueue.length,
+        0,
+      )}{' '}
+      ships in {starSystemResult.data?.starSystem?.shipyards.length} shipyards
       <div>
         {fleetsResult.data?.fleets.map((fleet) => (
           <div key={fleet.id}>
             {fleet.name},{`${fleet.coordinates.x}/${fleet.coordinates.y}`},{' '}
-            {fleet.composition.squadrons.reduce(
-              (acc, s) => acc + s.quantity,
-              0,
-            )}{' '}
-            ships strong, mustering?{' '}
-            {fleet.mustering.squadrons.length > 0 ? 'yes' : 'no'}
-            <span>
-              (
-              {fleet.mustering.squadrons.reduce(
-                (acc, s) => acc + s.workLeft,
-                0,
-              )}{' '}
-              work left,{' '}
-              {fleet.mustering.squadrons.reduce(
-                (acc, s) => acc + s.materialNeeded,
-                0,
-              )}{' '}
-              material needed)
-            </span>
+            {fleet.ships.length} ships strong
           </div>
         ))}
       </div>

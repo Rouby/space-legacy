@@ -1,12 +1,10 @@
-import type { GameEvent } from '@prisma/client';
+import type { GameEvent, User } from '@prisma/client';
 import { getDbClient } from '../../util';
 import type { AppEvent } from '../events';
-import { proxies } from './proxies';
+import { proxies, type Promised } from './proxies';
 
 export class StarSystem {
-  static get modelName() {
-    return 'StarSystem';
-  }
+  readonly kind = 'StarSystem';
 
   static async get(id: string) {
     const starSystem = new StarSystem(id);
@@ -43,7 +41,7 @@ export class StarSystem {
     | 'blackhole' = 'A';
   public coordinates = { x: 0, y: 0 };
   public habitablePlanets = [] as {
-    owner?: ReturnType<typeof proxies.userProxy>;
+    owner?: Promised<User>;
     population?: number;
     orbit: number;
     size: number;
@@ -69,6 +67,15 @@ export class StarSystem {
       | 'frozen'
       | 'molten'
       | 'toxic';
+  }[];
+  public shipyards = [] as {
+    shipConstructionQueue: {
+      shipId: string;
+      workLeft: number;
+      materialsLeft: number;
+    }[];
+    workLeft: number;
+    materialsLeft: number;
   }[];
 
   private applyEvent(event: AppEvent) {
@@ -101,6 +108,25 @@ export class StarSystem {
               planet.population + event.payload.populationChange;
           }
         });
+    }
+
+    if (
+      event.type === 'constructShipyard' &&
+      event.payload.systemId === this.id
+    ) {
+      this.shipyards.push({
+        shipConstructionQueue: [],
+        workLeft: event.payload.materialsNeeded,
+        materialsLeft: event.payload.materialsNeeded,
+      });
+    }
+
+    if (event.type === 'constructShip' && event.payload.systemId === this.id) {
+      this.shipyards[event.payload.shipyardIndex].shipConstructionQueue.push({
+        shipId: event.payload.shipId,
+        workLeft: event.payload.workNeeded,
+        materialsLeft: event.payload.materialsNeeded,
+      });
     }
   }
 }

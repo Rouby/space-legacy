@@ -18,6 +18,7 @@ generates:
       strictScalars: true
       allowEnumStringTypes: true
       includeScalars: true
+      maybeValue: T
 hooks:
   afterOneFileWrite:
     - prettier --write

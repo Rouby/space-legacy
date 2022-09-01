@@ -1,3 +1,4 @@
+import { devtoolsExchange } from '@urql/devtools';
 import { authExchange } from '@urql/exchange-auth';
 import { useAtomValue } from 'jotai';
 import { useMemo, useRef } from 'react';
@@ -22,6 +23,7 @@ export function useClient() {
       createClient({
         url: '/graphql',
         exchanges: [
+          devtoolsExchange,
           dedupExchange,
           customScalarsExchange({
             schema,

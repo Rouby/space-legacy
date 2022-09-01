@@ -1,16 +1,19 @@
 import { cacheExchange as urlCacheExchange } from '@urql/exchange-graphcache';
 import { gql } from 'urql';
-import schema, { UpdateMutationCreateGameQuery } from './generated';
+import schema, {
+  ConstructShipMutation,
+  MutationConstructShipArgs,
+  UpdateMutationConstructShipQuery,
+  UpdateMutationCreateGameQuery,
+} from './generated';
 
 export const cacheExchange = urlCacheExchange({
   schema,
   keys: {
     Planet: () => null,
     Body: () => null,
-    FleetComposition: () => null,
-    FleetSquadron: () => null,
-    FleetMustering: () => null,
-    FleetSquadronMustering: () => null,
+    Shipyard: () => null,
+    ShipConstruction: () => null,
   },
   updates: {
     Mutation: {
@@ -60,6 +63,49 @@ export const cacheExchange = urlCacheExchange({
       },
       endTurn: (result, args, cache, info) => {
         cache.invalidate('Query', 'currentRound');
+      },
+      constructShip: (
+        result: ConstructShipMutation,
+        args: MutationConstructShipArgs,
+        cache,
+        info,
+      ) => {
+        if (result.constructShip) {
+          cache.updateQuery<UpdateMutationConstructShipQuery>(
+            {
+              query: /* GraphQL */ `
+                #graphql
+                query UpdateMutationConstructShip(
+                  $gameId: ID!
+                  $systemId: ID!
+                ) {
+                  starSystem(gameId: $gameId, id: $systemId) {
+                    id
+                    shipyards {
+                      shipConstructionQueue {
+                        shipId
+                        workLeft
+                        materialsLeft
+                      }
+                    }
+                  }
+                }
+              `,
+              variables: {
+                gameId: args.input.gameId,
+                systemId: args.input.systemId,
+              },
+            },
+            (data) => {
+              if (data?.starSystem?.shipyards) {
+                data?.starSystem?.shipyards[
+                  args.input.shipyardIndex
+                ].shipConstructionQueue.push(result.constructShip!);
+              }
+              return data;
+            },
+          );
+        }
       },
     },
     Subscription: {

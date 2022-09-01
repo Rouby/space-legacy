@@ -1,12 +1,11 @@
 import type { GameEvent } from '@prisma/client';
 import { getDbClient } from '../../util';
 import type { AppEvent } from '../events';
-import { proxies } from './proxies';
+import type { Game } from './Game';
+import { proxies, type Promised } from './proxies';
 
 export class GameList {
-  static get modelName() {
-    return 'GameList';
-  }
+  readonly kind = 'GameList';
 
   static async get() {
     const gameList = new GameList();
@@ -29,7 +28,7 @@ export class GameList {
 
   private constructor() {}
 
-  public list = [] as ReturnType<typeof proxies.gameProxy>[];
+  public list = [] as Promised<Game>[];
 
   #applyEvent(event: AppEvent) {
     if (event.type === 'createGame') {

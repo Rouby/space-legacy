@@ -2,12 +2,7 @@ import { GameEvent } from '@prisma/client';
 import { publishEvent } from '..';
 import { pubSub } from '../../graphql/context';
 import { logger } from '../../logger';
-import {
-  AppEvent,
-  changePopulation,
-  nextRound,
-  progressFleetMuster,
-} from '../events';
+import { AppEvent, changePopulation, nextRound } from '../events';
 import { Game } from '../models';
 
 export async function gameRoundEnded(
@@ -36,21 +31,6 @@ export async function gameRoundEnded(
               trigger: event,
             });
           }
-        }
-      }
-
-      for (const fleet of fleets) {
-        const system = await fleet.starSystem;
-        if (system) {
-          await publishEvent({
-            event: progressFleetMuster({
-              gameId: event.payload.gameId,
-              systemId: system.id,
-              fleetId: fleet.id,
-              materialsProvided: 100,
-              workDone: 100,
-            }),
-          });
         }
       }
 

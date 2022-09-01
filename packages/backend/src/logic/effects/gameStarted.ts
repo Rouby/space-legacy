@@ -2,7 +2,12 @@ import { GameEvent } from '@prisma/client';
 import { publishEvent } from '..';
 import { pubSub } from '../../graphql/context';
 import { logger } from '../../logger';
-import { AppEvent, colonizePlanet, createStarSystem } from '../events';
+import {
+  AppEvent,
+  colonizePlanet,
+  constructShipyard,
+  createStarSystem,
+} from '../events';
 import { Game } from '../models';
 
 export async function gameStarted(
@@ -84,6 +89,17 @@ export async function gameStarted(
           systemId: system.payload.id,
           planetIndex: 0,
           userId,
+        }),
+        trigger: event,
+      });
+
+      await publishEvent({
+        event: constructShipyard({
+          gameId: event.payload.gameId,
+          systemId: system.payload.id,
+          userId,
+          workNeeded: 0,
+          materialsNeeded: 0,
         }),
         trigger: event,
       });

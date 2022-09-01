@@ -1,6 +1,6 @@
 import { Ability } from '@casl/ability';
 import { createDefaultAbility } from 'backend/src/ability';
-import type { AppAbility } from 'backend/src/ability/AppAbility';
+// import type { AppAbility } from 'backend/src/ability/AppAbility';
 import { useMemo } from 'react';
 import { useToken } from './useToken';
 
@@ -10,9 +10,9 @@ export function useAbility() {
   return useMemo(
     () =>
       token
-        ? (new Ability(token?.space.permissions, {
+        ? new Ability(token?.space.permissions, {
             detectSubjectType: (s) => (s as any).__typename,
-          }) as any as AppAbility)
+          })
         : createDefaultAbility(),
     [token],
   );
