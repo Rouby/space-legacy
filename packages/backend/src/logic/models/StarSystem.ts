@@ -2,6 +2,8 @@ import type { GameEvent, User } from '@prisma/client';
 import { getDbClient } from '../../util';
 import type { AppEvent } from '../events';
 import { proxies, type Promised } from './proxies';
+import type { Ship } from './Ship';
+import type { ShipDesign } from './ShipDesign';
 
 export class StarSystem {
   readonly kind = 'StarSystem';
@@ -70,13 +72,16 @@ export class StarSystem {
   }[];
   public shipyards = [] as {
     shipConstructionQueue: {
-      shipId: string;
+      id: string;
+      design: Promised<ShipDesign>;
       workLeft: number;
       materialsLeft: number;
     }[];
     workLeft: number;
     materialsLeft: number;
+    owner: Promised<User>;
   }[];
+  public ships = [] as Promised<Ship>[];
 
   private applyEvent(event: AppEvent) {
     if (event.type === 'createStarSystem' && event.payload.id === this.id) {
@@ -118,14 +123,51 @@ export class StarSystem {
         shipConstructionQueue: [],
         workLeft: event.payload.materialsNeeded,
         materialsLeft: event.payload.materialsNeeded,
+        owner: proxies.userProxy(event.payload.userId),
       });
     }
 
     if (event.type === 'constructShip' && event.payload.systemId === this.id) {
       this.shipyards[event.payload.shipyardIndex].shipConstructionQueue.push({
-        shipId: event.payload.shipId,
+        id: event.payload.id,
+        design: proxies.shipDesignProxy(event.payload.designId),
         workLeft: event.payload.workNeeded,
         materialsLeft: event.payload.materialsNeeded,
+      });
+    }
+
+    if (
+      event.type === 'cancelShipConstruction' &&
+      event.payload.systemId === this.id
+    ) {
+      this.shipyards[event.payload.shipyardIndex].shipConstructionQueue.splice(
+        event.payload.queueIndex,
+        1,
+      );
+    }
+
+    if (
+      event.type === 'progressShipConstruction' &&
+      event.payload.systemId === this.id
+    ) {
+      const construction = this.shipyards[
+        event.payload.shipyardIndex
+      ].shipConstructionQueue.find((c) => c.id === event.payload.shipId)!;
+
+      construction.workLeft -= event.payload.workDone;
+      construction.materialsLeft -= event.payload.materialsDelivered;
+    }
+
+    if (event.type === 'launchShip' && event.payload.systemId === this.id) {
+      this.ships.push(proxies.shipProxy(event.payload.id));
+
+      this.shipyards.forEach((yard) => {
+        const idx = yard.shipConstructionQueue.findIndex(
+          (c) => c.id === event.payload.id,
+        );
+        if (idx >= 0) {
+          yard.shipConstructionQueue.splice(idx, 1);
+        }
       });
     }
   }
