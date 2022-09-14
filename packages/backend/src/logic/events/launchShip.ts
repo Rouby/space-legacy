@@ -2,7 +2,7 @@ import cuid from 'cuid';
 
 export function launchShip(options: {
   gameId: string;
-  systemId: string;
+  coordinates: { x: number; y: number };
   userId: string;
   designId: string;
   id?: string;
@@ -13,7 +13,7 @@ export function launchShip(options: {
     payload: {
       id: options.id ?? cuid(),
       gameId: options.gameId,
-      systemId: options.systemId,
+      coordinates: options.coordinates,
       userId: options.userId,
       designId: options.designId,
     },

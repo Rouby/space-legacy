@@ -34,12 +34,32 @@ export class Ship {
   public name = '';
   public starSystem = null as Promised<StarSystem> | null;
   public coordinates = { x: 0, y: 0 };
+  public movingTo = null as { x: number; y: number } | null;
 
   private applyEvent(event: AppEvent) {
     if (event.type === 'launchShip' && event.payload.id === this.id) {
       this.owner = proxies.userProxy(event.payload.userId);
       this.design = proxies.shipDesignProxy(event.payload.designId);
-      this.starSystem = proxies.starSystemProxy(event.payload.systemId);
+      // this.starSystem = proxies.starSystemProxy(event.payload.systemId);
+      // this.coordinates = this.starSystem.coordinates
+    }
+
+    if (
+      event.type === 'issueMoveOrder' &&
+      event.payload.subjectId === this.id
+    ) {
+      if (
+        event.payload.to.x === this.coordinates.x &&
+        event.payload.to.y === this.coordinates.y
+      ) {
+        this.movingTo = null;
+      } else {
+        this.movingTo = event.payload.to;
+      }
+    }
+
+    if (event.type === 'moveShip' && event.payload.shipId === this.id) {
+      this.coordinates = event.payload.to;
     }
   }
 }

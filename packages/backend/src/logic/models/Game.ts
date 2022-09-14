@@ -1,7 +1,10 @@
 import type { GameEvent } from '@prisma/client';
 import { getDbClient } from '../../util';
 import type { AppEvent } from '../events';
-import { proxies } from './proxies';
+import type { Fleet } from './Fleet';
+import { Promised, proxies } from './proxies';
+import type { Ship } from './Ship';
+import type { StarSystem } from './StarSystem';
 
 export class Game {
   readonly kind = 'Game';
@@ -33,8 +36,9 @@ export class Game {
   public state = 'CREATED' as 'CREATED' | 'STARTED' | 'ENDED';
   public round = 0;
   public players = [] as { id: string; turnEnded: boolean }[];
-  public starSystems = [] as ReturnType<typeof proxies.starSystemProxy>[];
-  public fleets = [] as ReturnType<typeof proxies.fleetProxy>[];
+  public starSystems = [] as Promised<StarSystem>[];
+  public ships = [] as Promised<Ship>[];
+  public fleets = [] as Promised<Fleet>[];
 
   private applyEvent(event: AppEvent) {
     if (event.type === 'createGame' && event.payload.id === this.id) {
@@ -69,6 +73,10 @@ export class Game {
 
     if (event.type === 'createStarSystem' && event.payload.gameId === this.id) {
       this.starSystems.push(proxies.starSystemProxy(event.payload.id));
+    }
+
+    if (event.type === 'launchShip' && event.payload.gameId === this.id) {
+      this.ships.push(proxies.shipProxy(event.payload.id));
     }
   }
 }

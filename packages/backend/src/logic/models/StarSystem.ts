@@ -1,6 +1,7 @@
 import type { GameEvent, User } from '@prisma/client';
 import { getDbClient } from '../../util';
 import type { AppEvent } from '../events';
+import type { Game } from './Game';
 import { proxies, type Promised } from './proxies';
 import type { Ship } from './Ship';
 import type { ShipDesign } from './ShipDesign';
@@ -29,6 +30,7 @@ export class StarSystem {
 
   private constructor(public id: string) {}
 
+  public game = null as Promised<Game> | null;
   public name = '';
   public sunClass:
     | 'O'
@@ -85,6 +87,7 @@ export class StarSystem {
 
   private applyEvent(event: AppEvent) {
     if (event.type === 'createStarSystem' && event.payload.id === this.id) {
+      this.game = proxies.gameProxy(event.payload.gameId);
       this.name = event.payload.name;
       this.sunClass = event.payload.sunClass;
       this.coordinates = event.payload.coordinates;
@@ -158,7 +161,12 @@ export class StarSystem {
       construction.materialsLeft -= event.payload.materialsDelivered;
     }
 
-    if (event.type === 'launchShip' && event.payload.systemId === this.id) {
+    if (
+      event.type === 'launchShip' &&
+      event.payload.gameId === this.game?.id &&
+      event.payload.coordinates.x === this.coordinates.x &&
+      event.payload.coordinates.x === this.coordinates.x
+    ) {
       this.ships.push(proxies.shipProxy(event.payload.id));
 
       this.shipyards.forEach((yard) => {
@@ -169,6 +177,19 @@ export class StarSystem {
           yard.shipConstructionQueue.splice(idx, 1);
         }
       });
+    }
+
+    if (event.type === 'moveShip' && event.payload.gameId === this.game?.id) {
+      if (
+        event.payload.to.x === this.coordinates.x &&
+        event.payload.to.y === this.coordinates.y
+      ) {
+        this.ships.push(proxies.shipProxy(event.payload.shipId));
+      } else {
+        this.ships = this.ships.filter(
+          (ship) => ship.id !== event.payload.shipId,
+        );
+      }
     }
   }
 }

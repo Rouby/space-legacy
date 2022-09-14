@@ -43,6 +43,8 @@ export async function createAbilityFor(user: User) {
     shipyards: { $elemMatch: { shipConstructionQueue: { $size: 0 } } },
   });
 
+  can('move', 'Ship', { 'owner.id': user.id });
+
   return new AppAbility([
     ...(createDefaultAbility().rules as typeof rules),
     ...rules,

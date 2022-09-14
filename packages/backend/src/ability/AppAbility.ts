@@ -1,7 +1,7 @@
-import { Ability, AbilityClass } from '@casl/ability';
-import { Subjects } from '@casl/prisma';
-import { User } from '@prisma/client';
-import { Game, GameList, StarSystem } from '../logic/models';
+import { Ability, type AbilityClass } from '@casl/ability';
+import type { Subjects } from '@casl/prisma';
+import type { User } from '@prisma/client';
+import type { Game, GameList, Ship, StarSystem } from '../logic/models';
 
 type Abilities =
   | [
@@ -25,7 +25,8 @@ type Abilities =
         | 'StarSystem'
         | Flatten<Readonly<StarSystem>, NestedPaths<Readonly<StarSystem>>>
       ),
-    ];
+    ]
+  | ['move', 'Ship' | Flatten<Readonly<Ship>, NestedPaths<Readonly<Ship>>>];
 
 export type AppAbility = Ability<Abilities>;
 

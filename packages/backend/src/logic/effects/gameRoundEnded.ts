@@ -5,6 +5,7 @@ import {
   AppEvent,
   changePopulation,
   launchShip,
+  moveShip,
   nextRound,
   progressShipConstruction,
 } from '../events';
@@ -17,7 +18,7 @@ export async function gameRoundEnded(
   if (event.type === 'endTurn') {
     logger.info('Effect "gameRoundEnded" triggered');
 
-    const { players, starSystems, fleets } = await Game.get(
+    const { players, starSystems, ships } = await Game.get(
       event.payload.gameId,
     );
 
@@ -71,7 +72,10 @@ export async function gameRoundEnded(
                 scheduleEvent(
                   launchShip({
                     gameId: event.payload.gameId,
-                    systemId: system.id,
+                    coordinates: {
+                      x: system.coordinates.x,
+                      y: system.coordinates.y,
+                    },
                     designId: construction.design.id,
                     userId: yard.owner.id,
                     id: construction.id,
@@ -90,6 +94,35 @@ export async function gameRoundEnded(
                 );
               }
             }
+          }
+        }
+      }
+
+      for (const promisedShip of ships) {
+        const ship = await promisedShip.$resolve;
+
+        if (ship.movingTo) {
+          const speed = 2; // TODO calc based on ship design
+
+          const dx = ship.movingTo.x - ship.coordinates.x;
+          const dy = ship.movingTo.y - ship.coordinates.y;
+          const distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+
+          if (distance > 0) {
+            scheduleEvent(
+              moveShip({
+                gameId: event.payload.gameId,
+                shipId: ship.id,
+                to: {
+                  x:
+                    ship.coordinates.x +
+                    (dx / distance) * Math.min(speed, distance),
+                  y:
+                    ship.coordinates.y +
+                    (dy / distance) * Math.min(speed, distance),
+                },
+              }),
+            );
           }
         }
       }

@@ -1,10 +1,11 @@
-import { Box, Button } from '@mantine/core';
+import { Box, Button, NumberInput, Popover } from '@mantine/core';
 import { useMatch } from '@tanstack/react-location';
 import { useState } from 'react';
 import {
   useCancelShipConstructionMutation,
   useConstructShipMutation,
   useFleetsQuery,
+  useMoveShipMutation,
   useStarSystemQuery,
 } from '../graphql';
 import { useAbility, useGame, useRandom } from '../utility';
@@ -48,6 +49,7 @@ export function StarSystemView() {
         }
         ships {
           id
+          movingTo
         }
       }
     }
@@ -439,6 +441,16 @@ function Fleets() {
   `;
   const [, cancelShipConstruction] = useCancelShipConstructionMutation();
 
+  /* GraphQL */ `#graphql
+    mutation moveShip($gameId: ID!, $shipId: ID!, $to: Coordinates!) {
+      moveShip(input: { gameId: $gameId, shipId: $shipId, to: $to }) {
+        id
+        movingTo
+      }
+    }
+  `;
+  const [, moveShip] = useMoveShipMutation();
+
   return (
     <>
       <Button
@@ -489,7 +501,45 @@ function Fleets() {
       </div>
       <div>
         {starSystemResult.data?.starSystem?.ships.map((ship) => (
-          <div key={ship.id}>{ship.id}</div>
+          <div key={ship.id}>
+            {ship.id}{' '}
+            {ship.movingTo
+              ? `Moving to ${ship.movingTo.x}, ${ship.movingTo.y}`
+              : ''}
+            <Popover>
+              <Popover.Target>
+                <Button>Move</Button>
+              </Popover.Target>
+              <Popover.Dropdown>
+                <form
+                  onSubmit={(evt) => {
+                    evt.preventDefault();
+
+                    moveShip({
+                      gameId: game?.id!,
+                      shipId: ship.id,
+                      to: {
+                        x: +evt.currentTarget['to.x'].value,
+                        y: +evt.currentTarget['to.y'].value,
+                      },
+                    });
+                  }}
+                >
+                  <NumberInput
+                    name="to.x"
+                    placeholder="x"
+                    defaultValue={ship.movingTo?.x}
+                  />
+                  <NumberInput
+                    name="to.y"
+                    placeholder="y"
+                    defaultValue={ship.movingTo?.y}
+                  />
+                  <Button type="submit">Issue order</Button>
+                </form>
+              </Popover.Dropdown>
+            </Popover>
+          </div>
         ))}
       </div>
       <div>

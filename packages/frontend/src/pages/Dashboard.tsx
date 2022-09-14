@@ -6,6 +6,7 @@ import {
   useGameCreatedSubscription,
   useGameListQuery,
   useNewGameMutation,
+  useShipListQuery,
   useStarSystemListQuery,
   useStartGameMutation,
 } from '../graphql';
@@ -35,6 +36,7 @@ export function Dashboard() {
           <Button onClick={() => startGame({ id: game.id })}>Start</Button>
         )}
         <StarSystemList />
+        <ShipList />
       </>
     );
   }
@@ -63,13 +65,44 @@ function StarSystemList() {
 
   return (
     <>
-      list
       {starSystems.data?.starSystems.map((starSystem) => (
         <div key={starSystem.id}>
           {starSystem.name}
           <Button component={Link} to={`/star-system/${starSystem.id}`}>
             View
           </Button>
+        </div>
+      ))}
+    </>
+  );
+}
+
+function ShipList() {
+  const [game] = useGame();
+
+  /* GraphQL */ `#graphql
+    query ShipList($gameId: ID!) {
+      ships(gameId: $gameId) {
+        id
+        coordinates
+        movingTo
+      }
+    }
+  `;
+  const [ships] = useShipListQuery({
+    variables: { gameId: game?.id! },
+  });
+
+  return (
+    <>
+      <div>ships</div>
+      {ships.data?.ships.map((ship) => (
+        <div key={ship.id}>
+          {ship.id}
+          {` at (${ship.coordinates.x}, ${ship.coordinates.y}) `}
+          {ship.movingTo
+            ? `moving to (${ship.movingTo.x}, ${ship.movingTo.y})`
+            : ''}
         </div>
       ))}
     </>

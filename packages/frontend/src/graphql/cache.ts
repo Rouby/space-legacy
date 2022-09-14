@@ -210,6 +210,12 @@ export const cacheExchange = urlCacheExchange({
             .forEach((field) =>
               cache.invalidate('Query', field.fieldName, field.arguments),
             );
+          cache
+            .inspectFields('Query')
+            .filter((field) => field.fieldName === 'ships')
+            .forEach((field) =>
+              cache.invalidate('Query', field.fieldName, field.arguments),
+            );
         }
       },
     },

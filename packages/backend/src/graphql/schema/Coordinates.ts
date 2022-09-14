@@ -12,31 +12,36 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
     description: 'Object with x and y coordinates',
     serialize(value) {
       if (
-        typeof value !== 'object' ||
-        !value ||
-        !('x' in value) ||
-        !('y' in value)
+        !isXYObject(value) ||
+        typeof value.x !== 'number' ||
+        typeof value.y !== 'number'
       ) {
         throw new Error(
-          `Scalar "Coordinates" cannot represent "${value}" since it is either not an object, or has no x value, or no y value.`,
+          `Scalar "Coordinates" cannot represent "${JSON.stringify(
+            value,
+          )}" since it is either not an object, or has no x value, or no y value.`,
         );
       }
 
       return JSON.stringify(value);
     },
     parseValue(value) {
-      const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+      const parsed: unknown =
+        typeof value === 'string' ? JSON.parse(value) : value;
+
       if (
-        typeof parsed !== 'object' ||
-        !parsed ||
-        !('x' in parsed) ||
-        !('y' in parsed)
+        !isXYObject(parsed) ||
+        typeof parsed.x !== 'number' ||
+        typeof parsed.y !== 'number'
       ) {
         throw new Error(
-          `Scalar "Coordinates" cannot represent "${parsed}" since it is either not an object, or has no x value, or no y value.`,
+          `Scalar "Coordinates" cannot represent "${value}" since it is either not an object, or has no x value, or no y value.`,
         );
       }
-      return parsed;
+      return {
+        x: +(parsed as any)['x'],
+        y: +(parsed as any)['y'],
+      };
     },
     parseLiteral(ast) {
       if (ast.kind !== 'ObjectValue') {
@@ -57,3 +62,7 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
     },
   }),
 };
+
+function isXYObject(value: unknown): value is { x: unknown; y: unknown } {
+  return typeof value === 'object' && !!value && 'x' in value && 'y' in value;
+}

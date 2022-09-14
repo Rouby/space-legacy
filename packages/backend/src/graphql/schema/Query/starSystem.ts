@@ -45,6 +45,8 @@ export const typeDefs = /* GraphQL */ `
 
   type Ship {
     id: ID!
+    coordinates: Coordinates!
+    movingTo: Coordinates
   }
 
   type Query {
