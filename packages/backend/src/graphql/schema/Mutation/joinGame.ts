@@ -1,4 +1,4 @@
-import { subject } from '@casl/ability';
+import { ForbiddenError } from '@casl/ability';
 import { GraphQLYogaError } from '@graphql-yoga/common';
 import { joinGame } from '../../../logic/events';
 import { context } from '../../context';
@@ -21,13 +21,13 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
       { input: { id } },
       { publishEvent, models, userId, ability },
     ) => {
-      {
-        const game = await models.Game.get(id);
+      const game = await models.Game.get(id);
 
-        if (!game || ability.cannot('join', subject('Game', game))) {
-          throw new GraphQLYogaError('Unauthorized');
-        }
+      if (!game) {
+        throw new GraphQLYogaError('Game not found');
       }
+
+      ForbiddenError.from(ability).throwUnlessCan('join', game);
 
       await publishEvent({
         event: joinGame({

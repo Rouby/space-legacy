@@ -1,4 +1,4 @@
-import { GraphQLYogaError } from '@graphql-yoga/node';
+import { ForbiddenError } from '@casl/ability';
 
 import { createGame, joinGame } from '../../../logic/events';
 import { context } from '../../context';
@@ -22,9 +22,7 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
       { input: { name, maxPlayers } },
       { publishEvent, userId, ability, models },
     ) => {
-      if (ability.cannot('create', 'Game')) {
-        throw new GraphQLYogaError('Unauthorized');
-      }
+      ForbiddenError.from(ability).throwUnlessCan('create', 'Game');
 
       const createEvent = await publishEvent({
         event: createGame({

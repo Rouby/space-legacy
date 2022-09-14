@@ -34,7 +34,7 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
       const game = await models.Game.get(gameId);
 
       if (!game) {
-        throw new GraphQLYogaError('Unauthorized');
+        throw new GraphQLYogaError('Game not found');
       }
 
       return game.fleets;

@@ -1,4 +1,4 @@
-import { GraphQLYogaError } from '@graphql-yoga/node';
+import { ForbiddenError } from '@casl/ability';
 import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
@@ -32,9 +32,7 @@ export const typeDefs = /* GraphQL */ `
 export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Query: {
     game: async (_, { id }, { ability, models }) => {
-      if (ability.cannot('read', 'GamesList')) {
-        throw new GraphQLYogaError('Unauthorized');
-      }
+      ForbiddenError.from(ability).throwUnlessCan('read', 'GamesList');
 
       return models.Game.get(id);
     },

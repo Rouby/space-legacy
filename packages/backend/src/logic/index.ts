@@ -1,6 +1,8 @@
 import { proxies } from './models/proxies';
 import { fleetProxy } from './models/proxies/fleet';
 import { gameProxy } from './models/proxies/game';
+import { shipProxy } from './models/proxies/ship';
+import { shipDesignProxy } from './models/proxies/shipDesign';
 import { starSystemProxy } from './models/proxies/starSystem';
 import { userProxy } from './models/proxies/user';
 
@@ -9,5 +11,7 @@ export { publishEvent } from './publishEvent';
 
 proxies.fleetProxy = fleetProxy;
 proxies.gameProxy = gameProxy;
+proxies.shipProxy = shipProxy;
+proxies.shipDesignProxy = shipDesignProxy;
 proxies.starSystemProxy = starSystemProxy;
 proxies.userProxy = userProxy;

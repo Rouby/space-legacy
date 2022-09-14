@@ -1,7 +1,9 @@
 import { cacheExchange as urlCacheExchange } from '@urql/exchange-graphcache';
 import { gql } from 'urql';
 import schema, {
+  CancelShipConstructionMutation,
   ConstructShipMutation,
+  MutationCancelShipConstructionArgs,
   MutationConstructShipArgs,
   UpdateMutationConstructShipQuery,
   UpdateMutationCreateGameQuery,
@@ -83,7 +85,9 @@ export const cacheExchange = urlCacheExchange({
                     id
                     shipyards {
                       shipConstructionQueue {
-                        shipId
+                        design {
+                          id
+                        }
                         workLeft
                         materialsLeft
                       }
@@ -101,6 +105,51 @@ export const cacheExchange = urlCacheExchange({
                 data?.starSystem?.shipyards[
                   args.input.shipyardIndex
                 ].shipConstructionQueue.push(result.constructShip!);
+              }
+              return data;
+            },
+          );
+        }
+      },
+      cancelShipConstruction: (
+        result: CancelShipConstructionMutation,
+        args: MutationCancelShipConstructionArgs,
+        cache,
+        info,
+      ) => {
+        if (result.cancelShipConstruction) {
+          cache.updateQuery<UpdateMutationConstructShipQuery>(
+            {
+              query: /* GraphQL */ `
+                #graphql
+                query UpdateMutationConstructShip(
+                  $gameId: ID!
+                  $systemId: ID!
+                ) {
+                  starSystem(gameId: $gameId, id: $systemId) {
+                    id
+                    shipyards {
+                      shipConstructionQueue {
+                        design {
+                          id
+                        }
+                        workLeft
+                        materialsLeft
+                      }
+                    }
+                  }
+                }
+              `,
+              variables: {
+                gameId: args.input.gameId,
+                systemId: args.input.systemId,
+              },
+            },
+            (data) => {
+              if (data?.starSystem?.shipyards) {
+                data?.starSystem?.shipyards[
+                  args.input.shipyardIndex
+                ].shipConstructionQueue.splice(args.input.queueIndex, 1);
               }
               return data;
             },

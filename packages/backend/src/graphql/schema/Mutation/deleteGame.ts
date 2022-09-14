@@ -1,4 +1,4 @@
-import { subject } from '@casl/ability';
+import { ForbiddenError } from '@casl/ability';
 import { GraphQLYogaError } from '@graphql-yoga/node';
 import { deleteGame } from '../../../logic/events';
 import { context } from '../../context';
@@ -23,9 +23,11 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
     ) => {
       const game = await models.Game.get(id);
 
-      if (!game || ability.cannot('delete', subject('Game', game))) {
-        throw new GraphQLYogaError('Unauthorized');
+      if (!game) {
+        throw new GraphQLYogaError('Game not found');
       }
+
+      ForbiddenError.from(ability).throwUnlessCan('delete', game);
 
       await publishEvent({
         event: deleteGame({

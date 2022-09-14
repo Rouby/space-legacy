@@ -20,7 +20,7 @@ type Abilities =
       'Game' | Flatten<Readonly<Game>, NestedPaths<Readonly<Game>>>,
     ]
   | [
-      'view' | 'constructShip',
+      'view' | 'constructShip' | 'cancelShipConstruction',
       (
         | 'StarSystem'
         | Flatten<Readonly<StarSystem>, NestedPaths<Readonly<StarSystem>>>

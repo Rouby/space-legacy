@@ -1,14 +1,7 @@
-import type { Promised } from '.';
 import { Game } from '../Game';
+import { proxyOf } from './proxy';
 
 export function gameProxy(id: string) {
-  return new Proxy<Promised<Game>>({ id } as any, {
-    get: (target, prop: keyof Game) => {
-      if (prop in target) {
-        return target[prop];
-      }
-      return Game.get(target.id).then((game) => game[prop]);
-    },
-  });
+  return proxyOf({ id }, () => Game.get(id));
 }
 export type gameProxy = typeof gameProxy;

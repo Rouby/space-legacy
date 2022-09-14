@@ -1,4 +1,4 @@
-import { subject } from '@casl/ability';
+import { ForbiddenError } from '@casl/ability';
 import { GraphQLYogaError } from '@graphql-yoga/node';
 import { constructShip } from '../../../logic/events';
 import { context } from '../../context';
@@ -9,7 +9,7 @@ export const typeDefs = /* GraphQL */ `
     gameId: ID!
     systemId: ID!
     shipyardIndex: Int!
-    shipId: ID!
+    designId: ID!
   }
 
   type Mutation {
@@ -21,17 +21,16 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Mutation: {
     constructShip: async (
       _,
-      { input: { gameId, systemId, shipyardIndex, shipId } },
+      { input: { gameId, systemId, shipyardIndex, designId } },
       { publishEvent, ability, models, userId },
     ) => {
       const starSystem = await models.StarSystem.get(systemId);
 
-      if (
-        !starSystem ||
-        ability.cannot('constructShip', subject('StarSystem', starSystem))
-      ) {
-        throw new GraphQLYogaError('Unauthorized');
+      if (!starSystem) {
+        throw new GraphQLYogaError('Star system not found');
       }
+
+      ForbiddenError.from(ability).throwUnlessCan('constructShip', starSystem);
 
       await publishEvent({
         event: constructShip({
@@ -39,7 +38,7 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
           systemId,
           userId,
           shipyardIndex,
-          shipId,
+          designId,
           workNeeded: 100,
           materialsNeeded: 100,
         }),

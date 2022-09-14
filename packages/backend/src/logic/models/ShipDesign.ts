@@ -1,15 +1,12 @@
 import type { GameEvent } from '@prisma/client';
 import { getDbClient } from '../../util';
 import type { AppEvent } from '../events';
-import { Promised, proxies } from './proxies';
-import type { Ship } from './Ship';
-import type { StarSystem } from './StarSystem';
 
-export class Fleet {
-  readonly kind = 'Fleet';
+export class ShipDesign {
+  readonly kind = 'ShipDesign';
 
   static async get(id: string) {
-    const fleet = new Fleet(id);
+    const design = new ShipDesign(id);
 
     const events = await (
       await getDbClient()
@@ -18,22 +15,18 @@ export class Fleet {
     });
 
     events.forEach((event) => {
-      fleet.applyEvent({
+      design.applyEvent({
         ...event,
         payload: JSON.parse(event.payload),
       } as Omit<GameEvent, 'payload'> & AppEvent);
     });
 
-    return fleet;
+    return design;
   }
 
   private constructor(public id: string) {}
 
-  public owner = proxies.userProxy('');
   public name = '';
-  public starSystem = null as Promised<StarSystem> | null;
-  public coordinates = { x: 0, y: 0 };
-  public ships = [] as Promised<Ship>[];
 
   private applyEvent(event: AppEvent) {}
 }

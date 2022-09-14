@@ -1,26 +1,21 @@
 import cuid from 'cuid';
 
-export function constructShip(options: {
+export function launchShip(options: {
   gameId: string;
   systemId: string;
   userId: string;
-  shipyardIndex: number;
   designId: string;
-  workNeeded: number;
-  materialsNeeded: number;
+  id?: string;
 }) {
   return {
-    type: 'constructShip' as const,
+    type: 'launchShip' as const,
     version: 1 as const,
     payload: {
-      id: cuid(),
+      id: options.id ?? cuid(),
       gameId: options.gameId,
       systemId: options.systemId,
       userId: options.userId,
-      shipyardIndex: options.shipyardIndex,
       designId: options.designId,
-      workNeeded: options.workNeeded,
-      materialsNeeded: options.materialsNeeded,
     },
   };
 }

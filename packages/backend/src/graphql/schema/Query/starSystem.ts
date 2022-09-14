@@ -1,3 +1,4 @@
+import { ForbiddenError } from '@casl/ability';
 import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
@@ -8,6 +9,7 @@ export const typeDefs = /* GraphQL */ `
     habitablePlanets: [Planet!]!
     uninhabitableBodies: [Body!]!
     shipyards: [Shipyard!]!
+    ships: [Ship!]!
   }
 
   type Planet {
@@ -32,9 +34,17 @@ export const typeDefs = /* GraphQL */ `
   }
 
   type ShipConstruction {
-    shipId: ID!
+    design: ShipDesign!
     workLeft: Int!
     materialsLeft: Int!
+  }
+
+  type ShipDesign {
+    id: ID!
+  }
+
+  type Ship {
+    id: ID!
   }
 
   type Query {
@@ -45,11 +55,11 @@ export const typeDefs = /* GraphQL */ `
 export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
   Query: {
     starSystem: async (_, { gameId, id }, { models, ability }) => {
-      // if (ability.cannot('read', 'GamesList')) {
-      //   throw new GraphQLYogaError('Unauthorized');
-      // }
+      const starSystem = await models.StarSystem.get(id);
 
-      return models.StarSystem.get(id);
+      ForbiddenError.from(ability).throwUnlessCan('view', starSystem);
+
+      return starSystem;
     },
   },
 };

@@ -2,6 +2,7 @@ import { Box, Button } from '@mantine/core';
 import { useMatch } from '@tanstack/react-location';
 import { useState } from 'react';
 import {
+  useCancelShipConstructionMutation,
   useConstructShipMutation,
   useFleetsQuery,
   useStarSystemQuery,
@@ -36,12 +37,17 @@ export function StarSystemView() {
         }
         shipyards {
           shipConstructionQueue {
-            shipId
+            design {
+              id
+            }
             workLeft
             materialsLeft
           }
           workLeft
           materialsLeft
+        }
+        ships {
+          id
         }
       }
     }
@@ -377,10 +383,12 @@ function Fleets() {
           gameId: $gameId
           systemId: $systemId
           shipyardIndex: 0
-          shipId: ""
+          designId: ""
         }
       ) {
-        shipId
+        design {
+          id
+        }
         workLeft
         materialsLeft
       }
@@ -408,6 +416,29 @@ function Fleets() {
 
   const ability = useAbility();
 
+  /* GraphQL */ `#graphql
+    mutation cancelShipConstruction(
+      $gameId: ID!
+      $systemId: ID!
+      $shipyardIndex: Int!
+      $queueIndex: Int!
+    ) {
+      cancelShipConstruction(
+        input: {
+          gameId: $gameId
+          systemId: $systemId
+          shipyardIndex: $shipyardIndex
+          queueIndex: $queueIndex
+        }
+      ) {
+        design {
+          id
+        }
+      }
+    }
+  `;
+  const [, cancelShipConstruction] = useCancelShipConstructionMutation();
+
   return (
     <>
       <Button
@@ -428,6 +459,39 @@ function Fleets() {
         0,
       )}{' '}
       ships in {starSystemResult.data?.starSystem?.shipyards.length} shipyards
+      <div>
+        {starSystemResult.data?.starSystem?.shipyards.map(
+          (shipyard, shipyardIdx) => (
+            <div key={shipyardIdx}>
+              Shipyard{' '}
+              {shipyard.shipConstructionQueue.length === 0 &&
+                ' - No construction'}
+              {shipyard.shipConstructionQueue.map((queue, idx) => (
+                <div key={idx}>
+                  queue
+                  <Button
+                    onClick={() =>
+                      cancelShipConstruction({
+                        gameId: game?.id!,
+                        systemId: params.starSystemId,
+                        shipyardIndex: shipyardIdx,
+                        queueIndex: idx,
+                      })
+                    }
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ))}
+            </div>
+          ),
+        )}
+      </div>
+      <div>
+        {starSystemResult.data?.starSystem?.ships.map((ship) => (
+          <div key={ship.id}>{ship.id}</div>
+        ))}
+      </div>
       <div>
         {fleetsResult.data?.fleets.map((fleet) => (
           <div key={fleet.id}>

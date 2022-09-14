@@ -5,10 +5,13 @@ import { AppEvent } from '../events';
 
 export async function gameCreated(
   event: Omit<GameEvent, 'payload'> & AppEvent,
+  scheduleEvent: <TEvent extends AppEvent>(event: TEvent) => TEvent,
 ) {
   if (event.type === 'createGame') {
     logger.info('Effect "gameCreated" triggered');
 
-    pubSub.publish('gameCreated', { id: event.payload.id });
+    return () => {
+      pubSub.publish('gameCreated', { id: event.payload.id });
+    };
   }
 }
