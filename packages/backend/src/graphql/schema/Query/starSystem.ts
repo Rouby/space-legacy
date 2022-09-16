@@ -6,6 +6,7 @@ export const typeDefs = /* GraphQL */ `
   type StarSystem {
     id: ID!
     name: String!
+    coordinates: Coordinates!
     habitablePlanets: [Planet!]!
     uninhabitableBodies: [Body!]!
     shipyards: [Shipyard!]!

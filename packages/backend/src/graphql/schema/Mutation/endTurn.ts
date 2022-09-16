@@ -10,7 +10,7 @@ export const typeDefs = /* GraphQL */ `
   }
 
   type Mutation {
-    endTurn(input: EndTurnInput!): Boolean!
+    endTurn(input: EndTurnInput!): Game!
   }
 `;
 
@@ -31,7 +31,7 @@ export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
 
       await publishEvent({ event: endTurn({ gameId, userId }) });
 
-      return true;
+      return models.Game.get(gameId);
     },
   },
 };

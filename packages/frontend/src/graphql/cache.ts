@@ -3,6 +3,7 @@ import { gql } from 'urql';
 import schema, {
   CancelShipConstructionMutation,
   ConstructShipMutation,
+  GameCreatedSubscription,
   MutationCancelShipConstructionArgs,
   MutationConstructShipArgs,
   UpdateMutationConstructShipQuery,
@@ -158,7 +159,7 @@ export const cacheExchange = urlCacheExchange({
       },
     },
     Subscription: {
-      gameCreated: (result, args, cache, info) => {
+      gameCreated: (result: GameCreatedSubscription, args, cache, info) => {
         if (result.gameCreated) {
           cache.updateQuery<UpdateMutationCreateGameQuery>(
             {
@@ -172,12 +173,16 @@ export const cacheExchange = urlCacheExchange({
               `,
             },
             (data) => {
-              if (data?.games) {
-                data.games = data.games.map((g) =>
-                  g.id === (result.gameCreated as any).id
-                    ? { ...g, ...(result.gameCreated as any) }
-                    : g,
-                );
+              if (data?.games && result.gameCreated) {
+                if (data.games.some((g) => g.id === result.gameCreated?.id)) {
+                  data.games = data.games.map((g) =>
+                    g.id === result.gameCreated?.id
+                      ? { ...g, ...result.gameCreated }
+                      : g,
+                  );
+                } else {
+                  data.games.push(result.gameCreated);
+                }
               }
               return data;
             },
@@ -198,6 +203,12 @@ export const cacheExchange = urlCacheExchange({
               round: (result.nextRound as any).round,
             },
           );
+          cache
+            .inspectFields('Query')
+            .filter((field) => field.fieldName === 'game')
+            .forEach((field) =>
+              cache.invalidate('Query', field.fieldName, field.arguments),
+            );
           cache
             .inspectFields('Query')
             .filter((field) => field.fieldName === 'starSystem')

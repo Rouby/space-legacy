@@ -22,7 +22,7 @@ export async function createAbilityFor(user: User) {
     players: { $elemMatch: { id: user.id, turnEnded: true } },
   });
 
-  can('view', 'StarSystem', {
+  can(['see', 'view'], 'StarSystem', {
     habitablePlanets: { $elemMatch: { 'owner.id': user.id } },
   });
   can('constructShip', 'StarSystem', {
@@ -43,7 +43,7 @@ export async function createAbilityFor(user: User) {
     shipyards: { $elemMatch: { shipConstructionQueue: { $size: 0 } } },
   });
 
-  can('move', 'Ship', { 'owner.id': user.id });
+  can(['see', 'view', 'move'], 'Ship', { 'owner.id': user.id });
 
   return new AppAbility([
     ...(createDefaultAbility().rules as typeof rules),

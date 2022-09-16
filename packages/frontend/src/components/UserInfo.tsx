@@ -43,7 +43,13 @@ export function UserInfo() {
 
   /* GraphQL */ `#graphql
     mutation EndTurn($gameId: ID!) {
-      endTurn(input: {gameId : $gameId}) 
+      endTurn(input: {gameId : $gameId}) {
+        id
+        players {
+          id
+          turnEnded
+        }
+      }
     }
   `;
   const [endTurnResult, endTurn] = useEndTurnMutation();

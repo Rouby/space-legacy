@@ -20,13 +20,16 @@ type Abilities =
       'Game' | Flatten<Readonly<Game>, NestedPaths<Readonly<Game>>>,
     ]
   | [
-      'view' | 'constructShip' | 'cancelShipConstruction',
+      'see' | 'view' | 'constructShip' | 'cancelShipConstruction',
       (
         | 'StarSystem'
         | Flatten<Readonly<StarSystem>, NestedPaths<Readonly<StarSystem>>>
       ),
     ]
-  | ['move', 'Ship' | Flatten<Readonly<Ship>, NestedPaths<Readonly<Ship>>>];
+  | [
+      'see' | 'view' | 'move',
+      'Ship' | Flatten<Readonly<Ship>, NestedPaths<Readonly<Ship>>>,
+    ];
 
 export type AppAbility = Ability<Abilities>;
 

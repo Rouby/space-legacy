@@ -1,16 +1,27 @@
-import { Button, Group, LoadingOverlay } from '@mantine/core';
+import {
+  Button,
+  Group,
+  LoadingOverlay,
+  NumberInput,
+  Popover,
+} from '@mantine/core';
 import { Link } from '@tanstack/react-location';
+import { Fragment, useEffect, useReducer, useRef } from 'react';
 import {
   GameListQuery,
   useDeleteGameMutation,
+  useGalaxyOverviewQuery,
   useGameCreatedSubscription,
   useGameListQuery,
+  useJoinGameMutation,
+  useMoveShipMutation,
+  useNewGameCreatedSubscription,
   useNewGameMutation,
   useShipListQuery,
   useStarSystemListQuery,
   useStartGameMutation,
 } from '../graphql';
-import { useAbility, useGame } from '../utility';
+import { useAbility, useGame, useRandom } from '../utility';
 
 export function Dashboard() {
   const [game, setGameId] = useGame();
@@ -37,6 +48,7 @@ export function Dashboard() {
         )}
         <StarSystemList />
         <ShipList />
+        <GalaxyOverview />
       </>
     );
   }
@@ -45,6 +57,192 @@ export function Dashboard() {
     <>
       <GameList />
     </>
+  );
+}
+
+function GalaxyOverview() {
+  const [game] = useGame();
+
+  /* GraphQL */ `#graphql
+    query GalaxyOverview($gameId: ID!) {
+      starSystems(gameId: $gameId) {
+        id
+        name
+        coordinates
+      }
+
+      ships(gameId: $gameId) {
+        id
+        coordinates
+        movingTo
+      }
+    }
+  `;
+  const [galaxyOverview] = useGalaxyOverviewQuery({
+    variables: { gameId: game?.id! },
+  });
+
+  const rng = useRandom('galaxy-overview');
+
+  const [viewBox, updateViewBox] = useReducer(
+    (
+      state: { x: number; y: number; w: number },
+      action:
+        | {
+            type: 'zoom';
+            delta: number;
+            svg: { width: number; height: number };
+          }
+        | {
+            type: 'pan';
+            delta: { x: number; y: number };
+            svg: { width: number; height: number };
+          },
+    ) => {
+      switch (action.type) {
+        case 'zoom':
+          return {
+            x: state.x,
+            y: state.y,
+            w: Math.max(50, state.w + action.delta),
+          };
+        case 'pan':
+          return {
+            x: Math.max(
+              state.w / 2 - action.svg.width,
+              Math.min(
+                -(state.w / 2 - action.svg.width),
+                state.x - action.delta.x * (state.w / action.svg.width),
+              ),
+            ),
+            y: Math.max(
+              state.w / 2 - action.svg.height,
+              Math.min(
+                -(state.w / 2 - action.svg.height),
+                state.y - action.delta.y * (state.w / action.svg.height),
+              ),
+            ),
+            w: state.w,
+          };
+        default:
+          return state;
+      }
+    },
+    { x: 0, y: 0, w: 1000 },
+  );
+  const svgRef = useRef<SVGSVGElement>(null);
+  useEffect(() => {
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    svgRef.current?.addEventListener('wheel', handleWheel);
+    svgRef.current?.addEventListener('mousedown', handleMouseDown);
+    svgRef.current?.addEventListener('mouseup', handleMouseUp);
+    svgRef.current?.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      svgRef.current?.removeEventListener('wheel', handleWheel);
+      svgRef.current?.removeEventListener('mousedown', handleMouseDown);
+      svgRef.current?.removeEventListener('mouseup', handleMouseUp);
+      svgRef.current?.removeEventListener('mousemove', handleMouseMove);
+    };
+
+    function handleWheel(evt: WheelEvent) {
+      evt.preventDefault();
+      updateViewBox({
+        type: 'zoom',
+        delta: evt.deltaY,
+        svg: svgRef.current!.getBoundingClientRect(),
+      });
+    }
+
+    function handleMouseDown(evt: MouseEvent) {
+      evt.preventDefault();
+      dragging = true;
+      lastX = evt.clientX;
+      lastY = evt.clientY;
+    }
+    function handleMouseUp() {
+      dragging = false;
+    }
+    function handleMouseMove(evt: MouseEvent) {
+      if (dragging) {
+        const dx = evt.clientX - lastX;
+        const dy = evt.clientY - lastY;
+        lastX = evt.clientX;
+        lastY = evt.clientY;
+        updateViewBox({
+          type: 'pan',
+          delta: { x: dx, y: dy },
+          svg: svgRef.current!.getBoundingClientRect(),
+        });
+      }
+    }
+  }, []);
+
+  return (
+    <svg
+      ref={svgRef}
+      width="800"
+      height="800"
+      viewBox={`${viewBox.x - viewBox.w / 2} ${viewBox.y - viewBox.w / 2} ${
+        viewBox.w
+      } ${viewBox.w}`}
+    >
+      <filter
+        id="star-field"
+        filterUnits="objectBoundingBox"
+        x="0"
+        y="0"
+        width="100%"
+        height="100%"
+      >
+        <feTurbulence baseFrequency="0.6" seed={rng.next()} />
+        <feColorMatrix
+          values="0 0 0 7 -4
+                  0 0 0 7 -4
+                  0 0 0 7 -4
+                  0 0 0 0 1"
+        />
+      </filter>
+      <rect
+        x="-500"
+        y="-500"
+        width="1000"
+        height="1000"
+        filter="url(#star-field)"
+      />
+      {galaxyOverview.data?.starSystems.map((starSystem) => (
+        <circle
+          key={starSystem.id}
+          cx={starSystem.coordinates.x}
+          cy={starSystem.coordinates.y}
+          r="1"
+          fill="red"
+        />
+      ))}
+      {galaxyOverview.data?.ships.map((ship) => (
+        <Fragment key={ship.id}>
+          {ship.movingTo && (
+            <line
+              x1={ship.coordinates.x}
+              y1={ship.coordinates.y}
+              x2={ship.movingTo.x}
+              y2={ship.movingTo.y}
+              stroke="teal"
+              strokeWidth="0.8"
+              strokeDasharray="1,1"
+            />
+          )}
+          <circle
+            cx={ship.coordinates.x}
+            cy={ship.coordinates.y}
+            r="1"
+            fill="green"
+          />
+        </Fragment>
+      ))}
+    </svg>
   );
 }
 
@@ -93,6 +291,8 @@ function ShipList() {
     variables: { gameId: game?.id! },
   });
 
+  const [, moveShip] = useMoveShipMutation();
+
   return (
     <>
       <div>ships</div>
@@ -102,7 +302,40 @@ function ShipList() {
           {` at (${ship.coordinates.x}, ${ship.coordinates.y}) `}
           {ship.movingTo
             ? `moving to (${ship.movingTo.x}, ${ship.movingTo.y})`
-            : ''}
+            : ''}{' '}
+          <Popover trapFocus withArrow>
+            <Popover.Target>
+              <Button>Move</Button>
+            </Popover.Target>
+            <Popover.Dropdown>
+              <form
+                onSubmit={(evt) => {
+                  evt.preventDefault();
+
+                  moveShip({
+                    gameId: game?.id!,
+                    shipId: ship.id,
+                    to: {
+                      x: +evt.currentTarget['to.x'].value,
+                      y: +evt.currentTarget['to.y'].value,
+                    },
+                  });
+                }}
+              >
+                <NumberInput
+                  name="to.x"
+                  placeholder="x"
+                  defaultValue={ship.movingTo?.x}
+                />
+                <NumberInput
+                  name="to.y"
+                  placeholder="y"
+                  defaultValue={ship.movingTo?.y}
+                />
+                <Button type="submit">Issue order</Button>
+              </form>
+            </Popover.Dropdown>
+          </Popover>
         </div>
       ))}
     </>
@@ -150,6 +383,18 @@ function GameList() {
   `;
   const [createGameResult, createGame] = useNewGameMutation();
 
+  /* GraphQL */ `#graphql
+    subscription GameCreated {
+      gameCreated {
+        id
+        players {
+          id
+        }
+      }
+    }
+  `;
+  useGameCreatedSubscription();
+
   const ability = useAbility();
 
   return (
@@ -181,7 +426,7 @@ function GameListItem(game: GameListQuery['games'][number]) {
   const [deleteGameResult, deleteGame] = useDeleteGameMutation();
 
   /* GraphQL */ `#graphql
-    subscription GameCreated($id: ID!) {
+    subscription NewGameCreated($id: ID!) {
       gameCreated(filter: { id: { eq: $id}}) {
         id
         players {
@@ -190,17 +435,31 @@ function GameListItem(game: GameListQuery['games'][number]) {
       }
     }
   `;
-  const [gameCreated] = useGameCreatedSubscription({
+  const [gameCreated] = useNewGameCreatedSubscription({
     pause: game.players.length > 0,
     variables: { id: game.id },
   });
+
+  /* GraphQL */ `#graphql
+    mutation JoinGame($id: ID!) {
+      joinGame(input: { id: $id }) {
+        id
+        players {
+          id
+        }
+      }
+    }
+  `;
+  const [, joinGame] = useJoinGameMutation();
 
   const [, setGameId] = useGame();
 
   return (
     <Group key={game.id} sx={{ position: 'relative' }}>
       {game.name}, {`${game.players.length} / ${game.maxPlayers}`} {game.state}
-      {ability.can('join', game) && <Button>Join</Button>}
+      {ability.can('join', game) && (
+        <Button onClick={() => joinGame({ id: game.id })}>Join</Button>
+      )}
       {ability.can('enter', game) && (
         <Button onClick={() => setGameId(game.id)}>Enter</Button>
       )}

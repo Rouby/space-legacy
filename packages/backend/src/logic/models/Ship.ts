@@ -40,6 +40,7 @@ export class Ship {
     if (event.type === 'launchShip' && event.payload.id === this.id) {
       this.owner = proxies.userProxy(event.payload.userId);
       this.design = proxies.shipDesignProxy(event.payload.designId);
+      this.coordinates = event.payload.coordinates;
       // this.starSystem = proxies.starSystemProxy(event.payload.systemId);
       // this.coordinates = this.starSystem.coordinates
     }
@@ -60,6 +61,12 @@ export class Ship {
 
     if (event.type === 'moveShip' && event.payload.shipId === this.id) {
       this.coordinates = event.payload.to;
+      if (
+        this.movingTo?.x === this.coordinates.x &&
+        this.movingTo?.y === this.coordinates.y
+      ) {
+        this.movingTo = null;
+      }
     }
   }
 }
