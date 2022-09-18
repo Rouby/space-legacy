@@ -4,7 +4,6 @@ import { useState } from 'react';
 import {
   useCancelShipConstructionMutation,
   useConstructShipMutation,
-  useFleetsQuery,
   useMoveShipMutation,
   useStarSystemQuery,
 } from '../graphql';
@@ -398,20 +397,6 @@ function Fleets() {
   `;
   const [constructShipResult, constructShip] = useConstructShipMutation();
 
-  /* GraphQL */ `#graphql
-    query Fleets($gameId: ID!) {
-      fleets(gameId: $gameId) {
-        id
-        name
-        coordinates
-        ships {
-          shipId
-        }
-      }
-    }
-  `;
-  const [fleetsResult] = useFleetsQuery({ variables: { gameId: game?.id! } });
-
   const [starSystemResult] = useStarSystemQuery({
     variables: { id: params.starSystemId, gameId: game?.id! },
   });
@@ -539,14 +524,6 @@ function Fleets() {
                 </form>
               </Popover.Dropdown>
             </Popover>
-          </div>
-        ))}
-      </div>
-      <div>
-        {fleetsResult.data?.fleets.map((fleet) => (
-          <div key={fleet.id}>
-            {fleet.name},{`${fleet.coordinates.x}/${fleet.coordinates.y}`},{' '}
-            {fleet.ships.length} ships strong
           </div>
         ))}
       </div>

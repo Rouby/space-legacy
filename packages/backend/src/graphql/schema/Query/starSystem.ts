@@ -1,5 +1,3 @@
-import { ForbiddenError } from '@casl/ability';
-import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -40,27 +38,19 @@ export const typeDefs = /* GraphQL */ `
     materialsLeft: Int!
   }
 
-  type ShipDesign {
-    id: ID!
-  }
-
-  type Ship {
-    id: ID!
-    coordinates: Coordinates!
-    movingTo: Coordinates
-  }
-
   type Query {
     starSystem(id: ID!, gameId: ID!): StarSystem
   }
 `;
 
-export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
+export const resolvers: Resolvers = {
   Query: {
-    starSystem: async (_, { gameId, id }, { models, ability }) => {
+    starSystem: async (_, { gameId, id }, { models, ability, userId }) => {
       const starSystem = await models.StarSystem.get(id);
 
-      ForbiddenError.from(ability).throwUnlessCan('view', starSystem);
+      if (!starSystem.isVisibleTo(userId)) {
+        return null;
+      }
 
       return starSystem;
     },

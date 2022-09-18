@@ -1,7 +1,6 @@
 import { ForbiddenError } from '@casl/ability';
 import { hash } from 'bcryptjs';
 import { signToken } from '../../../util';
-import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -10,7 +9,7 @@ export const typeDefs = /* GraphQL */ `
   }
 `;
 
-export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
+export const resolvers: Resolvers = {
   Mutation: {
     signup: async (_, { email, password, name }, { prisma, ability }) => {
       ForbiddenError.from(ability).throwUnlessCan('create', 'User');

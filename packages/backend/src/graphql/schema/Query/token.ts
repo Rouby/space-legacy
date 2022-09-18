@@ -1,5 +1,4 @@
 import { signToken } from '../../../util';
-import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -8,7 +7,7 @@ export const typeDefs = /* GraphQL */ `
   }
 `;
 
-export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
+export const resolvers: Resolvers = {
   Query: {
     token: async (_, __, { prisma, userId }) => {
       const user = userId

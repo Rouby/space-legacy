@@ -4,3 +4,4 @@ export * from './GameList';
 export * from './Ship';
 export * from './ShipDesign';
 export * from './StarSystem';
+export * from './Visibility';

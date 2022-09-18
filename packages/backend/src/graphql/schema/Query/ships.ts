@@ -1,5 +1,4 @@
-import { subject } from '@casl/ability';
-import { context } from '../../context';
+import { isTruthy } from '../../../util';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -8,13 +7,17 @@ export const typeDefs = /* GraphQL */ `
   }
 `;
 
-export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
+export const resolvers: Resolvers = {
   Query: {
-    ships: async (_, { gameId }, { models, ability }) => {
+    ships: async (_, { gameId }, { models, ability, userId }) => {
       return models.Game.get(gameId)
         .then((game) => Promise.all(game.ships.map((ship) => ship.$resolve)))
         .then((ships) =>
-          ships.filter((ship) => ability.can('see', subject('Ship', ship))),
+          Promise.all(
+            ships.map(async (ship) =>
+              (await ship.isVisibleTo(userId)) ? ship : null,
+            ),
+          ).then((ships) => ships.filter(isTruthy)),
         );
     },
   },

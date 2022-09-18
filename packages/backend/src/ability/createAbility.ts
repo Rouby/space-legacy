@@ -1,4 +1,4 @@
-import { AbilityBuilder } from '@casl/ability';
+import { AbilityBuilder, buildMongoQueryMatcher } from '@casl/ability';
 import { User } from '@prisma/client';
 import { AppAbility } from './AppAbility';
 
@@ -22,9 +22,6 @@ export async function createAbilityFor(user: User) {
     players: { $elemMatch: { id: user.id, turnEnded: true } },
   });
 
-  can(['see', 'view'], 'StarSystem', {
-    habitablePlanets: { $elemMatch: { 'owner.id': user.id } },
-  });
   can('constructShip', 'StarSystem', {
     habitablePlanets: { $elemMatch: { 'owner.id': user.id } },
     shipyards: { $elemMatch: { workLeft: 0, materialsLeft: 0 } },
@@ -43,12 +40,13 @@ export async function createAbilityFor(user: User) {
     shipyards: { $elemMatch: { shipConstructionQueue: { $size: 0 } } },
   });
 
-  can(['see', 'view', 'move'], 'Ship', { 'owner.id': user.id });
+  can('move', 'Ship', { 'owner.id': user.id });
+  can('view', 'Ship', ['movingTo'], { 'owner.id': user.id });
 
-  return new AppAbility([
-    ...(createDefaultAbility().rules as typeof rules),
-    ...rules,
-  ]);
+  return new AppAbility(
+    [...(createDefaultAbility().rules as typeof rules), ...rules],
+    { conditionsMatcher: buildMongoQueryMatcher() },
+  );
 }
 
 export function createDefaultAbility() {

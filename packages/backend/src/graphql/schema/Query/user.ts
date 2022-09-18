@@ -1,4 +1,3 @@
-import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -13,7 +12,7 @@ export const typeDefs = /* GraphQL */ `
   }
 `;
 
-export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
+export const resolvers: Resolvers = {
   Query: {
     user: (_, __, { prisma, userId }) =>
       userId ? prisma.user.findUnique({ where: { id: userId } }) : null,

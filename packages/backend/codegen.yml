@@ -7,11 +7,18 @@ generates:
       - 'typescript'
       - 'typescript-resolvers'
     config:
+      scalars:
+        JWT: string
+        Coordinates: '{ x: number; y: number }'
       allowEnumStringTypes: true
       wrapFieldDefinitions: true
       fieldWrapperValue: T | Promise<T>
       wrapEntireFieldDefinitions: true
       entireFieldWrapperValue: T | Promise<T>
+      mappers:
+        Ship: '../../logic/models#PromisedShip'
+      contextType: '../context#Context'
+      allowParentTypeOverride: true
 hooks:
   afterOneFileWrite:
     - prettier --write

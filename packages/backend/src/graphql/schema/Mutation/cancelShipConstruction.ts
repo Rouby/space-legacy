@@ -1,7 +1,6 @@
 import { ForbiddenError } from '@casl/ability';
 import { GraphQLYogaError } from '@graphql-yoga/common';
 import { cancelShipConstruction } from '../../../logic/events';
-import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -19,7 +18,7 @@ export const typeDefs = /* GraphQL */ `
   }
 `;
 
-export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
+export const resolvers: Resolvers = {
   Mutation: {
     cancelShipConstruction: async (
       _,

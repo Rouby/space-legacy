@@ -1,3 +1,4 @@
+import { subject } from '@casl/ability';
 import {
   Button,
   Group,
@@ -277,12 +278,16 @@ function StarSystemList() {
 
 function ShipList() {
   const [game] = useGame();
+  const ability = useAbility();
 
   /* GraphQL */ `#graphql
     query ShipList($gameId: ID!) {
       ships(gameId: $gameId) {
         id
         coordinates
+        owner {
+          id
+        }
         movingTo
       }
     }
@@ -292,6 +297,8 @@ function ShipList() {
   });
 
   const [, moveShip] = useMoveShipMutation();
+
+  console.log(ships, ability.rulesFor('move', 'Ship'));
 
   return (
     <>
@@ -305,7 +312,9 @@ function ShipList() {
             : ''}{' '}
           <Popover trapFocus withArrow>
             <Popover.Target>
-              <Button>Move</Button>
+              <Button disabled={ability.cannot('move', subject('Ship', ship))}>
+                Move
+              </Button>
             </Popover.Target>
             <Popover.Dropdown>
               <form

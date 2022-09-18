@@ -85,6 +85,12 @@ export class StarSystem {
   }[];
   public ships = [] as Promised<Ship>[];
 
+  public async isVisibleTo(userId: string) {
+    const visibility = await proxies.visibilityProxy(this.game!.id, userId)
+      .$resolve;
+    return visibility.checkVisibility(this.coordinates);
+  }
+
   private applyEvent(event: AppEvent) {
     if (event.type === 'createStarSystem' && event.payload.id === this.id) {
       this.game = proxies.gameProxy(event.payload.gameId);

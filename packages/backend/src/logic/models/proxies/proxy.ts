@@ -1,6 +1,6 @@
 import type { Promised } from '.';
 
-export function proxyOf<T extends { id: any }>(
+export function proxyOf<T extends {}>(
   base: any,
   getter: () => Promise<T | null>,
 ) {

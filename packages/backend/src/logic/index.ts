@@ -5,6 +5,7 @@ import { shipProxy } from './models/proxies/ship';
 import { shipDesignProxy } from './models/proxies/shipDesign';
 import { starSystemProxy } from './models/proxies/starSystem';
 import { userProxy } from './models/proxies/user';
+import { visibilityProxy } from './models/proxies/visibility';
 
 export * as models from './models';
 export { publishEvent } from './publishEvent';
@@ -15,3 +16,4 @@ proxies.shipProxy = shipProxy;
 proxies.shipDesignProxy = shipDesignProxy;
 proxies.starSystemProxy = starSystemProxy;
 proxies.userProxy = userProxy;
+proxies.visibilityProxy = visibilityProxy;

@@ -1,5 +1,4 @@
 import { ForbiddenError } from '@casl/ability';
-import { context } from '../../context';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -29,7 +28,7 @@ export const typeDefs = /* GraphQL */ `
   }
 `;
 
-export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
+export const resolvers: Resolvers = {
   Query: {
     game: async (_, { id }, { ability, models }) => {
       ForbiddenError.from(ability).throwUnlessCan('read', 'GamesList');

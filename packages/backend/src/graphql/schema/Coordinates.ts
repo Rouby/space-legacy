@@ -1,12 +1,11 @@
 import { GraphQLScalarType } from 'graphql';
-import { context } from '../context';
 import { Resolvers } from '../generated';
 
 export const typeDefs = /* GraphQL */ `
   scalar Coordinates
 `;
 
-export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
+export const resolvers: Resolvers = {
   Coordinates: new GraphQLScalarType<{ x: number; y: number }, string>({
     name: 'Coordinates',
     description: 'Object with x and y coordinates',

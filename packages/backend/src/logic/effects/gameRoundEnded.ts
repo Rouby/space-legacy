@@ -102,7 +102,7 @@ export async function gameRoundEnded(
         const ship = await promisedShip.$resolve;
 
         if (ship.movingTo) {
-          const speed = 2; // TODO calc based on ship design
+          const speed = 10; // TODO calc based on ship design
 
           const dx = ship.movingTo.x - ship.coordinates.x;
           const dy = ship.movingTo.y - ship.coordinates.y;

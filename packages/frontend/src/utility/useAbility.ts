@@ -11,7 +11,7 @@ export function useAbility() {
     () =>
       token
         ? new Ability(token?.space.permissions, {
-            detectSubjectType: (s) => (s as any).__typename,
+            detectSubjectType: (s) => s.__typename ?? s.__caslSubjectType__,
           })
         : createDefaultAbility(),
     [token],

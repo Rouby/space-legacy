@@ -1,5 +1,4 @@
-import { subject } from '@casl/ability';
-import { context } from '../../context';
+import { isTruthy } from '../../../util';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -8,18 +7,19 @@ export const typeDefs = /* GraphQL */ `
   }
 `;
 
-export const resolvers: Resolvers<Awaited<ReturnType<typeof context>>> = {
+export const resolvers: Resolvers = {
   Query: {
-    starSystems: async (_, { gameId }, { models, ability }) => {
-      // TODO specialized loader/model?
+    starSystems: async (_, { gameId }, { models, ability, userId }) => {
       return models.Game.get(gameId)
         .then((game) =>
           Promise.all(game.starSystems.map((system) => system.$resolve)),
         )
         .then((systems) =>
-          systems.filter((system) =>
-            ability.can('view', subject('StarSystem', system)),
-          ),
+          Promise.all(
+            systems.map(async (system) =>
+              (await system.isVisibleTo(userId)) ? system : null,
+            ),
+          ).then((systems) => systems.filter(isTruthy)),
         );
     },
   },

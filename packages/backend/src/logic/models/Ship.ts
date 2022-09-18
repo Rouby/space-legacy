@@ -29,6 +29,7 @@ export class Ship {
 
   private constructor(public id: string) {}
 
+  public game = proxies.gameProxy('');
   public owner = proxies.userProxy('');
   public design = null as Promised<ShipDesign> | null;
   public name = '';
@@ -36,8 +37,15 @@ export class Ship {
   public coordinates = { x: 0, y: 0 };
   public movingTo = null as { x: number; y: number } | null;
 
+  public async isVisibleTo(userId: string) {
+    const visibility = await proxies.visibilityProxy(this.game!.id, userId)
+      .$resolve;
+    return visibility.checkVisibility(this.coordinates);
+  }
+
   private applyEvent(event: AppEvent) {
     if (event.type === 'launchShip' && event.payload.id === this.id) {
+      this.game = proxies.gameProxy(event.payload.gameId);
       this.owner = proxies.userProxy(event.payload.userId);
       this.design = proxies.shipDesignProxy(event.payload.designId);
       this.coordinates = event.payload.coordinates;
@@ -70,3 +78,5 @@ export class Ship {
     }
   }
 }
+
+export type PromisedShip = Ship | Promised<Ship>;

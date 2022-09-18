@@ -74,3 +74,5 @@ export async function context({
     },
   };
 }
+
+export type Context = Awaited<ReturnType<typeof context>>;
