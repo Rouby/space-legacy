@@ -7,6 +7,7 @@ import { createGame } from './createGame';
 import { createStarSystem } from './createStarSystem';
 import { deleteGame } from './deleteGame';
 import { endTurn } from './endTurn';
+import { issueFollowOrder } from './issueFollowOrder';
 import { issueMoveOrder } from './issueMoveOrder';
 import { joinGame } from './joinGame';
 import { launchShip } from './launchShip';
@@ -24,6 +25,7 @@ export * from './createGame';
 export * from './createStarSystem';
 export * from './deleteGame';
 export * from './endTurn';
+export * from './issueFollowOrder';
 export * from './issueMoveOrder';
 export * from './joinGame';
 export * from './launchShip';
@@ -42,6 +44,7 @@ export type AppEvent =
   | ReturnType<typeof createStarSystem>
   | ReturnType<typeof deleteGame>
   | ReturnType<typeof endTurn>
+  | ReturnType<typeof issueFollowOrder>
   | ReturnType<typeof issueMoveOrder>
   | ReturnType<typeof joinGame>
   | ReturnType<typeof launchShip>

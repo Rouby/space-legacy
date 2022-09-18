@@ -1,4 +1,5 @@
 import { subject } from '@casl/ability';
+import { Vector } from '../../../util';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -12,18 +13,42 @@ export const typeDefs = /* GraphQL */ `
     movingTo: Coordinates
     owner: Player!
   }
+
+  type Query {
+    ship(id: ID!, gameId: ID!): Ship
+  }
 `;
 
 export const resolvers: Resolvers = {
-  Ship: {
-    movingTo: async (ship, _, { ability, models }) => {
-      const resolved = ship instanceof models.Ship ? ship : await ship.$resolve;
+  Query: {
+    ship: async (_, { gameId, id }, { models, ability, userId }) => {
+      const ship = await models.Ship.get(id);
 
-      if (ability.cannot('view', subject('Ship', resolved), 'movingTo')) {
+      if (!ship.isVisibleTo(userId)) {
         return null;
       }
 
-      return ship.movingTo;
+      return ship;
+    },
+  },
+  Ship: {
+    movingTo: async (ship, _, { ability, models, userId }) => {
+      const resolved = ship instanceof models.Ship ? ship : await ship.$resolve;
+
+      if (ability.cannot('view', subject('Ship', resolved), 'movingTo')) {
+        return new Vector(resolved.coordinates).add(
+          new Vector(resolved.movementVector).multiply(10), // TODO get ship speed?
+        );
+      }
+
+      if (resolved.followingShip) {
+        const followingShip = await resolved.followingShip.$resolve;
+        if (await followingShip.isVisibleTo(userId)) {
+          return followingShip.coordinates;
+        }
+      }
+
+      return resolved.movingTo;
     },
   },
 };

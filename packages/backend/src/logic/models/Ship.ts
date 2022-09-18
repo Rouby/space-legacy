@@ -1,5 +1,5 @@
 import type { GameEvent } from '@prisma/client';
-import { getDbClient } from '../../util';
+import { getDbClient, Vector } from '../../util';
 import type { AppEvent } from '../events';
 import { Promised, proxies } from './proxies';
 import type { ShipDesign } from './ShipDesign';
@@ -36,6 +36,8 @@ export class Ship {
   public starSystem = null as Promised<StarSystem> | null;
   public coordinates = { x: 0, y: 0 };
   public movingTo = null as { x: number; y: number } | null;
+  public followingShip = null as Promised<Ship> | null;
+  public movementVector = { x: 0, y: 0 };
 
   public async isVisibleTo(userId: string) {
     const visibility = await proxies.visibilityProxy(this.game!.id, userId)
@@ -49,8 +51,6 @@ export class Ship {
       this.owner = proxies.userProxy(event.payload.userId);
       this.design = proxies.shipDesignProxy(event.payload.designId);
       this.coordinates = event.payload.coordinates;
-      // this.starSystem = proxies.starSystemProxy(event.payload.systemId);
-      // this.coordinates = this.starSystem.coordinates
     }
 
     if (
@@ -65,10 +65,23 @@ export class Ship {
       } else {
         this.movingTo = event.payload.to;
       }
+      this.followingShip = null;
+    }
+
+    if (
+      event.type === 'issueFollowOrder' &&
+      event.payload.subjectId === this.id
+    ) {
+      this.movingTo = null;
+      this.followingShip = proxies.shipProxy(event.payload.targetId);
     }
 
     if (event.type === 'moveShip' && event.payload.shipId === this.id) {
+      this.movementVector = new Vector(event.payload.to)
+        .subtract(this.coordinates)
+        .normalize();
       this.coordinates = event.payload.to;
+
       if (
         this.movingTo?.x === this.coordinates.x &&
         this.movingTo?.y === this.coordinates.y

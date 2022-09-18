@@ -1,13 +1,7 @@
-import { subject } from '@casl/ability';
-import {
-  Button,
-  Group,
-  LoadingOverlay,
-  NumberInput,
-  Popover,
-} from '@mantine/core';
+import { Button, Group, LoadingOverlay } from '@mantine/core';
 import { Link } from '@tanstack/react-location';
 import { Fragment, useEffect, useReducer, useRef } from 'react';
+import { IssueShipOrder } from '../components';
 import {
   GameListQuery,
   useDeleteGameMutation,
@@ -15,7 +9,6 @@ import {
   useGameCreatedSubscription,
   useGameListQuery,
   useJoinGameMutation,
-  useMoveShipMutation,
   useNewGameCreatedSubscription,
   useNewGameMutation,
   useShipListQuery,
@@ -278,7 +271,6 @@ function StarSystemList() {
 
 function ShipList() {
   const [game] = useGame();
-  const ability = useAbility();
 
   /* GraphQL */ `#graphql
     query ShipList($gameId: ID!) {
@@ -296,10 +288,6 @@ function ShipList() {
     variables: { gameId: game?.id! },
   });
 
-  const [, moveShip] = useMoveShipMutation();
-
-  console.log(ships, ability.rulesFor('move', 'Ship'));
-
   return (
     <>
       <div>ships</div>
@@ -310,41 +298,7 @@ function ShipList() {
           {ship.movingTo
             ? `moving to (${ship.movingTo.x}, ${ship.movingTo.y})`
             : ''}{' '}
-          <Popover trapFocus withArrow>
-            <Popover.Target>
-              <Button disabled={ability.cannot('move', subject('Ship', ship))}>
-                Move
-              </Button>
-            </Popover.Target>
-            <Popover.Dropdown>
-              <form
-                onSubmit={(evt) => {
-                  evt.preventDefault();
-
-                  moveShip({
-                    gameId: game?.id!,
-                    shipId: ship.id,
-                    to: {
-                      x: +evt.currentTarget['to.x'].value,
-                      y: +evt.currentTarget['to.y'].value,
-                    },
-                  });
-                }}
-              >
-                <NumberInput
-                  name="to.x"
-                  placeholder="x"
-                  defaultValue={ship.movingTo?.x}
-                />
-                <NumberInput
-                  name="to.y"
-                  placeholder="y"
-                  defaultValue={ship.movingTo?.y}
-                />
-                <Button type="submit">Issue order</Button>
-              </form>
-            </Popover.Dropdown>
-          </Popover>
+          <IssueShipOrder shipId={ship.id} />
         </div>
       ))}
     </>
