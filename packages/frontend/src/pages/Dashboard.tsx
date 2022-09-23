@@ -281,6 +281,14 @@ function ShipList() {
           id
         }
         movingTo
+        combat {
+          friendlies {
+            id
+          }
+          hostiles {
+            id
+          }
+        }
       }
     }
   `;
@@ -299,6 +307,7 @@ function ShipList() {
             ? `moving to (${ship.movingTo.x}, ${ship.movingTo.y})`
             : ''}{' '}
           <IssueShipOrder shipId={ship.id} />
+          {ship.combat && <span>In combat</span>}
         </div>
       ))}
     </>
@@ -319,6 +328,7 @@ function GameList() {
         maxPlayers
         players {
           id
+          userId
           turnEnded
         }
         round
@@ -339,6 +349,7 @@ function GameList() {
         maxPlayers
         players {
           id
+          userId
           turnEnded
         }
       }
@@ -352,6 +363,7 @@ function GameList() {
         id
         players {
           id
+          userId
         }
       }
     }
@@ -394,6 +406,7 @@ function GameListItem(game: GameListQuery['games'][number]) {
         id
         players {
           id
+          userId
         }
       }
     }
@@ -409,6 +422,7 @@ function GameListItem(game: GameListQuery['games'][number]) {
         id
         players {
           id
+          userId
         }
       }
     }

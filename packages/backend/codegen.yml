@@ -17,6 +17,7 @@ generates:
       entireFieldWrapperValue: T | Promise<T>
       mappers:
         Ship: '../../logic/models#PromisedShip'
+        Player: '../../logic/models#PromisedPlayer'
       contextType: '../context#Context'
       allowParentTypeOverride: true
 hooks:

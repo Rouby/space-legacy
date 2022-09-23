@@ -20,6 +20,8 @@ export const typeDefs = /* GraphQL */ `
 
   type Player {
     id: ID!
+    userId: ID!
+    name: String!
     turnEnded: Boolean!
   }
 
@@ -34,6 +36,11 @@ export const resolvers: Resolvers = {
       ForbiddenError.from(ability).throwUnlessCan('read', 'GamesList');
 
       return models.Game.get(id);
+    },
+  },
+  Player: {
+    id: (player) => {
+      return `${player.gameId}-${player.userId}`;
     },
   },
 };

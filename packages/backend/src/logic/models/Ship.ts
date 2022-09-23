@@ -30,14 +30,26 @@ export class Ship {
   private constructor(public id: string) {}
 
   public game = proxies.gameProxy('');
-  public owner = proxies.userProxy('');
+  public owner = proxies.playerProxy('', '');
   public design = null as Promised<ShipDesign> | null;
   public name = '';
   public starSystem = null as Promised<StarSystem> | null;
   public coordinates = { x: 0, y: 0 };
   public movingTo = null as { x: number; y: number } | null;
   public followingShip = null as Promised<Ship> | null;
+  public followingPredictive = false;
   public movementVector = { x: 0, y: 0 };
+
+  public get combats() {
+    return Promise.resolve().then(async () => {
+      const game = await this.game.$resolve;
+      const combats = await game.getActiveCombats();
+
+      return combats.filter((combat) =>
+        combat.ships.some((s) => s.id === this.id),
+      );
+    });
+  }
 
   public async isVisibleTo(userId: string) {
     const visibility = await proxies.visibilityProxy(this.game!.id, userId)
@@ -45,10 +57,42 @@ export class Ship {
     return visibility.checkVisibility(this.coordinates);
   }
 
+  public async getFollowingMovingTo() {
+    if (this.followingShip) {
+      const followingShip = await this.followingShip.$resolve;
+
+      if (this.followingPredictive) {
+        const followingShipMovement = new Vector(
+          followingShip.movementVector,
+        ).multiply(10); // TODO get ship speed?
+        let movingTo = new Vector(followingShip.coordinates).add(
+          followingShipMovement,
+        );
+        for (let i = 1; i < 10; i++) {
+          if (
+            new Vector(this.coordinates).subtract(movingTo).magnitude() <
+            10 * i
+          ) {
+            break;
+          }
+          movingTo = new Vector(movingTo).add(followingShipMovement);
+        }
+        return movingTo;
+      } else {
+        return followingShip.coordinates;
+      }
+    }
+
+    return null;
+  }
+
   private applyEvent(event: AppEvent) {
     if (event.type === 'launchShip' && event.payload.id === this.id) {
       this.game = proxies.gameProxy(event.payload.gameId);
-      this.owner = proxies.userProxy(event.payload.userId);
+      this.owner = proxies.playerProxy(
+        event.payload.gameId,
+        event.payload.userId,
+      );
       this.design = proxies.shipDesignProxy(event.payload.designId);
       this.coordinates = event.payload.coordinates;
     }
@@ -74,6 +118,7 @@ export class Ship {
     ) {
       this.movingTo = null;
       this.followingShip = proxies.shipProxy(event.payload.targetId);
+      this.followingPredictive = event.payload.usePredictiveRoute;
     }
 
     if (event.type === 'moveShip' && event.payload.shipId === this.id) {

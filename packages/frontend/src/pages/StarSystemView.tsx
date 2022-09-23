@@ -26,6 +26,7 @@ export function StarSystemView() {
           type
           owner {
             id
+            userId
             name
           }
           population

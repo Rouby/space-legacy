@@ -2,9 +2,9 @@ export class Vector {
   public x: number;
   public y: number;
 
-  public constructor(coords: { x: number; y: number }) {
-    this.x = coords.x;
-    this.y = coords.y;
+  public constructor(coords?: { x: number; y: number }) {
+    this.x = coords?.x ?? 0;
+    this.y = coords?.y ?? 0;
   }
 
   public add(other: { x: number; y: number }) {
@@ -72,5 +72,9 @@ export class Vector {
 
   public toString() {
     return `(${this.x}, ${this.y})`;
+  }
+
+  public toCoordinates() {
+    return { x: this.x, y: this.y };
   }
 }

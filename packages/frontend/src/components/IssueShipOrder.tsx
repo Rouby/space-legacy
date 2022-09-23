@@ -1,6 +1,7 @@
 import { subject } from '@casl/ability';
 import {
   Button,
+  Checkbox,
   LoadingOverlay,
   NumberInput,
   Popover,
@@ -14,6 +15,7 @@ import {
   useShipSelectQuery,
 } from '../graphql';
 import { useAbility, useGame } from '../utility';
+import { AbilityButton } from './AbilityButton';
 
 export function IssueShipOrder({ shipId }: { shipId: string }) {
   const [game] = useGame();
@@ -25,6 +27,7 @@ export function IssueShipOrder({ shipId }: { shipId: string }) {
         id
         owner {
           id
+          userId
         }
         coordinates
         movingTo
@@ -57,8 +60,8 @@ export function IssueShipOrder({ shipId }: { shipId: string }) {
   const [shipSelect] = useShipSelectQuery({ variables: { gameId: game?.id! } });
 
   /* GraphQL */ `#graphql
-    mutation followShip($gameId: ID!, $shipId: ID!, $followId: ID!) {
-      followShip(input: { gameId: $gameId, shipId: $shipId, shipToFollowId: $followId }) {
+    mutation followShip($gameId: ID!, $shipId: ID!, $followId: ID!, $predictRoute: Boolean) {
+      followShip(input: { gameId: $gameId, shipId: $shipId, shipToFollowId: $followId, predictRoute: $predictRoute }) {
         id
         movingTo
       }
@@ -69,15 +72,15 @@ export function IssueShipOrder({ shipId }: { shipId: string }) {
   return (
     <Popover trapFocus withArrow opened={open} onChange={setOpen}>
       <Popover.Target>
-        <Button
+        <AbilityButton
           loading={fetching}
+          can="move"
+          on={subject('Ship', data?.ship!)}
+          and={!!data?.ship}
           onClick={() => setOpen((o) => !o)}
-          disabled={
-            !data?.ship || ability.cannot('move', subject('Ship', data?.ship))
-          }
         >
           Move
-        </Button>
+        </AbilityButton>
       </Popover.Target>
       <Popover.Dropdown>
         <LoadingOverlay visible={fetching} />
@@ -102,6 +105,7 @@ export function IssueShipOrder({ shipId }: { shipId: string }) {
                     gameId: game?.id!,
                     shipId: data?.ship?.id!,
                     followId: evt.currentTarget['followId'].value,
+                    predictRoute: evt.currentTarget['predictRoute'].checked,
                   }).then(() => setOpen(false));
                 }
               }
@@ -138,6 +142,7 @@ export function IssueShipOrder({ shipId }: { shipId: string }) {
               })) ?? []
             }
           />
+          <Checkbox name="predictRoute" label="Predict route?" />
           <Button
             loading={followShipResult.fetching}
             name="order"

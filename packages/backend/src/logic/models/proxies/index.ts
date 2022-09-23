@@ -1,5 +1,7 @@
+import type { GameList } from '../GameList';
 import type { fleetProxy } from './fleet';
 import type { gameProxy } from './game';
+import type { playerProxy } from './player';
 import type { shipProxy } from './ship';
 import type { shipDesignProxy } from './shipDesign';
 import type { starSystemProxy } from './starSystem';
@@ -17,6 +19,8 @@ export type Promised<T extends {}> = {
 export const proxies = {
   fleetProxy: undefined as any as fleetProxy,
   gameProxy: undefined as any as gameProxy,
+  gameListProxy: undefined as any as typeof GameList,
+  playerProxy: undefined as any as playerProxy,
   shipProxy: undefined as any as shipProxy,
   shipDesignProxy: undefined as any as shipDesignProxy,
   starSystemProxy: undefined as any as starSystemProxy,

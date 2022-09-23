@@ -16,7 +16,7 @@ export const typeDefs = /* GraphQL */ `
     orbit: Float!
     size: Int!
     type: String!
-    owner: User
+    owner: Player
     population: Int
   }
 

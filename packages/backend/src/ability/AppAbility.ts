@@ -1,4 +1,4 @@
-import { Ability, type AbilityClass } from '@casl/ability';
+import { Ability, Subject, type AbilityClass } from '@casl/ability';
 import type { Subjects } from '@casl/prisma';
 import type { User } from '@prisma/client';
 import type { Game, GameList, Ship, StarSystem } from '../logic/models';
@@ -8,103 +8,73 @@ type Abilities =
       'read' | 'create' | 'update' | 'delete' | 'login',
       'User' | Subjects<{ User: User }>,
     ]
-  | [
-      'read',
-      (
-        | 'GamesList'
-        | Flatten<Readonly<GameList>, NestedPaths<Readonly<GameList>>>
-      ),
-    ]
+  | ['read', 'GamesList' | Flatten<Readonly<GameList>>]
   | [
       'create' | 'delete' | 'join' | 'leave' | 'enter' | 'start' | 'endTurn',
-      'Game' | Flatten<Readonly<Game>, NestedPaths<Readonly<Game>>>,
+      'Game' | Flatten<Readonly<Game>>,
     ]
   | [
       'constructShip' | 'cancelShipConstruction',
-      (
-        | 'StarSystem'
-        | Flatten<Readonly<StarSystem>, NestedPaths<Readonly<StarSystem>>>
-      ),
+      'StarSystem' | Flatten<Readonly<StarSystem>>,
     ]
-  | [
-      'move' | 'view',
-      'Ship' | Flatten<Readonly<Ship>, NestedPaths<Readonly<Ship>>>,
-    ];
+  | ['move' | 'view', 'Ship' | Flatten<Readonly<Ship>>];
 
 export type AppAbility = Ability<Abilities>;
 
 export const AppAbility = Ability as AbilityClass<AppAbility>;
 
-type Flatten<T, P> = T;
-type NestedPaths<T> = T;
-
-// type Flatten<T extends GenericObject, P extends string> = {
-//   [K in P]: TypeFromPath<T, K>;
+type Flatten<T> = Subject;
+// type Flatten<T> = {
+//   [P in DeepKeys<T>]?: DeepValue<T, P>;
 // };
 
-// type Primitive = string | number | symbol;
+type ComputeRange<
+  N extends number,
+  Result extends Array<unknown> = [],
+> = Result['length'] extends N
+  ? Result
+  : ComputeRange<N, [...Result, Result['length']]>;
+type Index40 = ComputeRange<40>[number];
 
-// type GenericObject = Record<Primitive, unknown>;
+type IsTuple<T> = T extends readonly any[] & { length: infer Length }
+  ? Length extends Index40
+    ? T
+    : never
+  : never;
 
-// type Join<
-//   L extends Primitive | undefined,
-//   R extends Primitive | undefined,
-// > = L extends string | number
-//   ? R extends string | number
-//     ? `${L}.${R}`
-//     : L
-//   : R extends string | number
-//   ? R
-//   : undefined;
+type AllowedIndexes<
+  Tuple extends ReadonlyArray<any>,
+  Keys extends number = never,
+> = Tuple extends readonly []
+  ? Keys
+  : Tuple extends readonly [infer _, ...infer Tail]
+  ? AllowedIndexes<Tail, Keys | Tail['length']>
+  : Keys;
 
-// type Union<
-//   L extends unknown | undefined,
-//   R extends unknown | undefined,
-// > = L extends undefined
-//   ? R extends undefined
-//     ? undefined
-//     : R
-//   : R extends undefined
-//   ? L
-//   : L | R;
+export type DeepKeys<T> = unknown extends T
+  ? keyof T
+  : object extends T
+  ? string
+  : T extends readonly any[] & IsTuple<T>
+  ? AllowedIndexes<T> | DeepKeysPrefix<T, AllowedIndexes<T>>
+  : T extends (infer U)[]
+  ? (keyof U & string) | DeepKeysPrefix<T, keyof U>
+  : T extends Date
+  ? never
+  : T extends object
+  ? (keyof T & string) | DeepKeysPrefix<T, keyof T>
+  : never;
 
-// /**
-//  * NestedPaths
-//  * Get all the possible paths of an object
-//  * @example
-//  * type Keys = NestedPaths<{ a: { b: { c: string } }>
-//  * // 'a' | 'a.b' | 'a.b.c'
-//  */
-// export type NestedPaths<
-//   T extends GenericObject,
-//   Prev extends Primitive | undefined = undefined,
-//   Path extends Primitive | undefined = undefined,
-// > = {
-//   [K in keyof T]: T[K] extends Array<infer ArrayType extends GenericObject>
-//     ? NestedPaths<ArrayType, Union<Prev, Path>, Join<Path, K>>
-//     : T[K] extends GenericObject
-//     ? NestedPaths<T[K], Union<Prev, Path>, Join<Path, K>>
-//     : Union<Union<Prev, Path>, Join<Path, K>>;
-// }[keyof T];
+type DeepKeysPrefix<T, TPrefix> = TPrefix extends keyof T & (number | string)
+  ? `${TPrefix}.${DeepKeys<T[TPrefix]> & string}`
+  : never;
 
-// /**
-//  * TypeFromPath
-//  * Get the type of the element specified by the path
-//  * @example
-//  * type TypeOfAB = TypeFromPath<{ a: { b: { c: string } }, 'a.b'>
-//  * // { c: string }
-//  */
-// export type TypeFromPath<
-//   T extends GenericObject,
-//   Path extends string, // Or, if you prefer, NestedPaths<T>
-// > = {
-//   [K in Path]: K extends keyof T
-//     ? T[K] // TODO deeply nest it????
-//     : K extends `${infer P}.${infer S}`
-//     ? T[P] extends Array<infer ArrayType extends GenericObject>
-//       ? TypeFromPath<ArrayType, S>
-//       : T[P] extends GenericObject
-//       ? TypeFromPath<T[P], S>
-//       : never
-//     : never;
-// }[Path];
+export type DeepValue<T, TProp> = T extends Record<string | number, any>
+  ? TProp extends `${infer TBranch}.${infer TDeepProp}`
+    ? T[TBranch] extends (infer U)[]
+      ? DeepValue<U, TDeepProp>
+      : DeepValue<T[TBranch], TDeepProp>
+    : T[TProp & string] extends (infer U)[]
+    ? U
+    : T[TProp & string]
+  : never;

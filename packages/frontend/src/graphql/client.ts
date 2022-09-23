@@ -1,7 +1,7 @@
 import { devtoolsExchange } from '@urql/devtools';
 import { authExchange } from '@urql/exchange-auth';
 import { useAtomValue } from 'jotai';
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import {
   createClient,
   dedupExchange,
@@ -16,7 +16,6 @@ import schema from './generated';
 
 export function useClient() {
   const token = useAtomValue(tokenAtom);
-  const tokenRef = useRef(token);
 
   return useMemo(
     () =>
@@ -32,19 +31,16 @@ export function useClient() {
             },
           }),
           cacheExchange,
-          authExchange<typeof tokenRef | null>({
+          authExchange<typeof token>({
             getAuth: async ({ authState }) => {
               if (!authState) {
-                if (tokenRef.current) {
-                  return tokenRef;
-                }
-                return null;
+                return token;
               }
 
               return null;
             },
             addAuthToOperation: ({ authState, operation }) => {
-              if (!authState || !authState.current) {
+              if (!authState) {
                 return operation;
               }
 
@@ -59,7 +55,7 @@ export function useClient() {
                   ...fetchOptions,
                   headers: {
                     ...fetchOptions.headers,
-                    Authorization: `Bearer ${authState.current}`,
+                    Authorization: `Bearer ${authState}`,
                   },
                 },
               });
@@ -102,6 +98,6 @@ export function useClient() {
           }),
         ],
       }),
-    [!!token],
+    [token],
   );
 }

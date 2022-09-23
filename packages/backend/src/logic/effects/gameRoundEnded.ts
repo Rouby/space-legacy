@@ -1,6 +1,7 @@
 import { GameEvent } from '@prisma/client';
 import { pubSub } from '../../graphql/context';
 import { logger } from '../../logger';
+import { Vector } from '../../util';
 import {
   AppEvent,
   changePopulation,
@@ -77,7 +78,7 @@ export async function gameRoundEnded(
                       y: system.coordinates.y,
                     },
                     designId: construction.design.id,
-                    userId: yard.owner.id,
+                    userId: yard.owner.userId,
                     id: construction.id,
                   }),
                 );
@@ -104,23 +105,29 @@ export async function gameRoundEnded(
         if (ship.movingTo) {
           const speed = 10; // TODO calc based on ship design
 
-          const dx = ship.movingTo.x - ship.coordinates.x;
-          const dy = ship.movingTo.y - ship.coordinates.y;
-          const distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+          const movement = new Vector(ship.movingTo).subtract(ship.coordinates);
+          const distance = movement.magnitude();
 
           if (distance > 0) {
+            const movementDirection = movement.normalize();
             scheduleEvent(
               moveShip({
                 gameId: event.payload.gameId,
                 shipId: ship.id,
-                to: {
-                  x:
-                    ship.coordinates.x +
-                    (dx / distance) * Math.min(speed, distance),
-                  y:
-                    ship.coordinates.y +
-                    (dy / distance) * Math.min(speed, distance),
-                },
+                to: new Vector(ship.coordinates)
+                  .add(movementDirection.multiply(Math.min(speed, distance)))
+                  .toCoordinates(),
+              }),
+            );
+          }
+        } else if (ship.followingShip) {
+          const to = await ship.getFollowingMovingTo();
+          if (to) {
+            scheduleEvent(
+              moveShip({
+                gameId: event.payload.gameId,
+                shipId: ship.id,
+                to,
               }),
             );
           }

@@ -18,6 +18,7 @@ import {
   useRegisterMutation,
 } from '../graphql';
 import { useAbility, useGame, useToken } from '../utility';
+import { AbilityButton } from './AbilityButton';
 
 export function UserInfo() {
   const ability = useAbility();
@@ -47,12 +48,13 @@ export function UserInfo() {
         id
         players {
           id
+          userId
           turnEnded
         }
       }
     }
   `;
-  const [endTurnResult, endTurn] = useEndTurnMutation();
+  const [, endTurn] = useEndTurnMutation();
 
   const [game] = useGame();
 
@@ -62,12 +64,13 @@ export function UserInfo() {
         <>
           {`Hello ${token?.space.name}`}
           {game && (
-            <Button
-              disabled={ability.cannot('endTurn', game)}
+            <AbilityButton
+              can="endTurn"
+              on={game}
               onClick={() => endTurn({ gameId: game?.id! })}
             >
               End Turn
-            </Button>
+            </AbilityButton>
           )}
         </>
       ) : (

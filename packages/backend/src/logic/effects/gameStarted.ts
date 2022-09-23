@@ -54,7 +54,7 @@ export async function gameStarted(
           gameId: event.payload.gameId,
           systemId: system.payload.id,
           planetIndex: 0,
-          userId: player.id,
+          userId: player.userId,
         }),
       );
 
@@ -62,7 +62,7 @@ export async function gameStarted(
         constructShipyard({
           gameId: event.payload.gameId,
           systemId: system.payload.id,
-          userId: player.id,
+          userId: player.userId,
           workNeeded: 0,
           materialsNeeded: 0,
         }),

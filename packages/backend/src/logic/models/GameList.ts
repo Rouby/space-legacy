@@ -17,7 +17,7 @@ export class GameList {
     });
 
     events.forEach((event) => {
-      gameList.#applyEvent({
+      gameList.applyEvent({
         ...event,
         payload: JSON.parse(event.payload),
       } as Omit<GameEvent, 'payload'> & AppEvent);
@@ -30,7 +30,7 @@ export class GameList {
 
   public list = [] as Promised<Game>[];
 
-  #applyEvent(event: AppEvent) {
+  private applyEvent(event: AppEvent) {
     if (event.type === 'createGame') {
       this.list.push(proxies.gameProxy(event.payload.id));
     }

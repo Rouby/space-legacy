@@ -20,6 +20,7 @@ export function useGame() {
       maxPlayers
       players {
         id
+        userId
         turnEnded
       }
       creator {

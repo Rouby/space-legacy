@@ -8,6 +8,7 @@ export const typeDefs = /* GraphQL */ `
     gameId: ID!
     shipId: ID!
     shipToFollowId: ID!
+    predictRoute: Boolean
   }
 
   type Mutation {
@@ -19,7 +20,7 @@ export const resolvers: Resolvers = {
   Mutation: {
     followShip: async (
       _,
-      { input: { gameId, shipId, shipToFollowId } },
+      { input: { gameId, shipId, shipToFollowId, predictRoute } },
       { publishEvent, ability, models, userId },
     ) => {
       const ship = await models.Ship.get(shipId);
@@ -41,6 +42,7 @@ export const resolvers: Resolvers = {
           gameId,
           subjectId: shipId,
           targetId: shipToFollowId,
+          usePredictiveRoute: !!predictRoute,
         }),
       });
 

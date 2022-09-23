@@ -1,7 +1,8 @@
-import type { GameEvent, User } from '@prisma/client';
+import type { GameEvent } from '@prisma/client';
 import { getDbClient } from '../../util';
 import type { AppEvent } from '../events';
 import type { Game } from './Game';
+import type { Player } from './Player';
 import { proxies, type Promised } from './proxies';
 import type { Ship } from './Ship';
 import type { ShipDesign } from './ShipDesign';
@@ -45,7 +46,7 @@ export class StarSystem {
     | 'blackhole' = 'A';
   public coordinates = { x: 0, y: 0 };
   public habitablePlanets = [] as {
-    owner?: Promised<User>;
+    owner?: Promised<Player>;
     population?: number;
     orbit: number;
     size: number;
@@ -81,7 +82,7 @@ export class StarSystem {
     }[];
     workLeft: number;
     materialsLeft: number;
-    owner: Promised<User>;
+    owner: Promised<Player>;
   }[];
   public ships = [] as Promised<Ship>[];
 
@@ -105,7 +106,10 @@ export class StarSystem {
       this.habitablePlanets
         .filter((_, idx) => idx === event.payload.planetIndex)
         .forEach((planet) => {
-          planet.owner = proxies.userProxy(event.payload.userId);
+          planet.owner = proxies.playerProxy(
+            event.payload.gameId,
+            event.payload.userId,
+          );
           planet.population = 1000;
         });
     }
@@ -132,7 +136,7 @@ export class StarSystem {
         shipConstructionQueue: [],
         workLeft: event.payload.materialsNeeded,
         materialsLeft: event.payload.materialsNeeded,
-        owner: proxies.userProxy(event.payload.userId),
+        owner: proxies.playerProxy(event.payload.gameId, event.payload.userId),
       });
     }
 

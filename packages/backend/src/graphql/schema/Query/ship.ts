@@ -12,6 +12,13 @@ export const typeDefs = /* GraphQL */ `
     coordinates: Coordinates!
     movingTo: Coordinates
     owner: Player!
+    design: ShipDesign!
+    combat: Combat
+  }
+
+  type Combat {
+    friendlies: [Ship!]!
+    hostiles: [Ship!]!
   }
 
   type Query {
@@ -32,23 +39,46 @@ export const resolvers: Resolvers = {
     },
   },
   Ship: {
-    movingTo: async (ship, _, { ability, models, userId }) => {
-      const resolved = ship instanceof models.Ship ? ship : await ship.$resolve;
+    movingTo: async (promisedShip, _, { ability, models, userId }) => {
+      const ship =
+        promisedShip instanceof models.Ship
+          ? promisedShip
+          : await promisedShip.$resolve;
 
-      if (ability.cannot('view', subject('Ship', resolved), 'movingTo')) {
-        return new Vector(resolved.coordinates).add(
-          new Vector(resolved.movementVector).multiply(10), // TODO get ship speed?
+      if ((await ship.combats).length > 0) {
+        return null;
+      }
+
+      if (ability.cannot('view', subject('Ship', ship), 'movingTo')) {
+        return new Vector(ship.coordinates).add(
+          new Vector(ship.movementVector).multiply(10), // TODO get ship speed?
         );
       }
 
-      if (resolved.followingShip) {
-        const followingShip = await resolved.followingShip.$resolve;
-        if (await followingShip.isVisibleTo(userId)) {
-          return followingShip.coordinates;
-        }
+      if (ship.followingShip) {
+        return ship.getFollowingMovingTo();
       }
 
-      return resolved.movingTo;
+      return ship.movingTo;
+    },
+    combat: async (promisedShip, _, { ability, models, userId }) => {
+      const ship =
+        promisedShip instanceof models.Ship
+          ? promisedShip
+          : await promisedShip.$resolve;
+
+      const involvedCombats = await ship.combats;
+
+      if (involvedCombats.length === 0) {
+        return null;
+      }
+
+      return {
+        friendlies: involvedCombats.flatMap((combat) => combat.ships),
+        hostiles: involvedCombats.flatMap((combat) =>
+          combat.hostiles.flatMap((hostile) => hostile.ships),
+        ),
+      };
     },
   },
 };
