@@ -1,4 +1,5 @@
 import { AppShell, MantineProvider } from '@mantine/core';
+import { SpotlightAction } from '@mantine/spotlight';
 import {
   Outlet,
   parseSearchWith,
@@ -8,9 +9,9 @@ import {
 } from '@tanstack/react-location';
 import { Provider } from 'urql';
 import { parse, stringify } from 'zipson';
-import { Navigation } from './components';
+import { Navigation, Spotlight } from './components';
 import { useClient } from './graphql';
-import { Dashboard, StarSystemView } from './pages';
+import { CombatView, Dashboard, StarSystemView } from './pages';
 
 const reactLocation = new ReactLocation({
   parseSearch: parseSearchWith((value) =>
@@ -21,6 +22,8 @@ const reactLocation = new ReactLocation({
   ),
 });
 
+const actions: SpotlightAction[] = [];
+
 export default function App() {
   const client = useClient();
   return (
@@ -30,8 +33,12 @@ export default function App() {
         routes={[
           { path: '/', element: <Dashboard /> },
           {
-            path: 'star-system',
-            children: [{ path: ':starSystemId', element: <StarSystemView /> }],
+            path: 'star-system/:starSystemId',
+            element: <StarSystemView />,
+          },
+          {
+            path: 'combat/:combatId',
+            element: <CombatView />,
           },
         ]}
       >
@@ -40,9 +47,11 @@ export default function App() {
           withNormalizeCSS
           theme={{ colorScheme: 'dark' }}
         >
-          <AppShell navbar={<Navigation />}>
-            <Outlet />
-          </AppShell>
+          <Spotlight>
+            <AppShell navbar={<Navigation />}>
+              <Outlet />
+            </AppShell>
+          </Spotlight>
         </MantineProvider>
       </Router>
     </Provider>

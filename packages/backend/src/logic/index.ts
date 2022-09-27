@@ -1,5 +1,6 @@
 import { GameList } from './models';
 import { proxies } from './models/proxies';
+import { combatProxy } from './models/proxies/combat';
 import { fleetProxy } from './models/proxies/fleet';
 import { gameProxy } from './models/proxies/game';
 import { playerProxy } from './models/proxies/player';
@@ -12,6 +13,7 @@ import { visibilityProxy } from './models/proxies/visibility';
 export * as models from './models';
 export { publishEvent } from './publishEvent';
 
+proxies.combatProxy = combatProxy;
 proxies.fleetProxy = fleetProxy;
 proxies.gameProxy = gameProxy;
 proxies.gameListProxy = GameList;

@@ -67,14 +67,35 @@ export class Vector {
   }
 
   public equals(other: { x: number; y: number }) {
-    return this.x === other.x && this.y === other.y;
+    const v1 = this.toPrecision();
+    const v2 = new Vector(other).toPrecision();
+    return v1.x === v2.x && v1.y === v2.y;
+  }
+
+  private toPrecision() {
+    return new Vector({
+      x: Math.round(this.x * 1000) / 1000,
+      y: Math.round(this.y * 1000) / 1000,
+    });
   }
 
   public toString() {
-    return `(${this.x}, ${this.y})`;
+    const v = this.toPrecision();
+    return `(${v.x}, ${v.y})`;
+  }
+
+  public static fromString(val: string) {
+    const result = /\((?<x>-?\d+(?:\.\d+)?)\s*,\s*(?<y>-?\d+(?:\.\d+)?)\)/.exec(
+      val,
+    );
+    return new Vector({
+      x: +(result?.groups?.x ?? 0),
+      y: +(result?.groups?.y ?? 0),
+    });
   }
 
   public toCoordinates() {
-    return { x: this.x, y: this.y };
+    const v = this.toPrecision();
+    return { x: v.x, y: v.y };
   }
 }

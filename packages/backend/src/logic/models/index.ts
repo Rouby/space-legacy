@@ -1,3 +1,4 @@
+export * from './Combat';
 export * from './Fleet';
 export * from './Game';
 export * from './GameList';

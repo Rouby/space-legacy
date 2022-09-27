@@ -17,6 +17,8 @@ export const cacheExchange = urlCacheExchange({
     Body: () => null,
     Shipyard: () => null,
     ShipConstruction: () => null,
+    CombatParty: (party: any) => party.player.id,
+    CombatVersusParty: (party: any) => party.player.id,
   },
   updates: {
     Mutation: {

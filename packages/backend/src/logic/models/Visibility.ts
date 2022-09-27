@@ -38,10 +38,7 @@ export class Visibility {
   public async checkVisibility(coordinates: { x: number; y: number }) {
     for (const system of this.starSystems) {
       const coords = await system.coordinates;
-      const distance = Math.sqrt(
-        Math.pow(coords.x - coordinates.x, 2) +
-          Math.pow(coords.y - coordinates.y, 2),
-      );
+      const distance = coords.subtract(coordinates).magnitude();
 
       if (distance <= 100) {
         return true;
@@ -50,10 +47,7 @@ export class Visibility {
 
     for (const ship of this.ships) {
       const coords = await ship.coordinates;
-      const distance = Math.sqrt(
-        Math.pow(coords.x - coordinates.x, 2) +
-          Math.pow(coords.y - coordinates.y, 2),
-      );
+      const distance = coords.subtract(coordinates).magnitude();
 
       if (distance <= 50) {
         return true;

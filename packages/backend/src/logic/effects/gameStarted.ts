@@ -1,13 +1,14 @@
 import { GameEvent } from '@prisma/client';
 import { pubSub } from '../../graphql/context';
 import { logger } from '../../logger';
+import { Vector } from '../../util';
 import {
   AppEvent,
   colonizePlanet,
   constructShipyard,
   createStarSystem,
 } from '../events';
-import { Game } from '../models';
+import { proxies } from '../models/proxies';
 
 export async function gameStarted(
   event: Omit<GameEvent, 'payload'> & AppEvent,
@@ -16,7 +17,7 @@ export async function gameStarted(
   if (event.type === 'startGame') {
     logger.info('Effect "gameStarted" triggered');
 
-    const game = await Game.get(event.payload.gameId);
+    const game = await proxies.gameProxy(event.payload.gameId).$resolve;
 
     for (const [idx, player] of game.players.entries()) {
       const system = scheduleEvent(
@@ -24,14 +25,10 @@ export async function gameStarted(
           gameId: event.payload.gameId,
           name: 'Home System',
           sunClass: 'F',
-          coordinates: {
-            x: Math.round(
-              Math.cos(Math.PI * 2 * (idx / game.players.length)) * 100,
-            ),
-            y: Math.round(
-              Math.sin(Math.PI * 2 * (idx / game.players.length)) * 100,
-            ),
-          },
+          coordinates: new Vector({
+            x: Math.cos(Math.PI * 2 * (idx / game.players.length)) * 100,
+            y: Math.sin(Math.PI * 2 * (idx / game.players.length)) * 100,
+          }).toCoordinates(),
           habitablePlanets: [
             { orbit: 0.1, size: 25, type: 'continental' },
             { orbit: 0.3, size: 5, type: 'continental' },

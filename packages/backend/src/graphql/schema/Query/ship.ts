@@ -17,8 +17,20 @@ export const typeDefs = /* GraphQL */ `
   }
 
   type Combat {
-    friendlies: [Ship!]!
-    hostiles: [Ship!]!
+    id: ID!
+    coordinates: Coordinates!
+    parties: [CombatParty!]!
+  }
+
+  type CombatParty {
+    player: Player!
+    ships: [Ship!]!
+    versus: [CombatVersusParty!]!
+  }
+
+  type CombatVersusParty {
+    player: Player!
+    ships: [Ship!]!
   }
 
   type Query {
@@ -45,13 +57,13 @@ export const resolvers: Resolvers = {
           ? promisedShip
           : await promisedShip.$resolve;
 
-      if ((await ship.combats).length > 0) {
+      if (!!(await ship.combat)) {
         return null;
       }
 
       if (ability.cannot('view', subject('Ship', ship), 'movingTo')) {
         return new Vector(ship.coordinates).add(
-          new Vector(ship.movementVector).multiply(10), // TODO get ship speed?
+          new Vector(ship.movementVector ?? new Vector()).multiply(10), // TODO get ship speed?
         );
       }
 
@@ -60,25 +72,6 @@ export const resolvers: Resolvers = {
       }
 
       return ship.movingTo;
-    },
-    combat: async (promisedShip, _, { ability, models, userId }) => {
-      const ship =
-        promisedShip instanceof models.Ship
-          ? promisedShip
-          : await promisedShip.$resolve;
-
-      const involvedCombats = await ship.combats;
-
-      if (involvedCombats.length === 0) {
-        return null;
-      }
-
-      return {
-        friendlies: involvedCombats.flatMap((combat) => combat.ships),
-        hostiles: involvedCombats.flatMap((combat) =>
-          combat.hostiles.flatMap((hostile) => hostile.ships),
-        ),
-      };
     },
   },
 };

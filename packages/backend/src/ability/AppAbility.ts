@@ -10,7 +10,16 @@ type Abilities =
     ]
   | ['read', 'GamesList' | Flatten<Readonly<GameList>>]
   | [
-      'create' | 'delete' | 'join' | 'leave' | 'enter' | 'start' | 'endTurn',
+      (
+        | 'debug'
+        | 'create'
+        | 'delete'
+        | 'join'
+        | 'leave'
+        | 'enter'
+        | 'start'
+        | 'endTurn'
+      ),
       'Game' | Flatten<Readonly<Game>>,
     ]
   | [

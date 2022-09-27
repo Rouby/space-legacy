@@ -6,6 +6,9 @@ import { AppAbility } from './AppAbility';
 export async function createAbilityFor(user: User) {
   const { can, cannot, rules } = new AbilityBuilder(AppAbility);
 
+  // TODO remove for live
+  can('debug', 'Game');
+
   can('read', 'User', ['id', 'name']);
   can('update', 'User', ['email', 'password', 'name'], { id: user.id });
 
@@ -29,9 +32,14 @@ export async function createAbilityFor(user: User) {
   for (const game of games.filter((game) =>
     game.players.some((player) => player.userId === user.id),
   )) {
-    const combats = await game.getActiveCombats();
-    console.log(combats);
-    if (combats.some((combat) => combat.userId === user.id)) {
+    const combats = await Promise.all(
+      game.combats.map((combat) => combat.$resolve),
+    );
+    if (
+      combats.some((combat) =>
+        combat.parties.some((party) => party.player.userId === user.id),
+      )
+    ) {
       cannot('endTurn', 'Game', { id: game.id }).because('Ships are in combat');
     }
   }

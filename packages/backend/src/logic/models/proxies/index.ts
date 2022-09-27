@@ -1,4 +1,5 @@
 import type { GameList } from '../GameList';
+import type { combatProxy } from './combat';
 import type { fleetProxy } from './fleet';
 import type { gameProxy } from './game';
 import type { playerProxy } from './player';
@@ -17,6 +18,7 @@ export type Promised<T extends {}> = {
 } & { $resolve: Promise<T> };
 
 export const proxies = {
+  combatProxy: undefined as any as combatProxy,
   fleetProxy: undefined as any as fleetProxy,
   gameProxy: undefined as any as gameProxy,
   gameListProxy: undefined as any as typeof GameList,

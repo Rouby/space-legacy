@@ -1,5 +1,5 @@
 import type { GameEvent } from '@prisma/client';
-import { getDbClient } from '../../util';
+import { getDbClient, Vector } from '../../util';
 import type { AppEvent } from '../events';
 import type { Game } from './Game';
 import type { Player } from './Player';
@@ -44,7 +44,7 @@ export class StarSystem {
     | 'neutron'
     | 'pulsar'
     | 'blackhole' = 'A';
-  public coordinates = { x: 0, y: 0 };
+  public coordinates = new Vector();
   public habitablePlanets = [] as {
     owner?: Promised<Player>;
     population?: number;
@@ -97,7 +97,7 @@ export class StarSystem {
       this.game = proxies.gameProxy(event.payload.gameId);
       this.name = event.payload.name;
       this.sunClass = event.payload.sunClass;
-      this.coordinates = event.payload.coordinates;
+      this.coordinates = new Vector(event.payload.coordinates);
       this.habitablePlanets = event.payload.habitablePlanets;
       this.uninhabitableBodies = event.payload.uninhabitableBodies;
     }
@@ -174,8 +174,7 @@ export class StarSystem {
     if (
       event.type === 'launchShip' &&
       event.payload.gameId === this.game?.id &&
-      event.payload.coordinates.x === this.coordinates.x &&
-      event.payload.coordinates.x === this.coordinates.x
+      this.coordinates.equals(event.payload.coordinates)
     ) {
       this.ships.push(proxies.shipProxy(event.payload.id));
 
@@ -190,10 +189,7 @@ export class StarSystem {
     }
 
     if (event.type === 'moveShip' && event.payload.gameId === this.game?.id) {
-      if (
-        event.payload.to.x === this.coordinates.x &&
-        event.payload.to.y === this.coordinates.y
-      ) {
+      if (this.coordinates.equals(event.payload.to)) {
         this.ships.push(proxies.shipProxy(event.payload.shipId));
       } else {
         this.ships = this.ships.filter(

@@ -1,5 +1,4 @@
 import { GameEvent } from '@prisma/client';
-import { pubSub } from '../../graphql/context';
 import { logger } from '../../logger';
 import { Vector } from '../../util';
 import {
@@ -10,7 +9,7 @@ import {
   nextRound,
   progressShipConstruction,
 } from '../events';
-import { Game } from '../models';
+import { proxies } from '../models/proxies';
 
 export async function gameRoundEnded(
   event: Omit<GameEvent, 'payload'> & AppEvent,
@@ -19,9 +18,9 @@ export async function gameRoundEnded(
   if (event.type === 'endTurn') {
     logger.info('Effect "gameRoundEnded" triggered');
 
-    const { players, starSystems, ships } = await Game.get(
+    const { players, starSystems, ships } = await proxies.gameProxy(
       event.payload.gameId,
-    );
+    ).$resolve;
 
     if (players.every((p) => p.turnEnded)) {
       logger.info('All players have ended their turn');
@@ -73,10 +72,7 @@ export async function gameRoundEnded(
                 scheduleEvent(
                   launchShip({
                     gameId: event.payload.gameId,
-                    coordinates: {
-                      x: system.coordinates.x,
-                      y: system.coordinates.y,
-                    },
+                    coordinates: system.coordinates.toCoordinates(),
                     designId: construction.design.id,
                     userId: yard.owner.userId,
                     id: construction.id,
@@ -139,10 +135,6 @@ export async function gameRoundEnded(
           gameId: event.payload.gameId,
         }),
       );
-
-      return () => {
-        pubSub.publish('gameNextRound', { id: event.payload.gameId });
-      };
     }
   }
 }

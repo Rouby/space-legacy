@@ -282,11 +282,26 @@ function ShipList() {
         }
         movingTo
         combat {
-          friendlies {
-            id
-          }
-          hostiles {
-            id
+          id
+          parties {
+            player {
+              id
+              userId
+              name
+            }
+            ships {
+              id
+            }
+            versus {
+              player {
+                id
+                userId
+                name
+              }
+              ships {
+                id
+              }
+            }
           }
         }
       }
@@ -307,7 +322,11 @@ function ShipList() {
             ? `moving to (${ship.movingTo.x}, ${ship.movingTo.y})`
             : ''}{' '}
           <IssueShipOrder shipId={ship.id} />
-          {ship.combat && <span>In combat</span>}
+          {ship.combat && (
+            <Button component={Link} to={`/combat/${ship.combat.id}`}>
+              Goto combat
+            </Button>
+          )}
         </div>
       ))}
     </>

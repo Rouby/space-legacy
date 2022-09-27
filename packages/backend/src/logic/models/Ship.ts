@@ -1,6 +1,7 @@
 import type { GameEvent } from '@prisma/client';
 import { getDbClient, Vector } from '../../util';
 import type { AppEvent } from '../events';
+import type { Combat } from './Combat';
 import { Promised, proxies } from './proxies';
 import type { ShipDesign } from './ShipDesign';
 import type { StarSystem } from './StarSystem';
@@ -34,25 +35,15 @@ export class Ship {
   public design = null as Promised<ShipDesign> | null;
   public name = '';
   public starSystem = null as Promised<StarSystem> | null;
-  public coordinates = { x: 0, y: 0 };
-  public movingTo = null as { x: number; y: number } | null;
+  public coordinates = new Vector();
+  public movingTo = null as Vector | null;
   public followingShip = null as Promised<Ship> | null;
   public followingPredictive = false;
-  public movementVector = { x: 0, y: 0 };
-
-  public get combats() {
-    return Promise.resolve().then(async () => {
-      const game = await this.game.$resolve;
-      const combats = await game.getActiveCombats();
-
-      return combats.filter((combat) =>
-        combat.ships.some((s) => s.id === this.id),
-      );
-    });
-  }
+  public movementVector = null as Vector | null;
+  public combat = null as Promised<Combat> | null;
 
   public async isVisibleTo(userId: string) {
-    const visibility = await proxies.visibilityProxy(this.game!.id, userId)
+    const visibility = await proxies.visibilityProxy(this.game.id, userId)
       .$resolve;
     return visibility.checkVisibility(this.coordinates);
   }
@@ -62,9 +53,8 @@ export class Ship {
       const followingShip = await this.followingShip.$resolve;
 
       if (this.followingPredictive) {
-        const followingShipMovement = new Vector(
-          followingShip.movementVector,
-        ).multiply(10); // TODO get ship speed?
+        const followingShipMovement =
+          followingShip.movementVector?.multiply(10) ?? new Vector(); // TODO get ship speed?
         let movingTo = new Vector(followingShip.coordinates).add(
           followingShipMovement,
         );
@@ -94,21 +84,19 @@ export class Ship {
         event.payload.userId,
       );
       this.design = proxies.shipDesignProxy(event.payload.designId);
-      this.coordinates = event.payload.coordinates;
+      this.coordinates = new Vector(event.payload.coordinates);
     }
 
     if (
       event.type === 'issueMoveOrder' &&
       event.payload.subjectId === this.id
     ) {
-      if (
-        event.payload.to.x === this.coordinates.x &&
-        event.payload.to.y === this.coordinates.y
-      ) {
+      if (this.coordinates.equals(event.payload.to)) {
         this.movingTo = null;
       } else {
-        this.movingTo = event.payload.to;
+        this.movingTo = new Vector(event.payload.to);
       }
+      this.movementVector = null;
       this.followingShip = null;
     }
 
@@ -117,6 +105,7 @@ export class Ship {
       event.payload.subjectId === this.id
     ) {
       this.movingTo = null;
+      this.movementVector = null;
       this.followingShip = proxies.shipProxy(event.payload.targetId);
       this.followingPredictive = event.payload.usePredictiveRoute;
     }
@@ -125,14 +114,19 @@ export class Ship {
       this.movementVector = new Vector(event.payload.to)
         .subtract(this.coordinates)
         .normalize();
-      this.coordinates = event.payload.to;
+      this.coordinates = new Vector(event.payload.to);
 
-      if (
-        this.movingTo?.x === this.coordinates.x &&
-        this.movingTo?.y === this.coordinates.y
-      ) {
+      if (this.movingTo?.equals(this.coordinates)) {
         this.movingTo = null;
+        this.movementVector = null;
       }
+    }
+
+    if (
+      event.type === 'engageCombat' &&
+      event.payload.parties.some((party) => party.shipIds.includes(this.id))
+    ) {
+      this.combat = proxies.combatProxy(event.payload.id);
     }
   }
 }

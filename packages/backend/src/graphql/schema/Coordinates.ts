@@ -1,4 +1,5 @@
 import { GraphQLScalarType } from 'graphql';
+import { Vector } from '../../util';
 import { Resolvers } from '../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -22,7 +23,14 @@ export const resolvers: Resolvers = {
         );
       }
 
-      return JSON.stringify(value);
+      if (value instanceof Vector) {
+        return JSON.stringify(value.toCoordinates());
+      }
+
+      return JSON.stringify({
+        x: value.x,
+        y: value.y,
+      });
     },
     parseValue(value) {
       const parsed: unknown =
@@ -38,8 +46,8 @@ export const resolvers: Resolvers = {
         );
       }
       return {
-        x: +(parsed as any)['x'],
-        y: +(parsed as any)['y'],
+        x: +parsed['x'],
+        y: +parsed['y'],
       };
     },
     parseLiteral(ast) {
@@ -49,14 +57,14 @@ export const resolvers: Resolvers = {
       const xField = ast.fields.find((f) => f.name.value === 'x');
       const yField = ast.fields.find((f) => f.name.value === 'y');
       if (
-        xField?.value.kind !== 'IntValue' ||
-        yField?.value.kind !== 'IntValue'
+        xField?.value.kind !== 'FloatValue' ||
+        yField?.value.kind !== 'FloatValue'
       ) {
-        throw new Error('Expected IntValue');
+        throw new Error('Expected FloatValue');
       }
       return {
-        x: parseInt(xField.value.value, 10),
-        y: parseInt(yField.value.value, 10),
+        x: +xField.value.value,
+        y: +yField.value.value,
       };
     },
   }),
