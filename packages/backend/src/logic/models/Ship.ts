@@ -3,7 +3,6 @@ import { getDbClient, Vector } from '../../util';
 import type { AppEvent } from '../events';
 import type { Combat } from './Combat';
 import { Promised, proxies } from './proxies';
-import type { ShipDesign } from './ShipDesign';
 import type { StarSystem } from './StarSystem';
 
 export class Ship {
@@ -32,7 +31,7 @@ export class Ship {
 
   public game = proxies.gameProxy('');
   public owner = proxies.playerProxy('', '');
-  public design = null as Promised<ShipDesign> | null;
+  public design = proxies.shipDesignProxy('');
   public name = '';
   public starSystem = null as Promised<StarSystem> | null;
   public coordinates = new Vector();
@@ -41,6 +40,7 @@ export class Ship {
   public followingPredictive = false;
   public movementVector = null as Vector | null;
   public combat = null as Promised<Combat> | null;
+  public damage = 0;
 
   public async isVisibleTo(userId: string) {
     const visibility = await proxies.visibilityProxy(this.game.id, userId)
@@ -127,6 +127,10 @@ export class Ship {
       event.payload.parties.some((party) => party.shipIds.includes(this.id))
     ) {
       this.combat = proxies.combatProxy(event.payload.id);
+    }
+
+    if (event.type === 'damageShip' && event.payload.shipId === this.id) {
+      this.damage += event.payload.damage;
     }
   }
 }

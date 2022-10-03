@@ -5,6 +5,13 @@ __metadata:
   version: 6
   cacheKey: 8
 
+"@aiacta/dicelang@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@aiacta/dicelang@npm:2.0.0"
+  checksum: 933b86d53b5fb5e9067efa1834dd4da5d661d04472e8b156267d6fda357a835c6b7ff8f30d62174f3a9c84aa04af9bc6bebda6e259b59f5e192a194207df8849
+  languageName: node
+  linkType: hard
+
 "@ampproject/remapping@npm:^2.1.0":
   version: 2.2.0
   resolution: "@ampproject/remapping@npm:2.2.0"
@@ -3160,6 +3167,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "backend@workspace:packages/backend"
   dependencies:
+    "@aiacta/dicelang": ^2.0.0
     "@casl/ability": ^6.0.0
     "@casl/prisma": ^1.0.4
     "@graphql-codegen/cli": 2.11.3

@@ -27,6 +27,12 @@ export class ShipDesign {
   private constructor(public id: string) {}
 
   public name = '';
+  public weapons = [{ name: 'default', damage: '1d6', initiative: 0 }] as {
+    name: string;
+    damage: string;
+    initiative: number;
+  }[];
+  public structuralHealth = 10;
 
   private applyEvent(event: AppEvent) {}
 }

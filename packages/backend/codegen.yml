@@ -10,6 +10,7 @@ generates:
       scalars:
         JWT: string
         Coordinates: '{ x: number; y: number }'
+        CombatCard: '../../logic/combat#CombatCardId'
       allowEnumStringTypes: true
       wrapFieldDefinitions: true
       fieldWrapperValue: T | Promise<T>

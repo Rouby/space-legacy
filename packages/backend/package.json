@@ -27,6 +27,7 @@
     "wds": "^0.13.2"
   },
   "dependencies": {
+    "@aiacta/dicelang": "^2.0.0",
     "@casl/ability": "^6.0.0",
     "@casl/prisma": "^1.0.4",
     "@graphql-tools/load-files": "^6.6.0",

@@ -16,23 +16,6 @@ export const typeDefs = /* GraphQL */ `
     combat: Combat
   }
 
-  type Combat {
-    id: ID!
-    coordinates: Coordinates!
-    parties: [CombatParty!]!
-  }
-
-  type CombatParty {
-    player: Player!
-    ships: [Ship!]!
-    versus: [CombatVersusParty!]!
-  }
-
-  type CombatVersusParty {
-    player: Player!
-    ships: [Ship!]!
-  }
-
   type Query {
     ship(id: ID!, gameId: ID!): Ship
   }

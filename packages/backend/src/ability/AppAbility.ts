@@ -1,7 +1,7 @@
 import { Ability, Subject, type AbilityClass } from '@casl/ability';
 import type { Subjects } from '@casl/prisma';
 import type { User } from '@prisma/client';
-import type { Game, GameList, Ship, StarSystem } from '../logic/models';
+import type { Combat, Game, GameList, Ship, StarSystem } from '../logic/models';
 
 type Abilities =
   | [
@@ -26,7 +26,8 @@ type Abilities =
       'constructShip' | 'cancelShipConstruction',
       'StarSystem' | Flatten<Readonly<StarSystem>>,
     ]
-  | ['move' | 'view', 'Ship' | Flatten<Readonly<Ship>>];
+  | ['move' | 'view', 'Ship' | Flatten<Readonly<Ship>>]
+  | ['participate' | 'playCard', 'Combat' | Flatten<Readonly<Combat>>];
 
 export type AppAbility = Ability<Abilities>;
 

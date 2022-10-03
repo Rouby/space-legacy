@@ -35,6 +35,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
     ],\
     "fallbackPool": [\
       [\
+        "@aiacta/dicelang",\
+        "npm:2.0.0"\
+      ],\
+      [\
         "@ampproject/remapping",\
         "npm:2.2.0"\
       ],\
@@ -2948,6 +2952,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["typescript", "patch:typescript@npm%3A4.7.4#~builtin<compat/typescript>::version=4.7.4&hash=a1c5e5"]\
           ],\
           "linkType": "SOFT"\
+        }]\
+      ]],\
+      ["@aiacta/dicelang", [\
+        ["npm:2.0.0", {\
+          "packageLocation": "./.yarn/cache/@aiacta-dicelang-npm-2.0.0-9c0034011f-933b86d53b.zip/node_modules/@aiacta/dicelang/",\
+          "packageDependencies": [\
+            ["@aiacta/dicelang", "npm:2.0.0"]\
+          ],\
+          "linkType": "HARD"\
         }]\
       ]],\
       ["@ampproject/remapping", [\
@@ -8203,6 +8216,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./packages/backend/",\
           "packageDependencies": [\
             ["backend", "workspace:packages/backend"],\
+            ["@aiacta/dicelang", "npm:2.0.0"],\
             ["@casl/ability", "npm:6.0.0"],\
             ["@casl/prisma", "virtual:aa59773ac87791c4813d53447077fcf8a847d6de5a301d34dc31286584b1dbb26d30d3adb5b4c41c1e8aea04371e926fda05c09c6253647c432e11d872a304ba#npm:1.0.4"],\
             ["@graphql-codegen/cli", "virtual:aa59773ac87791c4813d53447077fcf8a847d6de5a301d34dc31286584b1dbb26d30d3adb5b4c41c1e8aea04371e926fda05c09c6253647c432e11d872a304ba#npm:2.11.3"],\

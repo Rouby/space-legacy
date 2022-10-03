@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "concurrently -n server,codegen \"yarn dev:code\" \"yarn codegen --watch --silent --errors-only\"",
+    "dev": "concurrently -n server,codegen \"yarn dev:code\" \"yarn codegen --watch --errors-only\"",
     "dev:code": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",

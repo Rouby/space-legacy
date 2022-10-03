@@ -12,6 +12,7 @@ generates:
       scalars:
         JWT: string
         Coordinates: '{ x: number; y: number }'
+        CombatCard: string
       gqlImport: urql#gql
       documentMode: documentNode
       pureMagicComment: true

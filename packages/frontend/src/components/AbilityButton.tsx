@@ -13,7 +13,7 @@ export const AbilityButton = forwardRef(function AbilityButton(
     children,
     ...props
   }: ({ can: string } | { cannot: string }) & {
-    on: Subject;
+    on?: Subject;
     and?: boolean;
     onClick: () => void;
     loading?: boolean;
@@ -24,16 +24,17 @@ export const AbilityButton = forwardRef(function AbilityButton(
   const [opened, { close, open }] = useDisclosure(false);
   const ability = useAbility();
 
-  const disabled =
-    ('can' in props
-      ? ability.cannot(props.can, on)
-      : ability.can(props.cannot, on)) &&
-    (and === undefined || and);
+  const disabled = !on
+    ? true
+    : ('can' in props
+        ? ability.cannot(props.can, on)
+        : ability.can(props.cannot, on)) &&
+      (and === undefined || and);
 
-  const reason = ability.relevantRuleFor(
-    'can' in props ? props.can : props.cannot,
-    on,
-  )?.reason;
+  const reason = !on
+    ? '...'
+    : ability.relevantRuleFor('can' in props ? props.can : props.cannot, on)
+        ?.reason;
 
   return (
     <Popover shadow="md" opened={opened && disabled && !!reason}>

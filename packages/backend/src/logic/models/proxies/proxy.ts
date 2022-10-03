@@ -8,7 +8,7 @@ export function proxyOf<T extends {}>(
   return new Proxy<Promised<T>>(base, {
     get: (target, prop: (keyof T & string) | '$resolve') => {
       if (prop === '$resolve') {
-        return getter();
+        return (cached = cached ?? getter());
       }
       if (prop in target) {
         return target[prop];
