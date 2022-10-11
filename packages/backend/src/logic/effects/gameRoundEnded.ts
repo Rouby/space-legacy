@@ -1,15 +1,14 @@
 import { GameEvent } from '@prisma/client';
 import { logger } from '../../logger';
-import { Vector } from '../../util';
 import {
   AppEvent,
   changePopulation,
   launchShip,
-  moveShip,
   nextRound,
   progressShipConstruction,
 } from '../events';
 import { proxies } from '../models/proxies';
+import { moveShips } from './util/shipMovement';
 
 export async function gameRoundEnded(
   event: Omit<GameEvent, 'payload'> & AppEvent,
@@ -18,9 +17,13 @@ export async function gameRoundEnded(
   if (event.type === 'endTurn') {
     logger.info('Effect "gameRoundEnded" triggered');
 
-    const { players, starSystems, ships } = await proxies.gameProxy(
-      event.payload.gameId,
-    ).$resolve;
+    const {
+      players: promisedPlayers,
+      starSystems,
+      ships,
+    } = await proxies.gameProxy(event.payload.gameId).$resolve;
+
+    const players = await promisedPlayers.$resolveAll;
 
     if (players.every((p) => p.turnEnded)) {
       logger.info('All players have ended their turn');
@@ -95,40 +98,7 @@ export async function gameRoundEnded(
         }
       }
 
-      for (const promisedShip of ships) {
-        const ship = await promisedShip.$resolve;
-
-        if (ship.movingTo) {
-          const speed = 10; // TODO calc based on ship design
-
-          const movement = new Vector(ship.movingTo).subtract(ship.coordinates);
-          const distance = movement.magnitude();
-
-          if (distance > 0) {
-            const movementDirection = movement.normalize();
-            scheduleEvent(
-              moveShip({
-                gameId: event.payload.gameId,
-                shipId: ship.id,
-                to: new Vector(ship.coordinates)
-                  .add(movementDirection.multiply(Math.min(speed, distance)))
-                  .toCoordinates(),
-              }),
-            );
-          }
-        } else if (ship.followingShip) {
-          const to = await ship.getFollowingMovingTo();
-          if (to) {
-            scheduleEvent(
-              moveShip({
-                gameId: event.payload.gameId,
-                shipId: ship.id,
-                to,
-              }),
-            );
-          }
-        }
-      }
+      await moveShips(await ships.$resolveAll, event, scheduleEvent);
 
       scheduleEvent(
         nextRound({

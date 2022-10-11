@@ -17,3 +17,17 @@ export function proxyOf<T extends {}>(
     },
   });
 }
+
+declare global {
+  interface Array<T> {
+    $resolveAll: Promise<(T extends Promised<infer U> ? U : T)[]>;
+  }
+}
+
+Object.defineProperty(Array.prototype, '$resolveAll', {
+  get(this: Promised<any>[]) {
+    return Promise.all(this.map((d) => d?.$resolve ?? d));
+  },
+  enumerable: false,
+  configurable: false,
+});

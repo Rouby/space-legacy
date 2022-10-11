@@ -71,8 +71,20 @@ export class Game {
       this.ships.push(proxies.shipProxy(event.payload.id));
     }
 
+    if (event.type === 'destroyShip' && event.payload.gameId === this.id) {
+      this.ships = this.ships.filter(
+        (ship) => ship.id !== event.payload.shipId,
+      );
+    }
+
     if (event.type === 'engageCombat' && event.payload.gameId === this.id) {
       this.combats.push(proxies.combatProxy(event.payload.id));
+    }
+
+    if (event.type === 'endCombat' && event.payload.gameId === this.id) {
+      this.combats = this.combats.filter(
+        (combat) => combat.id !== event.payload.combatId,
+      );
     }
   }
 }

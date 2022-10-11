@@ -45,6 +45,7 @@ export class Combat {
     cardsInDeck: CombatCardId[];
     cardsInDiscard: CombatCardId[];
     cardPlayed: CombatCardId | null;
+    handSize: number;
   }[];
   public ships = [] as Promised<Ship>[];
 
@@ -63,6 +64,7 @@ export class Combat {
         cardsInDeck: party.cardIdsInDeck,
         cardsInDiscard: [],
         cardPlayed: null,
+        handSize: 2,
       }));
       this.ships = this.parties.flatMap((party) => party.ships);
     }
@@ -87,6 +89,40 @@ export class Combat {
         party.cardsInDiscard.push(party.cardPlayed!);
         party.cardPlayed = null;
       });
+    }
+
+    if (event.type === 'destroyShip' && this.id === event.payload.combatId) {
+      this.ships = this.ships.filter(
+        (ship) => ship.id !== event.payload.shipId,
+      );
+      this.parties.forEach((party) => {
+        party.ships = party.ships.filter(
+          (ship) => ship.id !== event.payload.shipId,
+        );
+        party.versus.forEach((versus) => {
+          versus.ships = versus.ships.filter(
+            (ship) => ship.id !== event.payload.shipId,
+          );
+        });
+      });
+    }
+
+    if (event.type === 'restoreCombatDeck') {
+      this.parties
+        .filter((party) => party.player.userId === event.payload.userId)
+        .forEach((party) => {
+          party.cardsInDeck.push(...party.cardsInDiscard);
+          party.cardsInDiscard = [];
+        });
+    }
+
+    if (event.type === 'drawCombatCard') {
+      this.parties
+        .filter((party) => party.player.userId === event.payload.userId)
+        .forEach((party) => {
+          party.cardsInDeck.shift();
+          party.cardsInHand.push(event.payload.cardId);
+        });
     }
   }
 }

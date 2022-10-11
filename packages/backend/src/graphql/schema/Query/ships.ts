@@ -10,15 +10,17 @@ export const typeDefs = /* GraphQL */ `
 export const resolvers: Resolvers = {
   Query: {
     ships: async (_, { gameId }, { models, ability, userId }) => {
-      return models.Game.get(gameId)
-        .then((game) => Promise.all(game.ships.map((ship) => ship.$resolve)))
-        .then((ships) =>
-          Promise.all(
-            ships.map(async (ship) =>
-              (await ship.isVisibleTo(userId)) ? ship : null,
-            ),
-          ).then((ships) => ships.filter(isTruthy)),
-        );
+      const ships = await models.Game.get(gameId).then(
+        (game) => game.ships.$resolveAll,
+      );
+
+      const visibleShips = await Promise.all(
+        ships.map(async (ship) =>
+          (await ship.isVisibleTo(userId)) ? ship : null,
+        ),
+      ).then((ships) => ships.filter(isTruthy));
+
+      return visibleShips;
     },
   },
 };

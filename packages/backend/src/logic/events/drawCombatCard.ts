@@ -1,19 +1,19 @@
-export function destroyShip(options: {
+import { CombatCardId } from '../combat';
+
+export function drawCombatCard(options: {
   gameId: string;
   combatId: string;
-  shipId: string;
   userId: string;
-  destroyedByShipId: string;
+  cardId: CombatCardId;
 }) {
   return {
-    type: 'destroyShip' as const,
+    type: 'drawCombatCard' as const,
     version: 1 as const,
     payload: {
       gameId: options.gameId,
       combatId: options.combatId,
-      shipId: options.shipId,
       userId: options.userId,
-      destroyedByShipId: options.destroyedByShipId,
+      cardId: options.cardId,
     },
   };
 }

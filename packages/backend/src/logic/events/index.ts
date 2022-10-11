@@ -8,6 +8,8 @@ import { createStarSystem } from './createStarSystem';
 import { damageShip } from './damageShip';
 import { deleteGame } from './deleteGame';
 import { destroyShip } from './destroyShip';
+import { drawCombatCard } from './drawCombatCard';
+import { endCombat } from './endCombat';
 import { endTurn } from './endTurn';
 import { engageCombat } from './engageCombat';
 import { issueFollowOrder } from './issueFollowOrder';
@@ -19,6 +21,7 @@ import { nextCombatRound } from './nextCombatRound';
 import { nextRound } from './nextRound';
 import { playCombatCard } from './playCombatCard';
 import { progressShipConstruction } from './progressShipConstruction';
+import { restoreCombatDeck } from './restoreCombatDeck';
 import { startGame } from './startGame';
 
 export type AppEvent =
@@ -32,6 +35,8 @@ export type AppEvent =
   | ReturnType<typeof damageShip>
   | ReturnType<typeof deleteGame>
   | ReturnType<typeof destroyShip>
+  | ReturnType<typeof drawCombatCard>
+  | ReturnType<typeof endCombat>
   | ReturnType<typeof endTurn>
   | ReturnType<typeof engageCombat>
   | ReturnType<typeof issueFollowOrder>
@@ -43,6 +48,7 @@ export type AppEvent =
   | ReturnType<typeof nextRound>
   | ReturnType<typeof playCombatCard>
   | ReturnType<typeof progressShipConstruction>
+  | ReturnType<typeof restoreCombatDeck>
   | ReturnType<typeof startGame>;
 
 export {
@@ -56,6 +62,8 @@ export {
   damageShip,
   deleteGame,
   destroyShip,
+  drawCombatCard,
+  endCombat,
   endTurn,
   engageCombat,
   issueFollowOrder,
@@ -67,5 +75,6 @@ export {
   nextRound,
   playCombatCard,
   progressShipConstruction,
+  restoreCombatDeck,
   startGame,
 };

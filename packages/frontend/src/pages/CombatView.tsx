@@ -1,3 +1,4 @@
+import { Tooltip } from '@mantine/core';
 import { useMatch } from '@tanstack/react-location';
 import { AbilityButton } from '../components';
 import { useCombatDetailsQuery, usePlayCombatCardMutation } from '../graphql';
@@ -23,8 +24,10 @@ export function CombatView() {
           }
           ships {
             id
+            damage
             design {
               id
+              structuralHealth
             }
           }
           versus {
@@ -35,8 +38,10 @@ export function CombatView() {
             }
             ships {
               id
+              damage
               design {
                 id
+                structuralHealth
               }
             }
           }
@@ -61,8 +66,10 @@ export function CombatView() {
           }
           ships {
             id
+            damage
             design {
               id
+              structuralHealth
             }
           }
           versus {
@@ -71,8 +78,10 @@ export function CombatView() {
             }
             ships {
               id
+              damage
               design {
                 id
+                structuralHealth
               }
             }
           }
@@ -90,7 +99,21 @@ export function CombatView() {
       <div>Round {combatDetailsResult.data?.combat?.round}</div>
       {combatDetailsResult.data?.combat?.parties.map((party) => (
         <div key={party.player.id}>
-          {party.player.name} has {party.ships.length} ships and fights versus{' '}
+          {party.player.name} has{' '}
+          <Tooltip
+            label={
+              <>
+                {party.ships.map((ship) => (
+                  <div key={ship.id}>
+                    {ship.damage} / {ship.design.structuralHealth}
+                  </div>
+                ))}
+              </>
+            }
+          >
+            <span>{party.ships.length} ships</span>
+          </Tooltip>{' '}
+          and fights versus{' '}
           {party.versus.map((vs) => vs.player.name).join(' & ')} Played card:{' '}
           {party.cardPlayed}
         </div>

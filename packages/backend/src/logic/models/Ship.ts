@@ -35,6 +35,7 @@ export class Ship {
   public name = '';
   public starSystem = null as Promised<StarSystem> | null;
   public coordinates = new Vector();
+  public previousCoordinates = new Vector();
   public movingTo = null as Vector | null;
   public followingShip = null as Promised<Ship> | null;
   public followingPredictive = false;
@@ -45,7 +46,11 @@ export class Ship {
   public async isVisibleTo(userId: string) {
     const visibility = await proxies.visibilityProxy(this.game.id, userId)
       .$resolve;
-    return visibility.checkVisibility(this.coordinates);
+
+    return (
+      (await visibility.checkVisibility(this.coordinates)) ||
+      (await visibility.checkVisibility(this.previousCoordinates))
+    );
   }
 
   public async getFollowingMovingTo() {
@@ -85,6 +90,7 @@ export class Ship {
       );
       this.design = proxies.shipDesignProxy(event.payload.designId);
       this.coordinates = new Vector(event.payload.coordinates);
+      this.previousCoordinates = this.coordinates;
     }
 
     if (
@@ -114,6 +120,7 @@ export class Ship {
       this.movementVector = new Vector(event.payload.to)
         .subtract(this.coordinates)
         .normalize();
+      this.previousCoordinates = this.coordinates;
       this.coordinates = new Vector(event.payload.to);
 
       if (this.movingTo?.equals(this.coordinates)) {
@@ -131,6 +138,13 @@ export class Ship {
 
     if (event.type === 'damageShip' && event.payload.shipId === this.id) {
       this.damage += event.payload.damage;
+    }
+
+    if (
+      event.type === 'endCombat' &&
+      event.payload.combatId === this.combat?.id
+    ) {
+      this.combat = null;
     }
   }
 }

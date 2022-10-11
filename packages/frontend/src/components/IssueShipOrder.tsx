@@ -136,10 +136,12 @@ export function IssueShipOrder({ shipId }: { shipId: string }) {
             name="followId"
             label="Follow ship"
             data={
-              shipSelect.data?.ships.map((ship) => ({
-                value: ship.id,
-                label: `Ship ${ship.id}`,
-              })) ?? []
+              shipSelect.data?.ships
+                .filter((ship) => ship.id !== shipId)
+                .map((ship) => ({
+                  value: ship.id,
+                  label: `Ship ${ship.id}`,
+                })) ?? []
             }
           />
           <Checkbox name="predictRoute" label="Predict route?" />

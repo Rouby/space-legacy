@@ -2,7 +2,15 @@ import { GameEvent } from '@prisma/client';
 import cuid from 'cuid';
 import { logger } from '../../logger';
 import { roll } from '../../util/roll';
-import { AppEvent, damageShip, destroyShip, nextCombatRound } from '../events';
+import {
+  AppEvent,
+  damageShip,
+  destroyShip,
+  drawCombatCard,
+  endCombat,
+  nextCombatRound,
+  restoreCombatDeck,
+} from '../events';
 import type { Ship } from '../models';
 import { proxies } from '../models/proxies';
 
@@ -22,6 +30,14 @@ export async function combatRoundEnded(
       // roll weapon damage, assign damage to other ships
       // each weapon has initiative, fire on initiative order on top-priority target
       // overdamage is wasted, underdamage is carried over to next round
+
+      const partiesWithShips = parties
+        .filter((p) => p.ships.length > 0)
+        .map((party) => ({
+          userId: party.player.userId,
+          shipIds: party.ships.map((ship) => ship.id),
+          vsUserIds: party.versus.map((versus) => versus.player.userId),
+        }));
 
       for (const party of parties) {
         const weapons = (
@@ -81,20 +97,99 @@ export async function combatRoundEnded(
                   gameId: event.payload.gameId,
                   combatId: event.payload.combatId,
                   shipId: target.ship.id,
+                  userId: target.ship.owner.userId,
+                  destroyedByShipId: weapon.ship.id,
                 }),
               );
               targets.shift();
+              const partyWithShips = partiesWithShips.find((party) =>
+                party.shipIds.includes(target.ship.id),
+              )!;
+              logger.info({ partyWithShips }, "Party's ship was destroyed");
+              partyWithShips.shipIds = partyWithShips.shipIds.filter(
+                (id) => id !== target.ship.id,
+              );
             }
           }
         }
+
+        if (party.cardsInHand.length === 0 && party.cardsInDeck.length === 0) {
+          const {
+            payload: { cardIdsInDeck },
+          } = scheduleEvent(
+            restoreCombatDeck({
+              gameId: event.payload.gameId,
+              combatId: event.payload.combatId,
+              userId: party.player.userId,
+              cardIdsInDeck: [...party.cardsInDiscard].sort(
+                () => Math.random() - 0.5,
+              ),
+            }),
+          );
+          for (
+            let cardsDrawn = 0;
+            cardsDrawn < Math.min(party.handSize, cardIdsInDeck.length);
+            ++cardsDrawn
+          ) {
+            scheduleEvent(
+              drawCombatCard({
+                gameId: event.payload.gameId,
+                combatId: event.payload.combatId,
+                userId: party.player.userId,
+                cardId: cardIdsInDeck[cardsDrawn],
+              }),
+            );
+          }
+        }
+
+        if (
+          party.cardsInHand.length < party.handSize &&
+          party.cardsInDeck.length > 0
+        ) {
+          scheduleEvent(
+            drawCombatCard({
+              gameId: event.payload.gameId,
+              combatId: event.payload.combatId,
+              userId: party.player.userId,
+              cardId: party.cardsInDeck[0],
+            }),
+          );
+        }
       }
 
-      scheduleEvent(
-        nextCombatRound({
-          gameId: event.payload.gameId,
-          combatId: event.payload.combatId,
-        }),
+      const partiesWithShipsAndEnemiesLeft = partiesWithShips.filter(
+        (p) =>
+          p.shipIds.length > 0 &&
+          p.vsUserIds.some((userId) =>
+            partiesWithShips.some(
+              (party) => party.userId === userId && party.shipIds.length > 0,
+            ),
+          ),
       );
+
+      logger.info(
+        { partiesWithShips, partiesWithShipsAndEnemiesLeft },
+        'Aftermath of combat round',
+      );
+
+      if (partiesWithShipsAndEnemiesLeft.length > 0) {
+        scheduleEvent(
+          nextCombatRound({
+            gameId: event.payload.gameId,
+            combatId: event.payload.combatId,
+          }),
+        );
+      } else {
+        scheduleEvent(
+          endCombat({
+            gameId: event.payload.gameId,
+            combatId: event.payload.combatId,
+            winnerUserIds: partiesWithShips
+              .filter((p) => p.shipIds.length > 0)
+              .map((p) => p.userId),
+          }),
+        );
+      }
     }
   }
 }

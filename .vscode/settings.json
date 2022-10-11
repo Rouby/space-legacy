@@ -6,5 +6,7 @@
   "prettier.prettierPath": ".yarn/sdks/prettier/index.js",
   "typescript.tsdk": ".yarn/sdks/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
-  "prettier.trailingComma": "all"
+  "prettier.trailingComma": "all",
+  "vitest.commandLine": "yarn workspace backend test",
+  "vitest.enable": true
 }

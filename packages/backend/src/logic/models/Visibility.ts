@@ -75,5 +75,13 @@ export class Visibility {
     ) {
       this.ships.push(proxies.shipProxy(event.payload.id));
     }
+
+    if (
+      event.type === 'destroyShip' &&
+      event.payload.gameId === this.game.id &&
+      event.payload.userId === this.user.id
+    ) {
+      this.ships = this.ships.filter((s) => s.id !== event.payload.shipId);
+    }
   }
 }

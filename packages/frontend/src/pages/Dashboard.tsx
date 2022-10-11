@@ -69,6 +69,10 @@ function GalaxyOverview() {
         id
         coordinates
         movingTo
+        owner {
+          userId
+          diplomaticStance
+        }
       }
     }
   `;
@@ -232,7 +236,7 @@ function GalaxyOverview() {
             cx={ship.coordinates.x}
             cy={ship.coordinates.y}
             r="1"
-            fill="green"
+            fill={ship.owner.diplomaticStance === 'FRIENDLY' ? 'green' : 'red'}
           />
         </Fragment>
       ))}
