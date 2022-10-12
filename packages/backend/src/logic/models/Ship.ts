@@ -1,5 +1,5 @@
 import type { GameEvent } from '@prisma/client';
-import { getDbClient, Vector } from '../../util';
+import { getDbClient, Line, Vector } from '../../util';
 import type { AppEvent } from '../events';
 import type { Combat } from './Combat';
 import { Promised, proxies } from './proxies';
@@ -57,7 +57,12 @@ export class Ship {
     if (this.followingShip) {
       const followingShip = await this.followingShip.$resolve;
 
-      if (this.followingPredictive) {
+      if (
+        this.followingPredictive &&
+        followingShip.followingShip?.id !== this.id
+        // if both ships follow each other,
+        // just move to the coordinates the other ship is currently at
+      ) {
         const followingShipMovement =
           followingShip.movementVector?.multiply(10) ?? new Vector(); // TODO get ship speed?
         let movingTo = new Vector(followingShip.coordinates).add(
@@ -79,6 +84,28 @@ export class Ship {
     }
 
     return null;
+  }
+
+  public async getMovementLine() {
+    const targetVector = this.followingShip
+      ? await this.getFollowingMovingTo()
+      : this.movingTo;
+
+    if (!targetVector) {
+      return null;
+    }
+
+    const speed = 10; // TODO calc based on design
+
+    const movement = targetVector.subtract(this.coordinates);
+    const distance = movement.magnitude();
+
+    return new Line(
+      this.coordinates,
+      this.coordinates.add(
+        movement.normalize().multiply(Math.min(speed, distance)),
+      ),
+    );
   }
 
   private applyEvent(event: AppEvent) {

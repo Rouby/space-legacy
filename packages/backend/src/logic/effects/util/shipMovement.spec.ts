@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mockGameEvents } from '../../../util/__mocks__/db';
-import { issueMoveOrder, launchShip } from '../../events';
+import { issueFollowOrder, issueMoveOrder, launchShip } from '../../events';
 import '../../index';
 import { Ship } from '../../models';
 import { moveShips } from './shipMovement';
@@ -37,6 +37,114 @@ describe('shipMovement', () => {
         type: 'moveShip',
         version: 1,
         payload: { gameId: '', shipId: '1', to: { x: 10, y: 0 } },
+      }),
+    );
+  });
+
+  it('should stop movement for hostile crossing ships', async () => {
+    mockGameEvents.mockImplementation(() => [
+      launchShip({
+        id: '1',
+        gameId: '',
+        designId: '',
+        userId: '',
+        coordinates: { x: 5, y: 0 },
+      }),
+      issueMoveOrder({
+        gameId: '',
+        subjectId: '1',
+        to: { x: -5, y: 10 },
+      }),
+
+      launchShip({
+        id: '2',
+        gameId: '',
+        designId: '',
+        userId: '',
+        coordinates: { x: -5, y: 0 },
+      }),
+      issueMoveOrder({
+        gameId: '',
+        subjectId: '2',
+        to: { x: 5, y: 10 },
+      }),
+    ]);
+
+    const scheduleEvent = vi.fn();
+
+    await moveShips(
+      [await Ship.get('1'), await Ship.get('2')],
+      { payload: { gameId: '', userId: '' } } as any,
+      scheduleEvent,
+    );
+
+    expect(scheduleEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'moveShip',
+        version: 1,
+        payload: { gameId: '', shipId: '1', to: { x: 0, y: 5 } },
+      }),
+    );
+    expect(scheduleEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'moveShip',
+        version: 1,
+        payload: { gameId: '', shipId: '2', to: { x: 0, y: 5 } },
+      }),
+    );
+  });
+
+  it('should move ships that follow each other straight at each other', async () => {
+    mockGameEvents.mockImplementation(() => [
+      launchShip({
+        id: '1',
+        gameId: '',
+        designId: '',
+        userId: '',
+        coordinates: { x: 5, y: 0 },
+      }),
+      issueFollowOrder({
+        gameId: '',
+        subjectId: '1',
+        targetId: '2',
+        usePredictiveRoute: true,
+      }),
+
+      launchShip({
+        id: '2',
+        gameId: '',
+        designId: '',
+        userId: '',
+        coordinates: { x: -5, y: 0 },
+      }),
+      issueFollowOrder({
+        gameId: '',
+        subjectId: '2',
+        targetId: '1',
+        usePredictiveRoute: true,
+      }),
+    ]);
+
+    const scheduleEvent = vi.fn();
+
+    await moveShips(
+      [await Ship.get('1'), await Ship.get('2')],
+      { payload: { gameId: '', userId: '' } } as any,
+      scheduleEvent,
+    );
+
+    expect(scheduleEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'moveShip',
+        version: 1,
+        payload: { gameId: '', shipId: '1', to: { x: 0, y: 0 } },
+      }),
+    );
+    expect(scheduleEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'moveShip',
+        version: 1,
+        payload: { gameId: '', shipId: '2', to: { x: 0, y: 0 } },
       }),
     );
   });

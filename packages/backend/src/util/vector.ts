@@ -67,12 +67,12 @@ export class Vector {
   }
 
   public equals(other: { x: number; y: number }) {
-    const v1 = this.toPrecision();
-    const v2 = new Vector(other).toPrecision();
+    const v1 = this.round();
+    const v2 = new Vector(other).round();
     return v1.x === v2.x && v1.y === v2.y;
   }
 
-  private toPrecision() {
+  public round() {
     return new Vector({
       x: Math.round(this.x * 1000) / 1000,
       y: Math.round(this.y * 1000) / 1000,
@@ -80,7 +80,7 @@ export class Vector {
   }
 
   public toString() {
-    const v = this.toPrecision();
+    const v = this.round();
     return `(${v.x}, ${v.y})`;
   }
 
@@ -95,7 +95,7 @@ export class Vector {
   }
 
   public toCoordinates() {
-    const v = this.toPrecision();
+    const v = this.round();
     return { x: v.x, y: v.y };
   }
 }
