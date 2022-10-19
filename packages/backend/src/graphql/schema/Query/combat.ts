@@ -7,6 +7,7 @@ export const typeDefs = /* GraphQL */ `
     round: Int!
     coordinates: Coordinates!
     parties: [CombatParty!]!
+    log: [CombatLog!]!
   }
 
   type CombatParty {
@@ -22,6 +23,23 @@ export const typeDefs = /* GraphQL */ `
   type CombatVersusParty {
     player: Player!
     ships: [Ship!]!
+  }
+
+  type CombatLog {
+    round: Int!
+    cardsPlayed: [CombatCardPlay!]!
+    damageReports: [CombatDamageReport!]!
+  }
+
+  type CombatCardPlay {
+    player: Player!
+    card: CombatCard!
+  }
+
+  type CombatDamageReport {
+    ship: Ship!
+    source: Ship!
+    damage: Int!
   }
 
   type Query {

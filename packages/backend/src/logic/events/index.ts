@@ -4,6 +4,8 @@ import { colonizePlanet } from './colonizePlanet';
 import { constructShip } from './constructShip';
 import { constructShipyard } from './constructShipyard';
 import { createGame } from './createGame';
+import { createShipComponent } from './createShipComponent';
+import { createShipDesign } from './createShipDesign';
 import { createStarSystem } from './createStarSystem';
 import { damageShip } from './damageShip';
 import { deleteGame } from './deleteGame';
@@ -31,6 +33,8 @@ export type AppEvent =
   | ReturnType<typeof constructShip>
   | ReturnType<typeof constructShipyard>
   | ReturnType<typeof createGame>
+  | ReturnType<typeof createShipComponent>
+  | ReturnType<typeof createShipDesign>
   | ReturnType<typeof createStarSystem>
   | ReturnType<typeof damageShip>
   | ReturnType<typeof deleteGame>
@@ -58,6 +62,8 @@ export {
   constructShip,
   constructShipyard,
   createGame,
+  createShipComponent,
+  createShipDesign,
   createStarSystem,
   damageShip,
   deleteGame,

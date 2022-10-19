@@ -85,6 +85,7 @@ export class StarSystem {
     owner: Promised<Player>;
   }[];
   public ships = [] as Promised<Ship>[];
+  public userSensorRange = {} as { [userId: string]: number };
 
   public async isVisibleTo(userId: string) {
     const visibility = await proxies.visibilityProxy(this.game!.id, userId)
@@ -111,6 +112,11 @@ export class StarSystem {
             event.payload.userId,
           );
           planet.population = 1000;
+
+          this.userSensorRange[event.payload.userId] = Math.max(
+            this.userSensorRange[event.payload.userId] ?? 0,
+            15,
+          );
         });
     }
 
@@ -138,6 +144,11 @@ export class StarSystem {
         materialsLeft: event.payload.materialsNeeded,
         owner: proxies.playerProxy(event.payload.gameId, event.payload.userId),
       });
+
+      this.userSensorRange[event.payload.userId] = Math.max(
+        this.userSensorRange[event.payload.userId] ?? 0,
+        100,
+      );
     }
 
     if (event.type === 'constructShip' && event.payload.systemId === this.id) {

@@ -33,6 +33,7 @@ export class Combat {
 
   public game = proxies.gameProxy('');
   public round = 0;
+  public inProgress = false;
   public coordinates = new Vector();
   public parties = [] as {
     player: Promised<Player>;
@@ -48,6 +49,18 @@ export class Combat {
     handSize: number;
   }[];
   public ships = [] as Promised<Ship>[];
+  public log = [] as {
+    round: number;
+    cardsPlayed: {
+      player: Promised<Player>;
+      card: CombatCardId;
+    }[];
+    damageReports: {
+      ship: Promised<Ship>;
+      source: Promised<Ship>;
+      damage: number;
+    }[];
+  }[];
 
   applyEvent(event: AppEvent) {
     if (event.type === 'engageCombat' && event.payload.id === this.id) {
@@ -67,6 +80,14 @@ export class Combat {
         handSize: 2,
       }));
       this.ships = this.parties.flatMap((party) => party.ships);
+      this.inProgress = true;
+      this.log = [
+        {
+          round: 0,
+          cardsPlayed: [],
+          damageReports: [],
+        },
+      ];
     }
 
     if (event.type === 'playCombatCard' && event.payload.combatId === this.id) {
@@ -84,10 +105,19 @@ export class Combat {
       event.type === 'nextCombatRound' &&
       event.payload.combatId === this.id
     ) {
-      this.round++;
       this.parties.forEach((party) => {
         party.cardsInDiscard.push(party.cardPlayed!);
         party.cardPlayed = null;
+        this.log.at(this.round)!.cardsPlayed.push({
+          player: party.player,
+          card: party.cardsInDiscard.at(-1)!,
+        });
+      });
+      this.round++;
+      this.log.push({
+        round: this.round,
+        cardsPlayed: [],
+        damageReports: [],
       });
     }
 
@@ -123,6 +153,26 @@ export class Combat {
           party.cardsInDeck.shift();
           party.cardsInHand.push(event.payload.cardId);
         });
+    }
+
+    if (event.type === 'damageShip' && event.payload.combatId === this.id) {
+      this.log.at(this.round)!.damageReports.push({
+        ship: proxies.shipProxy(event.payload.shipId),
+        source: proxies.shipProxy(event.payload.sourceShipId),
+        damage: event.payload.damage,
+      });
+    }
+
+    if (event.type === 'endCombat' && event.payload.combatId === this.id) {
+      this.inProgress = false;
+      this.parties.forEach((party) => {
+        if (party.cardPlayed) {
+          this.log.at(this.round)!.cardsPlayed.push({
+            player: party.player,
+            card: party.cardPlayed,
+          });
+        }
+      });
     }
   }
 }

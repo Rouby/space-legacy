@@ -1,8 +1,9 @@
-import { Box, Button } from '@mantine/core';
+import { Box, Button, Group, Select } from '@mantine/core';
 import { useMatch } from '@tanstack/react-location';
 import { useState } from 'react';
 import { IssueShipOrder } from '../components';
 import {
+  useAvailableShipDesignsQuery,
   useCancelShipConstructionMutation,
   useConstructShipMutation,
   useStarSystemQuery,
@@ -379,13 +380,13 @@ function Fleets() {
   const [game] = useGame();
 
   /* GraphQL */ `#graphql
-    mutation constructShip($gameId: ID!, $systemId: ID!) {
+    mutation constructShip($gameId: ID!, $systemId: ID!, $designId: ID!) {
       constructShip(
         input: {
           gameId: $gameId
           systemId: $systemId
           shipyardIndex: 0
-          designId: ""
+          designId: $designId
         }
       ) {
         design {
@@ -427,20 +428,65 @@ function Fleets() {
   `;
   const [, cancelShipConstruction] = useCancelShipConstructionMutation();
 
+  /* GraphQL */ `#graphql
+    query availableShipDesigns($gameId: ID!) {
+      shipDesigns(gameId: $gameId) {
+        __typename
+        id
+        name
+        owner {
+          id
+          userId
+        }
+      }
+    } 
+  `;
+  const [availableShipDesigns] = useAvailableShipDesignsQuery({
+    variables: { gameId: game?.id! },
+  });
+  const [selectedDesignId, setSelectedDesignId] = useState<string | null>(null);
+
   return (
     <>
-      <Button
-        onClick={() =>
-          constructShip({ gameId: game?.id!, systemId: params.starSystemId })
-        }
-        loading={constructShipResult.fetching}
-        disabled={
-          !starSystemResult.data?.starSystem ||
-          ability.cannot('constructShip', starSystemResult.data.starSystem)
-        }
-      >
-        Build ship
-      </Button>
+      <Group>
+        <Select
+          data={
+            availableShipDesigns.data?.shipDesigns.map((design) => ({
+              value: design.id,
+              label: design.name,
+            })) ?? []
+          }
+          value={
+            availableShipDesigns.data?.shipDesigns.find(
+              (design) => design.id === selectedDesignId,
+            )?.id
+          }
+          onChange={(id) => setSelectedDesignId(id)}
+        />
+        <Button
+          onClick={() =>
+            constructShip({
+              gameId: game?.id!,
+              systemId: params.starSystemId,
+              designId: selectedDesignId!,
+            })
+          }
+          loading={constructShipResult.fetching}
+          disabled={
+            !starSystemResult.data?.starSystem ||
+            ability.cannot('constructShip', starSystemResult.data.starSystem) ||
+            !selectedDesignId ||
+            ability.cannot(
+              'construct',
+              availableShipDesigns.data?.shipDesigns.find(
+                (design) => design.id === selectedDesignId,
+              )!,
+            )
+          }
+        >
+          Build ship
+        </Button>
+      </Group>
       Constructing{' '}
       {starSystemResult.data?.starSystem?.shipyards.reduce(
         (acc, shipyard) => acc + shipyard.shipConstructionQueue.length,

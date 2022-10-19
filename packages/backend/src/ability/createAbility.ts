@@ -72,6 +72,8 @@ export async function createAbilityFor(user: User) {
     parties: { $elemMatch: { 'player.userId': user.id, cardPlayed: null } },
   });
 
+  can('construct', 'ShipDesign', { 'owner.userId': user.id });
+
   return new AppAbility(
     [...(createDefaultAbility().rules as typeof rules), ...rules],
     { conditionsMatcher: buildMongoQueryMatcher() },

@@ -48,6 +48,23 @@ export function CombatView() {
           cardsInHand
           cardPlayed
         }
+        log {
+          round
+          cardsPlayed {
+            player {
+              id
+              userId
+              name
+            }
+            card
+          }
+          damageReports {
+            ship {
+              id
+            }
+            damage
+          }
+        }
       }
     }
   `;

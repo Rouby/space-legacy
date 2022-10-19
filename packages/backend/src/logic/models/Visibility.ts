@@ -35,6 +35,29 @@ export class Visibility {
   public starSystems = [] as Promised<StarSystem>[];
   public ships = [] as Promised<Ship>[];
 
+  async ranges() {
+    const starSystems = await this.starSystems.$resolveAll;
+    const ships = await this.ships.$resolveAll.then((ship) =>
+      Promise.all(
+        ship.map(async (ship) => ({
+          ...ship,
+          design: await ship.design.$resolve,
+        })),
+      ),
+    );
+
+    return [
+      ...starSystems.map((system) => ({
+        coordinates: system.coordinates,
+        range: system.userSensorRange[this.user.id] || 0,
+      })),
+      ...ships.map((ship) => ({
+        coordinates: ship.coordinates,
+        range: ship.design.sensorRange,
+      })),
+    ];
+  }
+
   public async checkVisibility(coordinates: { x: number; y: number }) {
     for (const system of this.starSystems) {
       const coords = await system.coordinates;

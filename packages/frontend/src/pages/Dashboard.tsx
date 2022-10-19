@@ -60,12 +60,14 @@ function GalaxyOverview() {
   /* GraphQL */ `#graphql
     query GalaxyOverview($gameId: ID!) {
       starSystems(gameId: $gameId) {
+        __typename
         id
         name
         coordinates
       }
 
       ships(gameId: $gameId) {
+        __typename
         id
         coordinates
         movingTo
@@ -73,6 +75,11 @@ function GalaxyOverview() {
           userId
           diplomaticStance
         }
+      }
+
+      visibilityRanges(gameId: $gameId) {
+        coordinates
+        range
       }
     }
   `;
@@ -203,13 +210,7 @@ function GalaxyOverview() {
                   0 0 0 0 1"
         />
       </filter>
-      <rect
-        x="-500"
-        y="-500"
-        width="1000"
-        height="1000"
-        filter="url(#star-field)"
-      />
+      <rect x="-500" y="-500" width="1000" height="1000" fill="black" />
       {galaxyOverview.data?.starSystems.map((starSystem) => (
         <circle
           key={starSystem.id}
@@ -240,6 +241,19 @@ function GalaxyOverview() {
           />
         </Fragment>
       ))}
+      {galaxyOverview.data?.visibilityRanges.map((visibilityRange) => (
+        <circle
+          key={
+            visibilityRange.coordinates.x + ',' + visibilityRange.coordinates.y
+          }
+          cx={visibilityRange.coordinates.x}
+          cy={visibilityRange.coordinates.y}
+          r={visibilityRange.range}
+          fill="none"
+          stroke="darkolivegreen"
+          strokeDasharray="1,1"
+        />
+      ))}
     </svg>
   );
 }
@@ -250,6 +264,7 @@ function StarSystemList() {
   /* GraphQL */ `#graphql
     query StarSystemList($gameId: ID!) {
       starSystems(gameId: $gameId) {
+        __typename
         id
         name
       }
@@ -279,6 +294,7 @@ function ShipList() {
   /* GraphQL */ `#graphql
     query ShipList($gameId: ID!) {
       ships(gameId: $gameId) {
+        __typename
         id
         coordinates
         owner {

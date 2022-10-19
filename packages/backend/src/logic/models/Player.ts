@@ -2,6 +2,7 @@ import type { GameEvent } from '@prisma/client';
 import { getDbClient } from '../../util';
 import type { AppEvent } from '../events';
 import { proxies, type Promised } from './proxies';
+import type { ShipDesign } from './ShipDesign';
 
 export class Player {
   readonly kind = 'Player';
@@ -32,6 +33,7 @@ export class Player {
   public turnEnded = false;
   public relationships = {} as { [userId: string]: 'friendly' | 'hostile' };
   public name = 'New Player';
+  public availableShipDesigns = [] as Promised<ShipDesign>[];
 
   applyEvent(event: AppEvent) {
     if (
@@ -52,6 +54,14 @@ export class Player {
 
     if (event.type === 'nextRound' && event.payload.gameId === this.gameId) {
       this.turnEnded = false;
+    }
+
+    if (
+      event.type === 'createShipDesign' &&
+      event.payload.gameId === this.gameId &&
+      event.payload.userId === this.userId
+    ) {
+      this.availableShipDesigns.push(proxies.shipDesignProxy(event.payload.id));
     }
   }
 }

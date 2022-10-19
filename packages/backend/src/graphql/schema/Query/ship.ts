@@ -3,11 +3,6 @@ import { Vector } from '../../../util';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
-  type ShipDesign {
-    id: ID!
-    structuralHealth: Int!
-  }
-
   type Ship {
     id: ID!
     coordinates: Coordinates!

@@ -29,7 +29,14 @@ export const resolvers: Resolvers = {
         throw new GraphQLYogaError('Star system not found');
       }
 
+      const shipDesign = await models.ShipDesign.get(designId);
+
+      if (!shipDesign) {
+        throw new GraphQLYogaError('Ship design not found');
+      }
+
       ForbiddenError.from(ability).throwUnlessCan('constructShip', starSystem);
+      ForbiddenError.from(ability).throwUnlessCan('construct', shipDesign);
 
       await publishEvent({
         event: constructShip({

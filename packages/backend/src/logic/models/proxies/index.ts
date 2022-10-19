@@ -4,6 +4,7 @@ import type { fleetProxy } from './fleet';
 import type { gameProxy } from './game';
 import type { playerProxy } from './player';
 import type { shipProxy } from './ship';
+import type { shipComponentProxy } from './shipComponent';
 import type { shipDesignProxy } from './shipDesign';
 import type { starSystemProxy } from './starSystem';
 import type { userProxy } from './user';
@@ -24,6 +25,7 @@ export const proxies = {
   gameListProxy: undefined as any as typeof GameList,
   playerProxy: undefined as any as playerProxy,
   shipProxy: undefined as any as shipProxy,
+  shipComponentProxy: undefined as any as shipComponentProxy,
   shipDesignProxy: undefined as any as shipDesignProxy,
   starSystemProxy: undefined as any as starSystemProxy,
   userProxy: undefined as any as userProxy,

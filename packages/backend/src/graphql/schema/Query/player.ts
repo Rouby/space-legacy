@@ -9,13 +9,29 @@ export const typeDefs = /* GraphQL */ `
     diplomaticStance: DiplomaticStance!
   }
 
+  type VisibilityRange {
+    coordinates: Coordinates!
+    range: Int!
+  }
+
   enum DiplomaticStance {
     FRIENDLY
     HOSTILE
   }
+
+  type Query {
+    visibilityRanges(gameId: ID!): [VisibilityRange!]!
+  }
 `;
 
 export const resolvers: Resolvers = {
+  Query: {
+    visibilityRanges: async (_, { gameId }, { models, userId }) => {
+      const visibility = await models.Visibility.get(gameId, userId);
+
+      return visibility.ranges();
+    },
+  },
   Player: {
     id: (player) => {
       return `${player.gameId}-${player.userId}`;
