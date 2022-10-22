@@ -1,6 +1,7 @@
 import { ForbiddenError } from '@casl/ability';
 import { GraphQLYogaError } from '@graphql-yoga/common';
 import { joinGame } from '../../../logic/events';
+import { Game } from '../../../logic/models';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -18,9 +19,9 @@ export const resolvers: Resolvers = {
     joinGame: async (
       _,
       { input: { id } },
-      { publishEvent, models, userId, ability },
+      { publishEvent, get, userId, ability },
     ) => {
-      const game = await models.Game.get(id);
+      const game = await get(Game, id);
 
       if (!game) {
         throw new GraphQLYogaError('Game not found');
@@ -35,7 +36,7 @@ export const resolvers: Resolvers = {
         }),
       });
 
-      return models.Game.get(id);
+      return get(Game, id);
     },
   },
 };

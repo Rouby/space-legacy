@@ -1,4 +1,5 @@
 import { subject } from '@casl/ability';
+import { Ship } from '../../../logic/models';
 import { Vector } from '../../../util';
 import { Resolvers } from '../../generated';
 
@@ -20,8 +21,8 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers = {
   Query: {
-    ship: async (_, { gameId, id }, { models, ability, userId }) => {
-      const ship = await models.Ship.get(id);
+    ship: async (_, { gameId, id }, { get, ability, userId }) => {
+      const ship = await get(Ship, id);
 
       if (!ship.isVisibleTo(userId)) {
         return null;
@@ -31,9 +32,9 @@ export const resolvers: Resolvers = {
     },
   },
   Ship: {
-    movingTo: async (promisedShip, _, { ability, models, userId }) => {
+    movingTo: async (promisedShip, _, { ability, userId }) => {
       const ship =
-        promisedShip instanceof models.Ship
+        promisedShip instanceof Ship
           ? promisedShip
           : await promisedShip.$resolve;
 

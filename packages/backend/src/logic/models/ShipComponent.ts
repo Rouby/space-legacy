@@ -1,32 +1,14 @@
-import type { GameEvent } from '@prisma/client';
-import { getDbClient } from '../../util';
 import type { AppEvent } from '../events';
+import { Base } from './Base';
 
-export class ShipComponent {
+export class ShipComponent extends Base {
   readonly kind = 'ShipComponent';
 
-  static async get(id: string) {
-    const component = new ShipComponent(id);
-
-    const events = await (
-      await getDbClient()
-    ).gameEvent.findMany({
-      orderBy: { createdAt: 'asc' },
-    });
-
-    events.forEach((event) => {
-      component.applyEvent({
-        ...event,
-        payload: JSON.parse(event.payload),
-      } as Omit<GameEvent, 'payload'> & AppEvent);
-    });
-
-    return component;
+  public constructor(public id: string) {
+    super();
   }
-
-  private constructor(public id: string) {}
 
   public name = '';
 
-  private applyEvent(event: AppEvent) {}
+  protected applyEvent(event: AppEvent) {}
 }

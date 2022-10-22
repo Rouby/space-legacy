@@ -1,32 +1,14 @@
-import type { GameEvent } from '@prisma/client';
-import { getDbClient } from '../../util';
 import type { AppEvent } from '../events';
+import { Base } from './Base';
 import { Promised, proxies } from './proxies';
 import type { ShipComponent } from './ShipComponent';
 
-export class ShipDesign {
+export class ShipDesign extends Base {
   readonly kind = 'ShipDesign';
 
-  static async get(id: string) {
-    const design = new ShipDesign(id);
-
-    const events = await (
-      await getDbClient()
-    ).gameEvent.findMany({
-      orderBy: { createdAt: 'asc' },
-    });
-
-    events.forEach((event) => {
-      design.applyEvent({
-        ...event,
-        payload: JSON.parse(event.payload),
-      } as Omit<GameEvent, 'payload'> & AppEvent);
-    });
-
-    return design;
+  public constructor(public id: string) {
+    super();
   }
-
-  private constructor(public id: string) {}
 
   public name = '';
   public owner = proxies.playerProxy('', '');
@@ -39,7 +21,7 @@ export class ShipDesign {
   public sensorRange = 0;
   public components = [] as Promised<ShipComponent>[];
 
-  private applyEvent(event: AppEvent) {
+  protected applyEvent(event: AppEvent) {
     if (event.type === 'createShipDesign' && event.payload.id === this.id) {
       this.name = event.payload.name;
       this.owner = proxies.playerProxy(

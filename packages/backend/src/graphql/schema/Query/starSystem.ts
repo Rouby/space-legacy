@@ -1,3 +1,4 @@
+import { StarSystem } from '../../../logic/models';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -45,8 +46,8 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers = {
   Query: {
-    starSystem: async (_, { gameId, id }, { models, ability, userId }) => {
-      const starSystem = await models.StarSystem.get(id);
+    starSystem: async (_, { gameId, id }, { get, ability, userId }) => {
+      const starSystem = await get(StarSystem, id);
 
       if (!starSystem.isVisibleTo(userId)) {
         return null;

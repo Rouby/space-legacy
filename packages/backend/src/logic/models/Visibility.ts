@@ -1,33 +1,15 @@
-import type { GameEvent } from '@prisma/client';
-import { getDbClient } from '../../util';
 import type { AppEvent } from '../events';
+import { Base } from './Base';
 import { Promised, proxies } from './proxies';
 import type { Ship } from './Ship';
 import type { StarSystem } from './StarSystem';
 
-export class Visibility {
+export class Visibility extends Base {
   readonly kind = 'Visibility';
 
-  static async get(gameId: string, userId: string) {
-    const visibility = new Visibility(gameId, userId);
-
-    const events = await (
-      await getDbClient()
-    ).gameEvent.findMany({
-      orderBy: { createdAt: 'asc' },
-    });
-
-    events.forEach((event) => {
-      visibility.applyEvent({
-        ...event,
-        payload: JSON.parse(event.payload),
-      } as Omit<GameEvent, 'payload'> & AppEvent);
-    });
-
-    return visibility;
+  public constructor(public gameId: string, public userId: string) {
+    super();
   }
-
-  constructor(public gameId: string, public userId: string) {}
 
   public game = proxies.gameProxy(this.gameId);
   public user = proxies.userProxy(this.userId);
@@ -80,7 +62,7 @@ export class Visibility {
     return false;
   }
 
-  private applyEvent(event: AppEvent) {
+  protected applyEvent(event: AppEvent) {
     if (
       event.type === 'colonizePlanet' &&
       event.payload.gameId === this.game.id &&

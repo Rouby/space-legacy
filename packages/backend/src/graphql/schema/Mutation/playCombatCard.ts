@@ -1,5 +1,6 @@
 import { ForbiddenError } from '@casl/ability';
 import { playCombatCard } from '../../../logic/events';
+import { Combat } from '../../../logic/models';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -19,9 +20,9 @@ export const resolvers: Resolvers = {
     playCombatCard: async (
       _,
       { input: { gameId, combatId, card } },
-      { publishEvent, ability, models, userId },
+      { publishEvent, ability, get, userId },
     ) => {
-      const combat = await models.Combat.get(combatId);
+      const combat = await get(Combat, combatId);
 
       ForbiddenError.from(ability).throwUnlessCan('playCard', combat);
 
@@ -34,7 +35,7 @@ export const resolvers: Resolvers = {
         }),
       });
 
-      return await models.Combat.get(combatId);
+      return await get(Combat, combatId);
     },
   },
 };

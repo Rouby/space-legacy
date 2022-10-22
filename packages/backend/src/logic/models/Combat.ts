@@ -1,35 +1,18 @@
-import type { GameEvent } from '@prisma/client';
-import { getDbClient, Vector } from '../../util';
+import { Vector } from '../../util';
 import { CombatCardId } from '../combat';
 import type { AppEvent } from '../events';
+import { Base } from './Base';
 
 import type { Player } from './Player';
 import { Promised, proxies } from './proxies';
 import type { Ship } from './Ship';
 
-export class Combat {
+export class Combat extends Base {
   readonly kind = 'Combat';
 
-  static async get(id: string) {
-    const combat = new Combat(id);
-
-    const events = await (
-      await getDbClient()
-    ).gameEvent.findMany({
-      orderBy: { createdAt: 'asc' },
-    });
-
-    events.forEach((event) => {
-      combat.applyEvent({
-        ...event,
-        payload: JSON.parse(event.payload),
-      } as Omit<GameEvent, 'payload'> & AppEvent);
-    });
-
-    return combat;
+  public constructor(public id: string) {
+    super();
   }
-
-  private constructor(public id: string) {}
 
   public game = proxies.gameProxy('');
   public round = 0;
@@ -62,7 +45,7 @@ export class Combat {
     }[];
   }[];
 
-  applyEvent(event: AppEvent) {
+  protected applyEvent(event: AppEvent) {
     if (event.type === 'engageCombat' && event.payload.id === this.id) {
       this.game = proxies.gameProxy(event.payload.gameId);
       this.coordinates = new Vector(event.payload.coordinates);

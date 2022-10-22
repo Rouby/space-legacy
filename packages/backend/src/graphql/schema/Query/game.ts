@@ -1,4 +1,5 @@
 import { ForbiddenError } from '@casl/ability';
+import { Game } from '../../../logic/models';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -25,10 +26,10 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers = {
   Query: {
-    game: async (_, { id }, { ability, models }) => {
+    game: async (_, { id }, { ability, get }) => {
       ForbiddenError.from(ability).throwUnlessCan('read', 'GamesList');
 
-      return models.Game.get(id);
+      return get(Game, id);
     },
   },
 };

@@ -1,3 +1,4 @@
+import { Visibility } from '../../../logic/models';
 import { DiplomaticStance, Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -26,8 +27,8 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers = {
   Query: {
-    visibilityRanges: async (_, { gameId }, { models, userId }) => {
-      const visibility = await models.Visibility.get(gameId, userId);
+    visibilityRanges: async (_, { gameId }, { get, userId }) => {
+      const visibility = await get(Visibility, gameId, userId);
 
       return visibility.ranges();
     },

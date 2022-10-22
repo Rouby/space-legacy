@@ -1,6 +1,7 @@
 import { ForbiddenError } from '@casl/ability';
 import { GraphQLYogaError } from '@graphql-yoga/common';
 import { cancelShipConstruction } from '../../../logic/events';
+import { StarSystem } from '../../../logic/models';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -23,9 +24,9 @@ export const resolvers: Resolvers = {
     cancelShipConstruction: async (
       _,
       { input: { gameId, systemId, shipyardIndex, queueIndex } },
-      { publishEvent, ability, models, userId },
+      { publishEvent, ability, get, userId },
     ) => {
-      const starSystem = await models.StarSystem.get(systemId);
+      const starSystem = await get(StarSystem, systemId);
       if (!starSystem) {
         throw new GraphQLYogaError('Star system not found');
       }
@@ -35,7 +36,7 @@ export const resolvers: Resolvers = {
         starSystem,
       );
 
-      const construction = (await models.StarSystem.get(systemId)).shipyards[
+      const construction = (await get(StarSystem, systemId)).shipyards[
         shipyardIndex
       ].shipConstructionQueue.slice(-1)[0];
 

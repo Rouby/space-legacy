@@ -3,7 +3,8 @@ import { CookieSerializeOptions, serialize } from 'cookie';
 import { IncomingMessage, ServerResponse } from 'http';
 import { decode, JwtPayload, verify } from 'jsonwebtoken';
 import { AppAbility, createDefaultAbility } from '../ability';
-import { models, publishEvent } from '../logic';
+import { publishEvent } from '../logic';
+import { get } from '../logic/models/loader';
 import { getDbClient } from '../util';
 
 export const pubSub = createPubSub<{
@@ -53,7 +54,7 @@ export async function context({
     ability: user ? new AppAbility(user.permissions) : createDefaultAbility(),
     publishEvent,
     pubSub,
-    models,
+    get,
     http: {
       setCookie: (
         name: string,

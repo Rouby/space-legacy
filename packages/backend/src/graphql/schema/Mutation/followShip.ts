@@ -1,6 +1,7 @@
 import { ForbiddenError } from '@casl/ability';
 import { GraphQLYogaError } from '@graphql-yoga/node';
 import { issueFollowOrder } from '../../../logic/events';
+import { Ship } from '../../../logic/models';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -21,9 +22,9 @@ export const resolvers: Resolvers = {
     followShip: async (
       _,
       { input: { gameId, shipId, shipToFollowId, predictRoute } },
-      { publishEvent, ability, models, userId },
+      { publishEvent, ability, get, userId },
     ) => {
-      const ship = await models.Ship.get(shipId);
+      const ship = await get(Ship, shipId);
 
       if (!ship) {
         throw new GraphQLYogaError('Star system not found');
@@ -31,7 +32,7 @@ export const resolvers: Resolvers = {
 
       ForbiddenError.from(ability).throwUnlessCan('move', ship);
 
-      const shipToFollow = await models.Ship.get(shipToFollowId);
+      const shipToFollow = await get(Ship, shipToFollowId);
 
       if (!(await shipToFollow.isVisibleTo(userId))) {
         throw new GraphQLYogaError('Ship to follow not found');
@@ -46,7 +47,7 @@ export const resolvers: Resolvers = {
         }),
       });
 
-      return await models.Ship.get(shipId);
+      return await get(Ship, shipId);
     },
   },
 };

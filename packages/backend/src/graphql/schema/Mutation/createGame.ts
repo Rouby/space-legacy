@@ -1,6 +1,7 @@
 import { ForbiddenError } from '@casl/ability';
 
 import { createGame, joinGame } from '../../../logic/events';
+import { Game } from '../../../logic/models';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -19,7 +20,7 @@ export const resolvers: Resolvers = {
     createGame: async (
       _,
       { input: { name, maxPlayers } },
-      { publishEvent, userId, ability, models },
+      { publishEvent, userId, ability, get },
     ) => {
       ForbiddenError.from(ability).throwUnlessCan('create', 'Game');
 
@@ -39,7 +40,7 @@ export const resolvers: Resolvers = {
         }),
       });
 
-      return models.Game.get(gameId);
+      return get(Game, gameId);
     },
   },
 };

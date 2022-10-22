@@ -1,5 +1,6 @@
 import { ForbiddenError } from '@casl/ability';
 import { logger } from '../../../logger';
+import { Game } from '../../../logic/models';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -17,7 +18,7 @@ export const resolvers: Resolvers = {
     undoLastEndOfRound: async (
       _,
       { input: { gameId } },
-      { ability, models, prisma },
+      { ability, get, prisma },
     ) => {
       ForbiddenError.from(ability).throwUnlessCan('debug', 'Game');
 
@@ -49,7 +50,7 @@ export const resolvers: Resolvers = {
         }
       }
 
-      return models.Game.get(gameId);
+      return get(Game, gameId);
     },
   },
 };

@@ -1,33 +1,16 @@
-import type { GameEvent } from '@prisma/client';
-import { getDbClient, Line, Vector } from '../../util';
+import { Line, Vector } from '../../util';
 import type { AppEvent } from '../events';
+import { Base } from './Base';
 import type { Combat } from './Combat';
 import { Promised, proxies } from './proxies';
 import type { StarSystem } from './StarSystem';
 
-export class Ship {
+export class Ship extends Base {
   readonly kind = 'Ship';
 
-  static async get(id: string) {
-    const ship = new Ship(id);
-
-    const events = await (
-      await getDbClient()
-    ).gameEvent.findMany({
-      orderBy: { createdAt: 'asc' },
-    });
-
-    events.forEach((event) => {
-      ship.applyEvent({
-        ...event,
-        payload: JSON.parse(event.payload),
-      } as Omit<GameEvent, 'payload'> & AppEvent);
-    });
-
-    return ship;
+  public constructor(public id: string) {
+    super();
   }
-
-  private constructor(public id: string) {}
 
   public game = proxies.gameProxy('');
   public owner = proxies.playerProxy('', '');
@@ -108,7 +91,7 @@ export class Ship {
     );
   }
 
-  private applyEvent(event: AppEvent) {
+  protected applyEvent(event: AppEvent) {
     if (event.type === 'launchShip' && event.payload.id === this.id) {
       this.game = proxies.gameProxy(event.payload.gameId);
       this.owner = proxies.playerProxy(

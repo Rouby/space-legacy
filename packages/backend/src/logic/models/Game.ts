@@ -1,6 +1,5 @@
-import type { GameEvent } from '@prisma/client';
-import { getDbClient } from '../../util';
 import type { AppEvent } from '../events';
+import { Base } from './Base';
 import type { Combat } from './Combat';
 import type { Fleet } from './Fleet';
 import type { Player } from './Player';
@@ -8,29 +7,12 @@ import { Promised, proxies } from './proxies';
 import type { Ship } from './Ship';
 import type { StarSystem } from './StarSystem';
 
-export class Game {
+export class Game extends Base {
   readonly kind = 'Game';
 
-  static async get(id: string) {
-    const game = new Game(id);
-
-    const events = await (
-      await getDbClient()
-    ).gameEvent.findMany({
-      orderBy: { createdAt: 'asc' },
-    });
-
-    events.forEach((event) => {
-      game.applyEvent({
-        ...event,
-        payload: JSON.parse(event.payload),
-      } as Omit<GameEvent, 'payload'> & AppEvent);
-    });
-
-    return game;
+  public constructor(public id: string) {
+    super();
   }
-
-  constructor(public id: string) {}
 
   public name = '';
   public maxPlayers = 0;
@@ -43,7 +25,7 @@ export class Game {
   public fleets = [] as Promised<Fleet>[];
   public combats = [] as Promised<Combat>[];
 
-  private applyEvent(event: AppEvent) {
+  protected applyEvent(event: AppEvent) {
     if (event.type === 'createGame' && event.payload.id === this.id) {
       this.name = event.payload.name;
       this.maxPlayers = event.payload.maxPlayers;

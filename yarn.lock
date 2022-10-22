@@ -3189,6 +3189,7 @@ __metadata:
     concurrently: ^7.3.0
     cookie: ^0.5.0
     cuid: ^2.1.8
+    dataloader: ^2.1.0
     esbuild: ^0.15.5
     graphql: ^16.5.0
     jsonwebtoken: ^8.5.1
@@ -3867,7 +3868,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dataloader@npm:2.1.0":
+"dataloader@npm:2.1.0, dataloader@npm:^2.1.0":
   version: 2.1.0
   resolution: "dataloader@npm:2.1.0"
   checksum: bbd43496c41697766f8611f60ed3bae437b450985499140b9603a2447c10d45975d3a0661caaebaa9750bc1bc9fd154676a314423294916c8b8ca1a59a08d139

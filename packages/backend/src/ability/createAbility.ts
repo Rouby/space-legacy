@@ -72,6 +72,7 @@ export async function createAbilityFor(user: User) {
     parties: { $elemMatch: { 'player.userId': user.id, cardPlayed: null } },
   });
 
+  can('read', 'ShipDesign');
   can('construct', 'ShipDesign', { 'owner.userId': user.id });
 
   return new AppAbility(

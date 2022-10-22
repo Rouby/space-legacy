@@ -1,32 +1,15 @@
-import type { GameEvent } from '@prisma/client';
-import { getDbClient } from '../../util';
 import type { AppEvent } from '../events';
+import { Base } from './Base';
 import { proxies, type Promised } from './proxies';
+import type { ShipComponent } from './ShipComponent';
 import type { ShipDesign } from './ShipDesign';
 
-export class Player {
+export class Player extends Base {
   readonly kind = 'Player';
 
-  static async get(gameId: string, userId: string) {
-    const player = new Player(gameId, userId);
-
-    const events = await (
-      await getDbClient()
-    ).gameEvent.findMany({
-      orderBy: { createdAt: 'asc' },
-    });
-
-    events.forEach((event) => {
-      player.applyEvent({
-        ...event,
-        payload: JSON.parse(event.payload),
-      } as Omit<GameEvent, 'payload'> & AppEvent);
-    });
-
-    return player;
+  public constructor(public gameId: string, public userId: string) {
+    super();
   }
-
-  private constructor(public gameId: string, public userId: string) {}
 
   public game = proxies.gameProxy(this.gameId);
   public user = proxies.userProxy(this.userId);
@@ -34,8 +17,9 @@ export class Player {
   public relationships = {} as { [userId: string]: 'friendly' | 'hostile' };
   public name = 'New Player';
   public availableShipDesigns = [] as Promised<ShipDesign>[];
+  public availableShipComponents = [] as Promised<ShipComponent>[];
 
-  applyEvent(event: AppEvent) {
+  protected applyEvent(event: AppEvent) {
     if (
       event.type === 'joinGame' &&
       event.payload.gameId === this.gameId &&
@@ -62,6 +46,16 @@ export class Player {
       event.payload.userId === this.userId
     ) {
       this.availableShipDesigns.push(proxies.shipDesignProxy(event.payload.id));
+    }
+
+    if (
+      event.type === 'createShipComponent' &&
+      event.payload.gameId === this.gameId &&
+      event.payload.userId === this.userId
+    ) {
+      this.availableShipComponents.push(
+        proxies.shipComponentProxy(event.payload.id),
+      );
     }
   }
 }

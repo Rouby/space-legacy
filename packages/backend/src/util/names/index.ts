@@ -1,6 +1,6 @@
-import { planets } from './planets';
+import { systems } from './systems';
 
-const names = { planets };
+const names = { systems };
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // name_generator.js

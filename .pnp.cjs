@@ -8238,6 +8238,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["concurrently", "npm:7.3.0"],\
             ["cookie", "npm:0.5.0"],\
             ["cuid", "npm:2.1.8"],\
+            ["dataloader", "npm:2.1.0"],\
             ["esbuild", "npm:0.15.5"],\
             ["graphql", "npm:16.5.0"],\
             ["jsonwebtoken", "npm:8.5.1"],\

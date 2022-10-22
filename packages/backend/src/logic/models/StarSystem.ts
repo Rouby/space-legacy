@@ -1,35 +1,18 @@
-import type { GameEvent } from '@prisma/client';
-import { getDbClient, Vector } from '../../util';
+import { Vector } from '../../util';
 import type { AppEvent } from '../events';
+import { Base } from './Base';
 import type { Game } from './Game';
 import type { Player } from './Player';
 import { proxies, type Promised } from './proxies';
 import type { Ship } from './Ship';
 import type { ShipDesign } from './ShipDesign';
 
-export class StarSystem {
+export class StarSystem extends Base {
   readonly kind = 'StarSystem';
 
-  static async get(id: string) {
-    const starSystem = new StarSystem(id);
-
-    const events = await (
-      await getDbClient()
-    ).gameEvent.findMany({
-      orderBy: { createdAt: 'asc' },
-    });
-
-    events.forEach((event) => {
-      starSystem.applyEvent({
-        ...event,
-        payload: JSON.parse(event.payload),
-      } as Omit<GameEvent, 'payload'> & AppEvent);
-    });
-
-    return starSystem;
+  public constructor(public id: string) {
+    super();
   }
-
-  private constructor(public id: string) {}
 
   public game = null as Promised<Game> | null;
   public name = '';
@@ -93,7 +76,7 @@ export class StarSystem {
     return visibility.checkVisibility(this.coordinates);
   }
 
-  private applyEvent(event: AppEvent) {
+  protected applyEvent(event: AppEvent) {
     if (event.type === 'createStarSystem' && event.payload.id === this.id) {
       this.game = proxies.gameProxy(event.payload.gameId);
       this.name = event.payload.name;

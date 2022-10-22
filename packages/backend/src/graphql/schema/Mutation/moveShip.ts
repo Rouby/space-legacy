@@ -1,6 +1,7 @@
 import { ForbiddenError } from '@casl/ability';
 import { GraphQLYogaError } from '@graphql-yoga/node';
 import { issueMoveOrder } from '../../../logic/events';
+import { Ship } from '../../../logic/models';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -20,9 +21,9 @@ export const resolvers: Resolvers = {
     moveShip: async (
       _,
       { input: { gameId, shipId, to } },
-      { publishEvent, ability, models, userId },
+      { publishEvent, ability, get, userId },
     ) => {
-      const ship = await models.Ship.get(shipId);
+      const ship = await get(Ship, shipId);
 
       if (!ship) {
         throw new GraphQLYogaError('Star system not found');
@@ -38,7 +39,7 @@ export const resolvers: Resolvers = {
         }),
       });
 
-      return await models.Ship.get(shipId);
+      return await get(Ship, shipId);
     },
   },
 };

@@ -1,4 +1,4 @@
-import { isTruthy } from '../../../util';
+import { Game } from '../../../logic/models';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
@@ -9,18 +9,10 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers = {
   Query: {
-    starSystems: async (_, { gameId }, { models, ability, userId }) => {
-      return models.Game.get(gameId)
-        .then((game) =>
-          Promise.all(game.starSystems.map((system) => system.$resolve)),
-        )
-        .then((systems) =>
-          Promise.all(
-            systems.map(async (system) =>
-              (await system.isVisibleTo(userId)) ? system : null,
-            ),
-          ).then((systems) => systems.filter(isTruthy)),
-        );
+    starSystems: async (_, { gameId }, { get, ability, userId }) => {
+      const game = await get(Game, gameId);
+
+      return game.starSystems.$resolveAll;
     },
   },
 };

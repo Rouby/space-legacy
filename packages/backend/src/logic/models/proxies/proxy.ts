@@ -24,10 +24,12 @@ declare global {
   }
 }
 
-Object.defineProperty(Array.prototype, '$resolveAll', {
-  get(this: Promised<any>[]) {
-    return Promise.all(this.map((d) => d?.$resolve ?? d));
-  },
-  enumerable: false,
-  configurable: false,
-});
+if (!Array.prototype.$resolveAll) {
+  Object.defineProperty(Array.prototype, '$resolveAll', {
+    get(this: Promised<any>[]) {
+      return Promise.all(this.map((d) => d?.$resolve ?? d));
+    },
+    enumerable: false,
+    configurable: false,
+  });
+}
