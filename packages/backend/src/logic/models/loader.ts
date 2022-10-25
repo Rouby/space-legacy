@@ -7,15 +7,14 @@ export async function get<TIds extends string[], TModel extends Base>(
   model: new (...ids: TIds) => TModel,
   ...ids: TIds
 ) {
-  let instance = new model(...ids);
-  const key = instance.kind + ':' + ids.join(':');
+  const key = model.name + ':' + ids.join(':');
 
   if (!cache.has(key)) {
-    logger.info('Cache miss %s', key);
-    cache.set(key, instance);
+    logger.info('Cache miss on %s', key);
+    cache.set(key, new model(...ids));
   }
 
-  instance = cache.get(key) as TModel;
+  const instance = cache.get(key) as TModel;
 
   await Base.applyEvents(instance);
 

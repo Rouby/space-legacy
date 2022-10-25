@@ -1,8 +1,9 @@
-import { Button, Group, LoadingOverlay } from '@mantine/core';
+import { Button, Group, LoadingOverlay, Tooltip } from '@mantine/core';
 import { Link } from '@tanstack/react-location';
 import { Fragment, useEffect, useReducer, useRef } from 'react';
 import { IssueShipOrder } from '../components';
 import {
+  GalaxyOverviewQuery,
   GameListQuery,
   useDeleteGameMutation,
   useGalaxyOverviewQuery,
@@ -15,7 +16,7 @@ import {
   useStarSystemListQuery,
   useStartGameMutation,
 } from '../graphql';
-import { useAbility, useGame, useRandom } from '../utility';
+import { useAbility, useGame } from '../utility';
 
 export function Dashboard() {
   const [game, setGameId] = useGame();
@@ -63,7 +64,14 @@ function GalaxyOverview() {
         __typename
         id
         name
+        sunClass
         coordinates
+        habitablePlanets {
+          owner {
+            id
+            diplomaticStance
+          }
+        }
       }
 
       ships(gameId: $gameId) {
@@ -86,8 +94,6 @@ function GalaxyOverview() {
   const [galaxyOverview] = useGalaxyOverviewQuery({
     variables: { gameId: game?.id! },
   });
-
-  const rng = useRandom('galaxy-overview');
 
   const [viewBox, updateViewBox] = useReducer(
     (
@@ -194,31 +200,9 @@ function GalaxyOverview() {
         viewBox.w
       } ${viewBox.w}`}
     >
-      <filter
-        id="star-field"
-        filterUnits="objectBoundingBox"
-        x="0"
-        y="0"
-        width="100%"
-        height="100%"
-      >
-        <feTurbulence baseFrequency="0.6" seed={rng.next()} />
-        <feColorMatrix
-          values="0 0 0 7 -4
-                  0 0 0 7 -4
-                  0 0 0 7 -4
-                  0 0 0 0 1"
-        />
-      </filter>
       <rect x="-500" y="-500" width="1000" height="1000" fill="black" />
       {galaxyOverview.data?.starSystems.map((starSystem) => (
-        <circle
-          key={starSystem.id}
-          cx={starSystem.coordinates.x}
-          cy={starSystem.coordinates.y}
-          r="1"
-          fill="red"
-        />
+        <StarSystemDot key={starSystem.id} starSystem={starSystem} />
       ))}
       {galaxyOverview.data?.ships.map((ship) => (
         <Fragment key={ship.id}>
@@ -255,6 +239,60 @@ function GalaxyOverview() {
         />
       ))}
     </svg>
+  );
+}
+
+function StarSystemDot({
+  starSystem,
+}: {
+  starSystem: GalaxyOverviewQuery['starSystems'][0];
+}) {
+  const hasFriendly = starSystem.habitablePlanets.some(
+    (planet) => planet.owner?.diplomaticStance === 'FRIENDLY',
+  );
+  const hasHostile = starSystem.habitablePlanets.some(
+    (planet) => planet.owner?.diplomaticStance === 'HOSTILE',
+  );
+
+  return (
+    <Link to={`/star-system/${starSystem.id}`}>
+      <Tooltip
+        label={
+          <>
+            {starSystem.name}, class {starSystem.sunClass}
+          </>
+        }
+        withinPortal
+      >
+        <circle
+          cx={starSystem.coordinates.x}
+          cy={starSystem.coordinates.y}
+          r={
+            {
+              O: 3.5,
+              B: 3.2,
+              A: 2.9,
+              F: 2.5,
+              G: 2.1,
+              K: 1.8,
+              M: 1.5,
+              neutron: 2,
+              pulsar: 2,
+              blackhole: 3,
+            }[starSystem.sunClass]
+          }
+          fill={
+            hasFriendly && hasHostile
+              ? 'purple'
+              : hasFriendly
+              ? 'green'
+              : hasHostile
+              ? 'red'
+              : 'gray'
+          }
+        />
+      </Tooltip>
+    </Link>
   );
 }
 

@@ -1,6 +1,5 @@
 import { AbilityBuilder, buildMongoQueryMatcher } from '@casl/ability';
 import { User } from '@prisma/client';
-import { proxies } from '../logic/models/proxies';
 import { AppAbility } from './AppAbility';
 
 export async function createAbilityFor(user: User) {
@@ -26,23 +25,23 @@ export async function createAbilityFor(user: User) {
     players: { $elemMatch: { userId: user.id, turnEnded: true } },
   });
 
-  const games = await Promise.all(
-    (await proxies.gameListProxy.get()).list.map((game) => game.$resolve),
-  );
-  for (const game of games.filter((game) =>
-    game.players.some((player) => player.userId === user.id),
-  )) {
-    const combats = await Promise.all(
-      game.combats.map((combat) => combat.$resolve),
-    );
-    if (
-      combats.some((combat) =>
-        combat.parties.some((party) => party.player.userId === user.id),
-      )
-    ) {
-      cannot('endTurn', 'Game', { id: game.id }).because('Ships are in combat');
-    }
-  }
+  // const games = await Promise.all(
+  //   (await get(proxies.gameListProxy)).list.map((game) => game.$resolve),
+  // );
+  // for (const game of games.filter((game) =>
+  //   game.players.some((player) => player.userId === user.id),
+  // )) {
+  //   const combats = await Promise.all(
+  //     game.combats.map((combat) => combat.$resolve),
+  //   );
+  //   if (
+  //     combats.some((combat) =>
+  //       combat.parties.some((party) => party.player.userId === user.id),
+  //     )
+  //   ) {
+  //     cannot('endTurn', 'Game', { id: game.id }).because('Ships are in combat');
+  //   }
+  // }
 
   can('constructShip', 'StarSystem', {
     habitablePlanets: { $elemMatch: { 'owner.userId': user.id } },

@@ -25,7 +25,7 @@ export async function gameStarted(
         createStarSystem({
           gameId: event.payload.gameId,
           name: generateName('systems'),
-          coordinates: new Vector(pos).toCoordinates(),
+          coordinates: pos.toCoordinates(),
           ...generateSystem(),
         }),
       ),
@@ -145,14 +145,9 @@ export async function gameStarted(
 
       const system = rng.from(systems, {
         splice: true,
-        where: (system) =>
-          system.payload.habitablePlanets.some(
-            (planet) => planet.size > 20 && planet.size < 25,
-          ),
+        where: (system) => system.payload.habitablePlanets.length > 0,
       });
-      const planet = rng.from(system.payload.habitablePlanets, {
-        where: (planet) => planet.size > 20 && planet.size < 25,
-      });
+      const planet = rng.from(system.payload.habitablePlanets);
 
       scheduleEvent(
         colonizePlanet({
@@ -185,7 +180,7 @@ function generateGalaxyPositions(
   systemCount: number,
 ) {
   const rng = new RandomNumberGenerator();
-  const systems: { x: number; y: number }[] = [];
+  const systems: Vector[] = [];
 
   const φ = rng.next() * Math.PI;
 
@@ -193,11 +188,11 @@ function generateGalaxyPositions(
     case 'elliptical':
       {
         for (let i = 0; i < systemCount; ++i) {
-          const x = rng.normal(0, 500);
-          const y = rng.normal(0, 800);
+          const x = rng.normal(0, 800);
+          const y = rng.normal(0, 500);
           const tx = x * Math.cos(φ) - y * Math.sin(φ);
           const ty = y * Math.cos(φ) + x * Math.sin(φ);
-          systems.push({ x: tx * 10, y: ty * 10 });
+          systems.push(new Vector({ x: tx, y: ty }));
         }
       }
       break;
@@ -211,19 +206,47 @@ function generateGalaxyPositions(
       break;
   }
 
+  while (
+    systems.some(
+      (system) =>
+        Math.min(
+          ...systems.map((other) =>
+            other === system ? 100000000 : system.distance(other),
+          ),
+        ) < 10,
+    )
+  ) {
+    const sys = systems.findIndex(
+      (system) =>
+        Math.min(
+          ...systems.map((other) =>
+            other === system ? 100000000 : system.distance(other),
+          ),
+        ) < 10,
+    );
+    systems.splice(sys, 1);
+  }
+  while (systems.length > systemCount) {
+    rng.from(systems, { splice: true });
+  }
+
   return systems;
 
   function genArm(φ: number, armCount: number) {
     const points = [];
-    for (let i = 0; i < Math.log10(systemCount) ** 2 * 14; ++i) {
-      for (let o = 0; o < 25 / (i + 1) / armCount; ++o) {
-        const x = i + rng.normal(0, 3);
-        const y = rng.normal(0, 3);
+    for (let i = 0; i < Math.log10(systemCount) ** 2 * 11; ++i) {
+      for (let o = 0; o < 3 / armCount; ++o) {
+        const x = i + rng.normal(0, 10);
+        const y = rng.normal(0, 10);
         const tx =
-          x * Math.cos(φ + i ** 1.5 / 100) - y * Math.sin(φ + i ** 1.5 / 100);
+          (x * Math.cos(φ + i ** 1.5 / 100) -
+            y * Math.sin(φ + i ** 1.5 / 100)) *
+          10;
         const ty =
-          y * Math.cos(φ + i ** 1.5 / 100) + x * Math.sin(φ + i ** 1.5 / 100);
-        points.push({ x: tx * 10, y: ty * 10 });
+          (y * Math.cos(φ + i ** 1.5 / 100) +
+            x * Math.sin(φ + i ** 1.5 / 100)) *
+          10;
+        points.push(new Vector({ x: tx, y: ty }));
       }
     }
     return points;

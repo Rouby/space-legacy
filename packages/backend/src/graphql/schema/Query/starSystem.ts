@@ -5,11 +5,25 @@ export const typeDefs = /* GraphQL */ `
   type StarSystem {
     id: ID!
     name: String!
+    sunClass: SunClass!
     coordinates: Coordinates!
     habitablePlanets: [Planet!]!
     uninhabitableBodies: [Body!]!
     shipyards: [Shipyard!]!
     ships: [Ship!]!
+  }
+
+  enum SunClass {
+    O
+    B
+    A
+    F
+    G
+    K
+    M
+    neutron
+    pulsar
+    blackhole
   }
 
   type Planet {

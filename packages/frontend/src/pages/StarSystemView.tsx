@@ -20,6 +20,7 @@ export function StarSystemView() {
         __typename
         id
         name
+        sunClass
         habitablePlanets {
           name
           orbit
@@ -65,7 +66,10 @@ export function StarSystemView() {
 
   return (
     <>
-      <div>{starSystemResult.data?.starSystem?.name}</div>
+      <div>
+        {starSystemResult.data?.starSystem?.name}, class{' '}
+        {starSystemResult.data?.starSystem?.sunClass}
+      </div>
       Planets:
       {starSystemResult.data?.starSystem?.habitablePlanets.map((planet) => (
         <div key={planet.orbit}>
@@ -110,7 +114,26 @@ export function StarSystemView() {
               seed={rng.next()}
             />
           ))}
-          <Sun temperature={2000} cx="50" cy="90" r="20" seed={rng.next()} />
+          <Sun
+            temperature={
+              {
+                O: 30000,
+                B: 15000,
+                A: 8000,
+                F: 7000,
+                G: 5800,
+                K: 4400,
+                M: 2500,
+                neutron: 100000,
+                pulsar: 100000,
+                blackhole: 10000000,
+              }[starSystemResult.data?.starSystem?.sunClass ?? 'O']
+            }
+            cx="50"
+            cy="90"
+            r="20"
+            seed={rng.next()}
+          />
           {/* Draw bodies */}
           {starSystemResult.data?.starSystem?.habitablePlanets.map((planet) => (
             <Planet

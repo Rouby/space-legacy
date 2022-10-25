@@ -40,7 +40,7 @@ export class RandomNumberGenerator {
   ): T {
     const filteredArray = array.filter(where);
     const element = filteredArray[this.int(0, filteredArray.length)];
-    if (splice) {
+    if (splice && element) {
       return array.splice(array.indexOf(element), 1)[0];
     }
     return element;
