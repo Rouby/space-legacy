@@ -4,3 +4,4 @@ node_modules
 
 src/graphql/generated
 dist
+prisma/dev.db

@@ -7,17 +7,12 @@ export abstract class Base {
   abstract get kind(): string;
 
   static async applyEvents(instance: Base) {
-    const lastEvent = instance.lastEvent;
     const events = await (
       await getDbClient()
     ).gameEvent.findMany({
       where: { createdAt: { gt: instance.lastEvent } },
       orderBy: { createdAt: 'asc' },
     });
-    if (lastEvent !== instance.lastEvent) {
-      logger.trace('Concurrent request detected, ignoring events');
-      return instance;
-    }
 
     logger.trace(
       'Applying %d events to %s since %s',

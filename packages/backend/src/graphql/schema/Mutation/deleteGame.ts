@@ -23,7 +23,7 @@ export const resolvers: Resolvers = {
     ) => {
       const game = await get(Game, id);
 
-      if (!game) {
+      if (game.state === 'NON_EXISTENT') {
         throw new GraphQLYogaError('Game not found');
       }
 

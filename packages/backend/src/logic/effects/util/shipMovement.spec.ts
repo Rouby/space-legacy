@@ -3,13 +3,14 @@ import { mockGameEvents } from '../../../util/__mocks__/db';
 import { issueFollowOrder, issueMoveOrder, launchShip } from '../../events';
 import '../../index';
 import { Ship } from '../../models';
+import { get } from '../../models/loader';
 import { moveShips } from './shipMovement';
 
 vi.mock('../../../util/db');
 
 describe('shipMovement', () => {
   it('should schedule a movement for a ship with an order', async () => {
-    mockGameEvents.mockImplementation(() => [
+    mockGameEvents.mockImplementation(async () => [
       launchShip({
         id: '1',
         gameId: '',
@@ -27,7 +28,7 @@ describe('shipMovement', () => {
     const scheduleEvent = vi.fn();
 
     await moveShips(
-      [await Ship.get('1')],
+      [await get(Ship, '1')],
       { payload: { gameId: '', userId: '' } } as any,
       scheduleEvent,
     );
@@ -42,7 +43,7 @@ describe('shipMovement', () => {
   });
 
   it('should stop movement for hostile crossing ships', async () => {
-    mockGameEvents.mockImplementation(() => [
+    mockGameEvents.mockImplementation(async () => [
       launchShip({
         id: '1',
         gameId: '',
@@ -73,7 +74,7 @@ describe('shipMovement', () => {
     const scheduleEvent = vi.fn();
 
     await moveShips(
-      [await Ship.get('1'), await Ship.get('2')],
+      [await get(Ship, '1'), await get(Ship, '2')],
       { payload: { gameId: '', userId: '' } } as any,
       scheduleEvent,
     );
@@ -95,7 +96,7 @@ describe('shipMovement', () => {
   });
 
   it('should move ships that follow each other straight at each other', async () => {
-    mockGameEvents.mockImplementation(() => [
+    mockGameEvents.mockImplementation(async () => [
       launchShip({
         id: '1',
         gameId: '',
@@ -128,7 +129,7 @@ describe('shipMovement', () => {
     const scheduleEvent = vi.fn();
 
     await moveShips(
-      [await Ship.get('1'), await Ship.get('2')],
+      [await get(Ship, '1'), await get(Ship, '2')],
       { payload: { gameId: '', userId: '' } } as any,
       scheduleEvent,
     );

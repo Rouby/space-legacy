@@ -13,6 +13,8 @@ const server = createServer({
   schema,
   context,
   logging: logger,
+  hostname: 'localhost',
+  maskedErrors: process.env.NODE_ENV === 'production',
 });
 
 server.start();

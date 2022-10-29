@@ -58,7 +58,21 @@ export async function gameStarted(
             resourceCosts: 1,
             structuralStrength: 1,
             crewRequirements: 1,
+            ftlSpeed: 1,
             fuelConsumption: 1,
+          }),
+        );
+        scheduleEvent(
+          createShipComponent({
+            gameId: game.id,
+            userId: player.userId,
+            type: 'sensor',
+            name: 'Scanner',
+            powerDraw: 1,
+            resourceCosts: 1,
+            structuralStrength: 0,
+            crewRequirements: 1,
+            sensorRange: 10,
           }),
         );
         scheduleEvent(

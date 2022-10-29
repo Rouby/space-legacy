@@ -34,6 +34,7 @@ type Component =
 
 type FtlComponent = {
   type: 'ftl';
+  ftlSpeed: number;
   fuelConsumption: number;
 };
 
@@ -56,7 +57,7 @@ type WeaponComponent = {
 
 type SensorComponent = {
   type: 'sensor';
-  range: number;
+  sensorRange: number;
 };
 
 type ShieldComponent = {

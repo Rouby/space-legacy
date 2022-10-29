@@ -1,9 +1,9 @@
 import { logger } from '../../logger';
 import { Base } from './Base';
 
-const cache = new Map<string, Base>();
+const cache = new Map<string, Promise<Base>>();
 
-export async function get<TIds extends string[], TModel extends Base>(
+export function get<TIds extends string[], TModel extends Base>(
   model: new (...ids: TIds) => TModel,
   ...ids: TIds
 ) {
@@ -11,12 +11,14 @@ export async function get<TIds extends string[], TModel extends Base>(
 
   if (!cache.has(key)) {
     logger.info('Cache miss on %s', key);
-    cache.set(key, new model(...ids));
+    cache.set(key, Promise.resolve(new model(...ids)));
   }
 
-  const instance = cache.get(key) as TModel;
+  const promisedInstance = cache.get(key)!.then(async (instance) => {
+    await Base.applyEvents(instance);
+    return instance;
+  });
+  cache.set(key, promisedInstance);
 
-  await Base.applyEvents(instance);
-
-  return instance;
+  return promisedInstance as Promise<TModel>;
 }

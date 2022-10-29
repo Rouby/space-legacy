@@ -1,4 +1,5 @@
 import { ForbiddenError } from '@casl/ability';
+import { GraphQLError } from 'graphql';
 import { Game } from '../../../logic/models';
 import { Resolvers } from '../../generated';
 
@@ -14,6 +15,7 @@ export const typeDefs = /* GraphQL */ `
   }
 
   enum GameState {
+    NON_EXISTENT
     CREATED
     STARTED
     ENDED
@@ -29,7 +31,13 @@ export const resolvers: Resolvers = {
     game: async (_, { id }, { ability, get }) => {
       ForbiddenError.from(ability).throwUnlessCan('read', 'GamesList');
 
-      return get(Game, id);
+      const game = await get(Game, id);
+
+      if (game.state === 'NON_EXISTENT') {
+        throw new GraphQLError('Game does not exist');
+      }
+
+      return game;
     },
   },
 };

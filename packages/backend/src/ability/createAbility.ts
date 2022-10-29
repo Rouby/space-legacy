@@ -21,6 +21,7 @@ export async function createAbilityFor(user: User) {
   cannot('start', 'Game', { state: { $ne: 'CREATED' } });
 
   can('endTurn', 'Game', { 'players.userId': user.id });
+  cannot('endTurn', 'Game', { state: { $ne: 'STARTED' } });
   cannot('endTurn', 'Game', {
     players: { $elemMatch: { userId: user.id, turnEnded: true } },
   });

@@ -17,7 +17,11 @@ export class Game extends Base {
   public name = '';
   public maxPlayers = 0;
   public creator = proxies.userProxy('');
-  public state = 'CREATED' as 'CREATED' | 'STARTED' | 'ENDED';
+  public state = 'NON_EXISTENT' as
+    | 'NON_EXISTENT'
+    | 'CREATED'
+    | 'STARTED'
+    | 'ENDED';
   public round = 0;
   public players = [] as Promised<Player>[];
   public starSystems = [] as Promised<StarSystem>[];
@@ -27,10 +31,15 @@ export class Game extends Base {
 
   protected applyEvent(event: AppEvent) {
     if (event.type === 'createGame' && event.payload.id === this.id) {
+      this.state = 'CREATED';
       this.name = event.payload.name;
       this.maxPlayers = event.payload.maxPlayers;
       this.creator = proxies.userProxy(event.payload.creatorId);
       this.round = 1;
+    }
+
+    if (event.type === 'deleteGame' && event.payload.id === this.id) {
+      this.state = 'NON_EXISTENT';
     }
 
     if (event.type === 'joinGame' && event.payload.gameId === this.id) {

@@ -1,5 +1,17 @@
-import { useMatch } from '@tanstack/react-location';
 import {
+  ActionIcon,
+  Avatar,
+  Box,
+  Group,
+  Paper,
+  Progress,
+  Text,
+} from '@mantine/core';
+import { IconMinus, IconPlus } from '@tabler/icons';
+import { useMatch } from '@tanstack/react-location';
+import { useState } from 'react';
+import {
+  AvailableShipComponentsQuery,
   useAvailableShipComponentsQuery,
   useShipDesignDetailsQuery,
 } from '../graphql';
@@ -21,10 +33,18 @@ export function ShipDesignBuilder() {
           id
           userId
         }
+        components {
+          id
+          name
+          powerDraw
+          crewRequirements
+          structuralStrength
+          resourceCosts
+        }
       }
     } 
   `;
-  const [] = useShipDesignDetailsQuery({
+  const [shipDesign] = useShipDesignDetailsQuery({
     variables: { gameId: game?.id!, shipDesignId: id! },
     pause: !id,
   });
@@ -35,6 +55,10 @@ export function ShipDesignBuilder() {
         __typename
         id
         name
+        powerDraw
+        crewRequirements
+        structuralStrength
+        resourceCosts
       }
     } 
   `;
@@ -42,9 +66,71 @@ export function ShipDesignBuilder() {
     variables: { gameId: game?.id! },
   });
 
+  const [newComponents, setNewComponents] = useState<
+    AvailableShipComponentsQuery['shipComponents']
+  >([]);
+
+  const powerDraw = (
+    shipDesign.data?.shipDesign?.components ?? newComponents
+  ).reduce((acc, comp) => acc + comp.powerDraw, 0);
+  const powerGeneration = (
+    shipDesign.data?.shipDesign?.components ?? newComponents
+  ).reduce((acc, comp) => acc, 0);
+
   return (
     <>
       build me up {id} {availableShipComponents.data?.shipComponents.length}
+      {availableShipComponents.data?.shipComponents.map((component) => (
+        <Group key={component.id}>
+          <ActionIcon
+            onClick={() =>
+              setNewComponents((components) => [...components, component])
+            }
+          >
+            <IconPlus />
+          </ActionIcon>
+          <Avatar />
+          <Box>
+            <Text>{component.name}</Text>
+          </Box>
+        </Group>
+      ))}
+      <Paper withBorder p="md" radius="md">
+        <Progress
+          sections={[
+            {
+              color: 'green',
+              value: Math.max(0, powerGeneration - powerDraw),
+            },
+            {
+              color: 'red',
+              value: Math.max(0, powerDraw - powerGeneration),
+            },
+          ]}
+        />
+      </Paper>
+      Components:
+      {(shipDesign.data?.shipDesign?.components ?? newComponents).map(
+        (component, idx) => (
+          <Group key={component.id}>
+            {!shipDesign.data?.shipDesign?.components && (
+              <ActionIcon
+                onClick={() =>
+                  setNewComponents(
+                    newComponents.filter((_, idx2) => idx !== idx2),
+                  )
+                }
+              >
+                <IconMinus />
+              </ActionIcon>
+            )}
+            <Avatar />
+            <Box>
+              <Text>{component.name}</Text>
+            </Box>
+          </Group>
+        ),
+      )}
     </>
   );
 }

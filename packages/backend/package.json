@@ -8,7 +8,8 @@
     "build": "echo tbd",
     "test": "vitest",
     "preview": "echo tbd",
-    "codegen": "graphql-codegen --config codegen.yml"
+    "codegen": "graphql-codegen --config codegen.yml",
+    "prisma:generate": "yarn pnpify prisma generate"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "2.11.3",

@@ -3,14 +3,30 @@ import { Player, ShipComponent } from '../../../logic/models';
 import { Resolvers } from '../../generated';
 
 export const typeDefs = /* GraphQL */ `
-  type ShipComponent {
+  interface ShipComponent {
     id: ID!
     name: String!
+    powerDraw: Int!
+    crewRequirements: Int!
+    structuralStrength: Int!
+    resourceCosts: Int!
   }
 
   type Query {
     shipComponent(id: ID!, gameId: ID!): ShipComponent
     shipComponents(gameId: ID!): [ShipComponent!]!
+  }
+
+  type FTLShipComponent implements ShipComponent {
+    id: ID!
+    name: String!
+    powerDraw: Int!
+    crewRequirements: Int!
+    structuralStrength: Int!
+    resourceCosts: Int!
+
+    ftlSpeed: Int!
+    fuelConsumption: Int!
   }
 `;
 
