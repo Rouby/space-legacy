@@ -8,9 +8,9 @@
     "packages/*"
   ],
   "devDependencies": {
-    "concurrently": "^7.3.0",
+    "concurrently": "^7.5.0",
     "prettier": "^2.7.1",
-    "typescript": "^4.6.4"
+    "typescript": "^4.8.4"
   },
   "dependenciesMeta": {
     "@prisma/client@4.1.1": {
