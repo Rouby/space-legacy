@@ -19,6 +19,7 @@ generates:
       mappers:
         Ship: '../../logic/models#PromisedShip'
         Player: '../../logic/models#PromisedPlayer'
+        ShipComponent: '../../logic/models#PromisedShipComponent'
       contextType: '../context#Context'
       allowParentTypeOverride: true
 hooks:

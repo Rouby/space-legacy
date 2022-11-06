@@ -40,6 +40,21 @@ export function ShipDesignBuilder() {
           crewRequirements
           structuralStrength
           resourceCosts
+
+          ... on FTLShipComponent {
+            ftlSpeed
+            fuelConsumption
+          }
+
+          ... on GeneratorShipComponent {
+            powerGeneration
+          }
+
+          ... on AugmentationShipComponent {
+            lifeSupport
+            crewCapacity
+            soldierCapacity
+          }
         }
       }
     } 
@@ -59,6 +74,21 @@ export function ShipDesignBuilder() {
         crewRequirements
         structuralStrength
         resourceCosts
+        
+        ... on FTLShipComponent {
+          ftlSpeed
+          fuelConsumption
+        }
+
+        ... on GeneratorShipComponent {
+          powerGeneration
+        }
+
+        ... on AugmentationShipComponent {
+          lifeSupport
+          crewCapacity
+          soldierCapacity
+        }
       }
     } 
   `;
@@ -70,12 +100,52 @@ export function ShipDesignBuilder() {
     AvailableShipComponentsQuery['shipComponents']
   >([]);
 
-  const powerDraw = (
-    shipDesign.data?.shipDesign?.components ?? newComponents
-  ).reduce((acc, comp) => acc + comp.powerDraw, 0);
+  const powerDraw = (shipDesign.data?.shipDesign?.components ?? newComponents)
+    .map((comp) => comp.powerDraw)
+    .reduce((a, b) => a + b, 0);
   const powerGeneration = (
     shipDesign.data?.shipDesign?.components ?? newComponents
-  ).reduce((acc, comp) => acc, 0);
+  )
+    .map((comp) =>
+      comp.__typename === 'GeneratorShipComponent' ? comp.powerGeneration : 0,
+    )
+    .reduce((a, b) => a + b, 0);
+
+  const crewRequirements = (
+    shipDesign.data?.shipDesign?.components ?? newComponents
+  )
+    .map((comp) => comp.crewRequirements)
+    .reduce((a, b) => a + b, 0);
+  const crewCapacity = (
+    shipDesign.data?.shipDesign?.components ?? newComponents
+  )
+    .map((comp) =>
+      comp.__typename === 'AugmentationShipComponent'
+        ? comp.crewCapacity ?? 0
+        : 0,
+    )
+    .reduce((a, b) => a + b, 0);
+
+  const lifeSupportRequired = (
+    shipDesign.data?.shipDesign?.components ?? newComponents
+  )
+    .map(
+      (comp) =>
+        comp.crewRequirements +
+        (comp.__typename === 'AugmentationShipComponent'
+          ? comp.soldierCapacity ?? 0
+          : 0),
+    )
+    .reduce((a, b) => a + b, 0);
+  const lifeSupportProvided = (
+    shipDesign.data?.shipDesign?.components ?? newComponents
+  )
+    .map((comp) =>
+      comp.__typename === 'AugmentationShipComponent'
+        ? comp.lifeSupport ?? 0
+        : 0,
+    )
+    .reduce((a, b) => a + b, 0);
 
   return (
     <>
@@ -105,6 +175,34 @@ export function ShipDesignBuilder() {
             {
               color: 'red',
               value: Math.max(0, powerDraw - powerGeneration),
+            },
+          ]}
+        />
+      </Paper>
+      <Paper withBorder p="md" radius="md">
+        <Progress
+          sections={[
+            {
+              color: 'green',
+              value: Math.max(0, crewCapacity - crewRequirements),
+            },
+            {
+              color: 'red',
+              value: Math.max(0, crewRequirements - crewCapacity),
+            },
+          ]}
+        />
+      </Paper>
+      <Paper withBorder p="md" radius="md">
+        <Progress
+          sections={[
+            {
+              color: 'green',
+              value: Math.max(0, lifeSupportProvided - lifeSupportRequired),
+            },
+            {
+              color: 'red',
+              value: Math.max(0, lifeSupportRequired - lifeSupportProvided),
             },
           ]}
         />

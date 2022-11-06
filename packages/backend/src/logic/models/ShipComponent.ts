@@ -1,5 +1,6 @@
 import type { AppEvent } from '../events';
 import { Base } from './Base';
+import { Promised, proxies } from './proxies';
 
 export class ShipComponent extends Base {
   readonly kind = 'ShipComponent';
@@ -23,6 +24,7 @@ export class ShipComponent extends Base {
   public structuralStrength = 0;
   public resourceCosts = 0;
 
+  public ftlSpeed = 0;
   public fuelConsumption = 0;
 
   public evasion = 0;
@@ -45,7 +47,7 @@ export class ShipComponent extends Base {
   public cargoCapacity = 0;
   public lifeSupport = 0;
 
-  public previousComponentId?: string;
+  public previousComponent?: Promised<ShipComponent>;
 
   protected applyEvent(event: AppEvent) {
     if (event.type === 'createShipComponent' && event.payload.id === this.id) {
@@ -55,9 +57,14 @@ export class ShipComponent extends Base {
       this.crewRequirements = event.payload.crewRequirements;
       this.structuralStrength = event.payload.structuralStrength;
       this.resourceCosts = event.payload.resourceCosts;
-      this.previousComponentId = event.payload.previousComponentId;
+      if (event.payload.previousComponentId) {
+        this.previousComponent = proxies.shipComponentProxy(
+          event.payload.previousComponentId,
+        );
+      }
 
       if (event.payload.type === 'ftl') {
+        this.ftlSpeed = event.payload.ftlSpeed;
         this.fuelConsumption = event.payload.fuelConsumption;
       }
 
@@ -97,3 +104,5 @@ export class ShipComponent extends Base {
     }
   }
 }
+
+export type PromisedShipComponent = ShipComponent | Promised<ShipComponent>;

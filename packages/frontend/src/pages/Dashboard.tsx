@@ -452,7 +452,7 @@ function GameList() {
   return (
     <>
       <Button
-        onClick={() => createGame()}
+        onClick={() => createGame({})}
         loading={createGameResult.fetching}
         disabled={ability.cannot('create', 'Game')}
       >

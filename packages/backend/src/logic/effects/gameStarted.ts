@@ -134,7 +134,7 @@ export async function gameStarted(
             gameId: game.id,
             userId: player.userId,
             type: 'augmentation',
-            name: 'Baracks',
+            name: 'Barracks',
             powerDraw: 1,
             resourceCosts: 1,
             structuralStrength: 1,
