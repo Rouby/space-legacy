@@ -1,19 +1,14 @@
-import { GameEvent } from '@prisma/client';
+import { promisedInstance, registerEffect } from '@rouby/event-sourcing';
 import { logger } from '../../logger';
 import {
-  AppEvent,
   changePopulation,
   launchShip,
   nextRound,
   progressShipConstruction,
 } from '../events';
-import { proxies } from '../models/proxies';
 import { moveShips } from './util/shipMovement';
 
-export async function gameRoundEnded(
-  event: Omit<GameEvent, 'payload'> & AppEvent,
-  scheduleEvent: <TEvent extends AppEvent>(event: TEvent) => TEvent,
-) {
+registerEffect(async function gameRoundEnded(event, scheduleEvent) {
   if (event.type === 'endTurn') {
     logger.info('Effect "gameRoundEnded" triggered');
 
@@ -21,7 +16,7 @@ export async function gameRoundEnded(
       players: promisedPlayers,
       starSystems,
       ships,
-    } = await proxies.gameProxy(event.payload.gameId).$resolve;
+    } = await promisedInstance('Game', { id: event.payload.gameId }).$resolve;
 
     const players = await promisedPlayers.$resolveAll;
 
@@ -107,4 +102,4 @@ export async function gameRoundEnded(
       );
     }
   }
-}
+});

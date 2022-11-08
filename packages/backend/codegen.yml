@@ -16,10 +16,10 @@ generates:
       fieldWrapperValue: T | Promise<T>
       wrapEntireFieldDefinitions: true
       entireFieldWrapperValue: T | Promise<T>
-      mappers:
-        Ship: '../../logic/models#PromisedShip'
-        Player: '../../logic/models#PromisedPlayer'
-        ShipComponent: '../../logic/models#PromisedShipComponent'
+      # mappers:
+      #   Ship: '../../logic/models#PromisedShip'
+      #   Player: '../../logic/models#PromisedPlayer'
+      #   ShipComponent: '../../logic/models#PromisedShipComponent'
       contextType: '../context#Context'
       allowParentTypeOverride: true
 hooks:

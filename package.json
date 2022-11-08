@@ -1,6 +1,6 @@
 {
   "name": "@rouby/space",
-  "packageManager": "yarn@3.2.3",
+  "packageManager": "yarn@3.2.4",
   "scripts": {
     "dev": "concurrently -n frontend,backend \"yarn workspace frontend dev\" \"yarn workspace backend dev\""
   },

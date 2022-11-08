@@ -1,8 +1,12 @@
+import {
+  Model,
+  Promised,
+  promisedInstance,
+  registerModel,
+} from '@rouby/event-sourcing';
 import type { AppEvent } from '../events';
-import { Base } from './Base';
-import { Promised, proxies } from './proxies';
 
-export class ShipComponent extends Base {
+export class ShipComponent extends Model {
   readonly kind = 'ShipComponent';
 
   public constructor(public id: string) {
@@ -58,9 +62,9 @@ export class ShipComponent extends Base {
       this.structuralStrength = event.payload.structuralStrength;
       this.resourceCosts = event.payload.resourceCosts;
       if (event.payload.previousComponentId) {
-        this.previousComponent = proxies.shipComponentProxy(
-          event.payload.previousComponentId,
-        );
+        this.previousComponent = promisedInstance('ShipComponent', {
+          id: event.payload.previousComponentId,
+        });
       }
 
       if (event.payload.type === 'ftl') {
@@ -105,4 +109,10 @@ export class ShipComponent extends Base {
   }
 }
 
-export type PromisedShipComponent = ShipComponent | Promised<ShipComponent>;
+declare module '@rouby/event-sourcing' {
+  interface RegisteredModels {
+    ShipComponent: ShipComponent;
+  }
+}
+
+registerModel('ShipComponent', ShipComponent);

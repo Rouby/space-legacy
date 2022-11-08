@@ -1,3 +1,4 @@
+import { getInstance } from '@rouby/event-sourcing';
 import { Visibility } from '../../../logic/models';
 import { DiplomaticStance, Resolvers } from '../../generated';
 
@@ -27,8 +28,8 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers = {
   Query: {
-    visibilityRanges: async (_, { gameId }, { get, userId }) => {
-      const visibility = await get(Visibility, gameId, userId);
+    visibilityRanges: async (_, { gameId }, { userId }) => {
+      const visibility = await getInstance(Visibility, gameId, userId);
 
       return visibility.ranges();
     },

@@ -1,20 +1,24 @@
+import {
+  Model,
+  Promised,
+  promisedInstance,
+  registerModel,
+} from '@rouby/event-sourcing';
 import { Line, Vector } from '../../util';
 import type { AppEvent } from '../events';
-import { Base } from './Base';
 import type { Combat } from './Combat';
-import { Promised, proxies } from './proxies';
 import type { StarSystem } from './StarSystem';
 
-export class Ship extends Base {
+export class Ship extends Model {
   readonly kind = 'Ship';
 
   public constructor(public id: string) {
     super();
   }
 
-  public game = proxies.gameProxy('');
-  public owner = proxies.playerProxy('', '');
-  public design = proxies.shipDesignProxy('');
+  public game = promisedInstance('Game', { id: '' });
+  public owner = promisedInstance('Player', { gameId: '', userId: '' });
+  public design = promisedInstance('ShipDesign', { id: '' });
   public name = '';
   public starSystem = null as Promised<StarSystem> | null;
   public coordinates = new Vector();
@@ -27,8 +31,10 @@ export class Ship extends Base {
   public damage = 0;
 
   public async isVisibleTo(userId: string) {
-    const visibility = await proxies.visibilityProxy(this.game.id, userId)
-      .$resolve;
+    const visibility = await promisedInstance('Visibility', {
+      gameId: this.game.id,
+      userId,
+    }).$resolve;
 
     return (
       (await visibility.checkVisibility(this.coordinates)) ||
@@ -93,12 +99,14 @@ export class Ship extends Base {
 
   protected applyEvent(event: AppEvent) {
     if (event.type === 'launchShip' && event.payload.id === this.id) {
-      this.game = proxies.gameProxy(event.payload.gameId);
-      this.owner = proxies.playerProxy(
-        event.payload.gameId,
-        event.payload.userId,
-      );
-      this.design = proxies.shipDesignProxy(event.payload.designId);
+      this.game = promisedInstance('Game', { id: event.payload.gameId });
+      this.owner = promisedInstance('Player', {
+        gameId: event.payload.gameId,
+        userId: event.payload.userId,
+      });
+      this.design = promisedInstance('ShipDesign', {
+        id: event.payload.designId,
+      });
       this.coordinates = new Vector(event.payload.coordinates);
       this.previousCoordinates = this.coordinates;
     }
@@ -122,7 +130,9 @@ export class Ship extends Base {
     ) {
       this.movingTo = null;
       this.movementVector = null;
-      this.followingShip = proxies.shipProxy(event.payload.targetId);
+      this.followingShip = promisedInstance('Ship', {
+        id: event.payload.targetId,
+      });
       this.followingPredictive = event.payload.usePredictiveRoute;
     }
 
@@ -143,7 +153,7 @@ export class Ship extends Base {
       event.type === 'engageCombat' &&
       event.payload.parties.some((party) => party.shipIds.includes(this.id))
     ) {
-      this.combat = proxies.combatProxy(event.payload.id);
+      this.combat = promisedInstance('Combat', { id: event.payload.id });
     }
 
     if (event.type === 'damageShip' && event.payload.shipId === this.id) {
@@ -159,4 +169,10 @@ export class Ship extends Base {
   }
 }
 
-export type PromisedShip = Ship | Promised<Ship>;
+declare module '@rouby/event-sourcing' {
+  interface RegisteredModels {
+    Ship: Ship;
+  }
+}
+
+registerModel('Ship', Ship);

@@ -1,13 +1,17 @@
+import {
+  Model,
+  Promised,
+  promisedInstance,
+  registerModel,
+} from '@rouby/event-sourcing';
 import { Vector } from '../../util';
 import type { AppEvent } from '../events';
-import { Base } from './Base';
 import type { Game } from './Game';
 import type { Player } from './Player';
-import { proxies, type Promised } from './proxies';
 import type { Ship } from './Ship';
 import type { ShipDesign } from './ShipDesign';
 
-export class StarSystem extends Base {
+export class StarSystem extends Model {
   readonly kind = 'StarSystem';
 
   public constructor(public id: string) {
@@ -71,14 +75,16 @@ export class StarSystem extends Base {
   public userSensorRange = {} as { [userId: string]: number };
 
   public async isVisibleTo(userId: string) {
-    const visibility = await proxies.visibilityProxy(this.game!.id, userId)
-      .$resolve;
+    const visibility = await promisedInstance('Visibility', {
+      gameId: this.game!.id,
+      userId,
+    }).$resolve;
     return visibility.checkVisibility(this.coordinates);
   }
 
   protected applyEvent(event: AppEvent) {
     if (event.type === 'createStarSystem' && event.payload.id === this.id) {
-      this.game = proxies.gameProxy(event.payload.gameId);
+      this.game = promisedInstance('Game', { id: event.payload.gameId });
       this.name = event.payload.name;
       this.sunClass = event.payload.sunClass;
       this.coordinates = new Vector(event.payload.coordinates);
@@ -90,10 +96,10 @@ export class StarSystem extends Base {
       this.habitablePlanets
         .filter((_, idx) => idx === event.payload.planetIndex)
         .forEach((planet) => {
-          planet.owner = proxies.playerProxy(
-            event.payload.gameId,
-            event.payload.userId,
-          );
+          planet.owner = promisedInstance('Player', {
+            gameId: event.payload.gameId,
+            userId: event.payload.userId,
+          });
           planet.population = 1000;
 
           this.userSensorRange[event.payload.userId] = Math.max(
@@ -125,7 +131,10 @@ export class StarSystem extends Base {
         shipConstructionQueue: [],
         workLeft: event.payload.materialsNeeded,
         materialsLeft: event.payload.materialsNeeded,
-        owner: proxies.playerProxy(event.payload.gameId, event.payload.userId),
+        owner: promisedInstance('Player', {
+          gameId: event.payload.gameId,
+          userId: event.payload.userId,
+        }),
       });
 
       this.userSensorRange[event.payload.userId] = Math.max(
@@ -137,7 +146,7 @@ export class StarSystem extends Base {
     if (event.type === 'constructShip' && event.payload.systemId === this.id) {
       this.shipyards[event.payload.shipyardIndex].shipConstructionQueue.push({
         id: event.payload.id,
-        design: proxies.shipDesignProxy(event.payload.designId),
+        design: promisedInstance('ShipDesign', { id: event.payload.designId }),
         workLeft: event.payload.workNeeded,
         materialsLeft: event.payload.materialsNeeded,
       });
@@ -170,7 +179,7 @@ export class StarSystem extends Base {
       event.payload.gameId === this.game?.id &&
       this.coordinates.equals(event.payload.coordinates)
     ) {
-      this.ships.push(proxies.shipProxy(event.payload.id));
+      this.ships.push(promisedInstance('Ship', { id: event.payload.id }));
 
       this.shipyards.forEach((yard) => {
         const idx = yard.shipConstructionQueue.findIndex(
@@ -184,7 +193,7 @@ export class StarSystem extends Base {
 
     if (event.type === 'moveShip' && event.payload.gameId === this.game?.id) {
       if (this.coordinates.equals(event.payload.to)) {
-        this.ships.push(proxies.shipProxy(event.payload.shipId));
+        this.ships.push(promisedInstance('Ship', { id: event.payload.shipId }));
       } else {
         this.ships = this.ships.filter(
           (ship) => ship.id !== event.payload.shipId,
@@ -193,3 +202,11 @@ export class StarSystem extends Base {
     }
   }
 }
+
+declare module '@rouby/event-sourcing' {
+  interface RegisteredModels {
+    StarSystem: StarSystem;
+  }
+}
+
+registerModel('StarSystem', StarSystem);

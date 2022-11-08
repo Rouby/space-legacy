@@ -1,18 +1,22 @@
+import {
+  Model,
+  Promised,
+  promisedInstance,
+  registerModel,
+} from '@rouby/event-sourcing';
 import type { AppEvent } from '../events';
-import { Base } from './Base';
-import { Promised, proxies } from './proxies';
 import type { Ship } from './Ship';
 import type { StarSystem } from './StarSystem';
 
-export class Visibility extends Base {
+export class Visibility extends Model {
   readonly kind = 'Visibility';
 
   public constructor(public gameId: string, public userId: string) {
     super();
   }
 
-  public game = proxies.gameProxy(this.gameId);
-  public user = proxies.userProxy(this.userId);
+  public game = promisedInstance('Game', { id: this.gameId });
+  public user = promisedInstance('User', { id: this.userId });
 
   public starSystems = [] as Promised<StarSystem>[];
   public ships = [] as Promised<Ship>[];
@@ -69,7 +73,9 @@ export class Visibility extends Base {
       event.payload.userId === this.user.id
     ) {
       if (!this.starSystems.some((s) => s.id === event.payload.systemId)) {
-        this.starSystems.push(proxies.starSystemProxy(event.payload.systemId));
+        this.starSystems.push(
+          promisedInstance('StarSystem', { id: event.payload.systemId }),
+        );
       }
     }
 
@@ -78,7 +84,7 @@ export class Visibility extends Base {
       event.payload.gameId === this.game.id &&
       event.payload.userId === this.user.id
     ) {
-      this.ships.push(proxies.shipProxy(event.payload.id));
+      this.ships.push(promisedInstance('Ship', { id: event.payload.id }));
     }
 
     if (
@@ -90,3 +96,11 @@ export class Visibility extends Base {
     }
   }
 }
+
+declare module '@rouby/event-sourcing' {
+  interface RegisteredModels {
+    Visibility: Visibility;
+  }
+}
+
+registerModel('Visibility', Visibility);

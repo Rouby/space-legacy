@@ -1,19 +1,16 @@
-import { GameEvent } from '@prisma/client';
+import { promisedInstance, registerEffect } from '@rouby/event-sourcing';
 import { pubSub } from '../../graphql/context';
 import { logger } from '../../logger';
 import { Vector } from '../../util';
-import { AppEvent, engageCombat } from '../events';
+import { engageCombat } from '../events';
 import type { Ship } from '../models';
-import { proxies } from '../models/proxies';
 
-export async function gameRoundStarted(
-  event: Omit<GameEvent, 'payload'> & AppEvent,
-  scheduleEvent: <TEvent extends AppEvent>(event: TEvent) => TEvent,
-) {
+registerEffect(async function gameRoundStarted(event, scheduleEvent) {
   if (event.type === 'nextRound') {
     logger.info('Effect "gameRoundStarted" triggered');
 
-    const game = await proxies.gameProxy(event.payload.gameId).$resolve;
+    const game = await promisedInstance('Game', { id: event.payload.gameId })
+      .$resolve;
 
     const shipsByPosition = await Promise.all(
       game.ships.map((ship) => ship.$resolve),
@@ -52,14 +49,17 @@ export async function gameRoundStarted(
                 (p) => p.userId === userId,
               )?.relationships;
               return {
-                player: proxies.playerProxy(game.id, userId),
+                player: promisedInstance('Player', { gameId: game.id, userId }),
                 ships,
                 versus: userIds
                   .filter(
                     (otherUserId) => relationships?.[otherUserId] === 'hostile',
                   )
                   .map((userId) => ({
-                    player: proxies.playerProxy(game.id, userId),
+                    player: promisedInstance('Player', {
+                      gameId: game.id,
+                      userId,
+                    }),
                     ships: shipsByUser[userId],
                   })),
               };
@@ -91,4 +91,4 @@ export async function gameRoundStarted(
       pubSub.publish('gameNextRound', { id: event.payload.gameId });
     };
   }
-}
+});

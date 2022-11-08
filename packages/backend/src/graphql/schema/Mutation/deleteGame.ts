@@ -1,5 +1,6 @@
 import { ForbiddenError } from '@casl/ability';
 import { GraphQLYogaError } from '@graphql-yoga/node';
+import { getInstance } from '@rouby/event-sourcing';
 import { deleteGame } from '../../../logic/events';
 import { Game } from '../../../logic/models';
 import { Resolvers } from '../../generated';
@@ -16,12 +17,8 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers = {
   Mutation: {
-    deleteGame: async (
-      _,
-      { input: { id } },
-      { publishEvent, ability, get },
-    ) => {
-      const game = await get(Game, id);
+    deleteGame: async (_, { input: { id } }, { publishEvent, ability }) => {
+      const game = await getInstance(Game, id);
 
       if (game.state === 'NON_EXISTENT') {
         throw new GraphQLYogaError('Game not found');
@@ -35,7 +32,7 @@ export const resolvers: Resolvers = {
         }),
       });
 
-      return get(Game, id);
+      return getInstance(Game, id);
     },
   },
 };

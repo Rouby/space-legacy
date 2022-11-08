@@ -1,9 +1,8 @@
-import { GameEvent } from '@prisma/client';
+import { promisedInstance, registerEffect } from '@rouby/event-sourcing';
 import cuid from 'cuid';
 import { logger } from '../../logger';
 import { roll } from '../../util/roll';
 import {
-  AppEvent,
   damageShip,
   destroyShip,
   drawCombatCard,
@@ -12,17 +11,14 @@ import {
   restoreCombatDeck,
 } from '../events';
 import type { Ship } from '../models';
-import { proxies } from '../models/proxies';
 
-export async function combatRoundEnded(
-  event: Omit<GameEvent, 'payload'> & AppEvent,
-  scheduleEvent: <TEvent extends AppEvent>(event: TEvent) => TEvent,
-) {
+registerEffect(async function combatRoundEnded(event, scheduleEvent) {
   if (event.type === 'playCombatCard') {
     logger.info('Effect "combatRoundEnded" triggered');
 
-    const { parties } = await proxies.combatProxy(event.payload.combatId)
-      .$resolve;
+    const { parties } = await promisedInstance('Combat', {
+      id: event.payload.combatId,
+    }).$resolve;
 
     if (parties.every((p) => p.cardPlayed)) {
       logger.info('All parties have played their card');
@@ -192,4 +188,4 @@ export async function combatRoundEnded(
       }
     }
   }
-}
+});

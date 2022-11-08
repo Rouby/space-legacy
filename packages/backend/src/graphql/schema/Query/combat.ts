@@ -1,4 +1,5 @@
 import { ForbiddenError } from '@casl/ability';
+import { getInstance } from '@rouby/event-sourcing';
 import { Combat } from '../../../logic/models';
 import { Resolvers } from '../../generated';
 
@@ -50,8 +51,8 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers = {
   Query: {
-    combat: async (_, { gameId, id }, { get, ability, userId }) => {
-      const combat = await get(Combat, id);
+    combat: async (_, { gameId, id }, { ability, userId }) => {
+      const combat = await getInstance(Combat, id);
 
       ForbiddenError.from(ability).throwUnlessCan('participate', combat);
 

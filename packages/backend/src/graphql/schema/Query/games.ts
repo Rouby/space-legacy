@@ -1,4 +1,5 @@
 import { ForbiddenError } from '@casl/ability';
+import { getInstance } from '@rouby/event-sourcing';
 import { GameList } from '../../../logic/models';
 import { Resolvers } from '../../generated';
 
@@ -14,10 +15,10 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers = {
   Query: {
-    games: async (_, __, { get, ability }) => {
+    games: async (_, __, { ability }) => {
       ForbiddenError.from(ability).throwUnlessCan('read', 'GamesList');
 
-      const games = await get(GameList);
+      const games = await getInstance(GameList);
 
       return games.list.$resolveAll;
     },

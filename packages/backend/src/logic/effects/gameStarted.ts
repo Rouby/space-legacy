@@ -1,24 +1,20 @@
-import { GameEvent } from '@prisma/client';
+import { promisedInstance, registerEffect } from '@rouby/event-sourcing';
 import { pubSub } from '../../graphql/context';
 import { logger } from '../../logger';
 import { generateName, RandomNumberGenerator, Vector } from '../../util';
 import {
-  AppEvent,
   colonizePlanet,
   constructShipyard,
   createShipComponent,
   createStarSystem,
 } from '../events';
-import { proxies } from '../models/proxies';
 
-export async function gameStarted(
-  event: Omit<GameEvent, 'payload'> & AppEvent,
-  scheduleEvent: <TEvent extends AppEvent>(event: TEvent) => TEvent,
-) {
+registerEffect(async function gameStarted(event, scheduleEvent) {
   if (event.type === 'startGame') {
     logger.info('Effect "gameStarted" triggered');
 
-    const game = await proxies.gameProxy(event.payload.gameId).$resolve;
+    const game = await promisedInstance('Game', { id: event.payload.gameId })
+      .$resolve;
 
     const systems = generateGalaxyPositions('spiral', 100).map((pos) =>
       scheduleEvent(
@@ -187,7 +183,7 @@ export async function gameStarted(
       pubSub.publish('gameStarted', { id: event.payload.gameId });
     };
   }
-}
+});
 
 function generateGalaxyPositions(
   type: 'elliptical' | 'spiral',

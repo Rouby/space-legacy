@@ -1,4 +1,5 @@
 import { ForbiddenError } from '@casl/ability';
+import { getInstance } from '@rouby/event-sourcing';
 import { Player, ShipComponent } from '../../../logic/models';
 import { Resolvers } from '../../generated';
 
@@ -124,15 +125,15 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers = {
   Query: {
-    shipComponent: async (_, { gameId, id }, { get, ability, userId }) => {
-      const shipComponent = await get(ShipComponent, id);
+    shipComponent: async (_, { gameId, id }, { ability, userId }) => {
+      const shipComponent = await getInstance(ShipComponent, id);
 
       ForbiddenError.from(ability).throwUnlessCan('read', shipComponent);
 
       return shipComponent;
     },
-    shipComponents: async (_, { gameId }, { get, userId }) => {
-      const components = (await get(Player, gameId, userId))
+    shipComponents: async (_, { gameId }, { userId }) => {
+      const components = (await getInstance(Player, gameId, userId))
         .availableShipComponents;
 
       return components;

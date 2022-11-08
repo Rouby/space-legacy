@@ -1,4 +1,5 @@
 import { ForbiddenError } from '@casl/ability';
+import { getInstance } from '@rouby/event-sourcing';
 import { logger } from '../../../logger';
 import { Game } from '../../../logic/models';
 import { Resolvers } from '../../generated';
@@ -18,7 +19,7 @@ export const resolvers: Resolvers = {
     undoLastEndOfRound: async (
       _,
       { input: { gameId } },
-      { ability, get, prisma },
+      { ability, prisma },
     ) => {
       ForbiddenError.from(ability).throwUnlessCan('debug', 'Game');
 
@@ -50,7 +51,7 @@ export const resolvers: Resolvers = {
         }
       }
 
-      return get(Game, gameId);
+      return getInstance(Game, gameId);
     },
   },
 };

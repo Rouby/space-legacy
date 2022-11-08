@@ -1,10 +1,9 @@
 import { createPubSub } from '@graphql-yoga/node';
+import { publishEvent } from '@rouby/event-sourcing';
 import { CookieSerializeOptions, serialize } from 'cookie';
 import { IncomingMessage, ServerResponse } from 'http';
 import { decode, JwtPayload, verify } from 'jsonwebtoken';
 import { AppAbility, createDefaultAbility } from '../ability';
-import { publishEvent } from '../logic';
-import { get } from '../logic/models/loader';
 import { getDbClient } from '../util';
 
 export const pubSub = createPubSub<{
@@ -54,7 +53,6 @@ export async function context({
     ability: user ? new AppAbility(user.permissions) : createDefaultAbility(),
     publishEvent,
     pubSub,
-    get,
     http: {
       setCookie: (
         name: string,

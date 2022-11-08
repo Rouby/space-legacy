@@ -1,9 +1,13 @@
+import {
+  Model,
+  Promised,
+  promisedInstance,
+  registerModel,
+} from '@rouby/event-sourcing';
 import type { AppEvent } from '../events';
-import { Base } from './Base';
-import { Promised, proxies } from './proxies';
 import type { ShipComponent } from './ShipComponent';
 
-export class ShipDesign extends Base {
+export class ShipDesign extends Model {
   readonly kind = 'ShipDesign';
 
   public constructor(public id: string) {
@@ -11,7 +15,7 @@ export class ShipDesign extends Base {
   }
 
   public name = '';
-  public owner = proxies.playerProxy('', '');
+  public owner = promisedInstance('Player', { gameId: '', userId: '' });
   public weapons = [] as {
     name: string;
     damage: string;
@@ -24,16 +28,24 @@ export class ShipDesign extends Base {
   protected applyEvent(event: AppEvent) {
     if (event.type === 'createShipDesign' && event.payload.id === this.id) {
       this.name = event.payload.name;
-      this.owner = proxies.playerProxy(
-        event.payload.gameId,
-        event.payload.userId,
-      );
+      this.owner = promisedInstance('Player', {
+        gameId: event.payload.gameId,
+        userId: event.payload.userId,
+      });
       this.weapons = event.payload.weapons;
       this.structuralHealth = event.payload.structuralHealth;
       this.sensorRange = event.payload.sensorRange;
       this.components = event.payload.componentIds.map((id) =>
-        proxies.shipComponentProxy(id),
+        promisedInstance('ShipComponent', { id }),
       );
     }
   }
 }
+
+declare module '@rouby/event-sourcing' {
+  interface RegisteredModels {
+    ShipDesign: ShipDesign;
+  }
+}
+
+registerModel('ShipDesign', ShipDesign);

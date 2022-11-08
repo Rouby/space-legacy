@@ -1,18 +1,22 @@
+import {
+  Model,
+  Promised,
+  promisedInstance,
+  registerModel,
+} from '@rouby/event-sourcing';
 import type { AppEvent } from '../events';
-import { Base } from './Base';
-import { proxies, type Promised } from './proxies';
 import type { ShipComponent } from './ShipComponent';
 import type { ShipDesign } from './ShipDesign';
 
-export class Player extends Base {
+export class Player extends Model {
   readonly kind = 'Player';
 
   public constructor(public gameId: string, public userId: string) {
     super();
   }
 
-  public game = proxies.gameProxy(this.gameId);
-  public user = proxies.userProxy(this.userId);
+  public game = promisedInstance('Game', { id: this.gameId });
+  public user = promisedInstance('User', { id: this.userId });
   public turnEnded = false;
   public relationships = {} as { [userId: string]: 'friendly' | 'hostile' };
   public name = 'New Player';
@@ -40,24 +44,30 @@ export class Player extends Base {
       this.turnEnded = false;
     }
 
-    if (
-      event.type === 'createShipDesign' &&
-      event.payload.gameId === this.gameId &&
-      event.payload.userId === this.userId
-    ) {
-      this.availableShipDesigns.push(proxies.shipDesignProxy(event.payload.id));
-    }
+    // if (
+    //   event.type === 'createShipDesign' &&
+    //   event.payload.gameId === this.gameId &&
+    //   event.payload.userId === this.userId
+    // ) {
+    //   this.availableShipDesigns.push(proxies.shipDesignProxy(event.payload.id));
+    // }
 
-    if (
-      event.type === 'createShipComponent' &&
-      event.payload.gameId === this.gameId &&
-      event.payload.userId === this.userId
-    ) {
-      this.availableShipComponents.push(
-        proxies.shipComponentProxy(event.payload.id),
-      );
-    }
+    // if (
+    //   event.type === 'createShipComponent' &&
+    //   event.payload.gameId === this.gameId &&
+    //   event.payload.userId === this.userId
+    // ) {
+    //   this.availableShipComponents.push(
+    //     proxies.shipComponentProxy(event.payload.id),
+    //   );
+    // }
   }
 }
 
-export type PromisedPlayer = Player | Promised<Player>;
+declare module '@rouby/event-sourcing' {
+  interface RegisteredModels {
+    Player: Player;
+  }
+}
+
+registerModel('Player', Player);

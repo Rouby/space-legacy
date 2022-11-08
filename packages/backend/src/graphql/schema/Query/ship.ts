@@ -1,4 +1,5 @@
 import { subject } from '@casl/ability';
+import { getInstance } from '@rouby/event-sourcing';
 import { Ship } from '../../../logic/models';
 import { Vector } from '../../../util';
 import { Resolvers } from '../../generated';
@@ -21,8 +22,8 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers = {
   Query: {
-    ship: async (_, { gameId, id }, { get, ability, userId }) => {
-      const ship = await get(Ship, id);
+    ship: async (_, { gameId, id }, { ability, userId }) => {
+      const ship = await getInstance(Ship, id);
 
       if (!ship.isVisibleTo(userId)) {
         return null;

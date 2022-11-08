@@ -1,3 +1,4 @@
+import { getInstance } from '@rouby/event-sourcing';
 import { Game } from '../../../logic/models';
 import { isTruthy } from '../../../util';
 import { Resolvers } from '../../generated';
@@ -10,8 +11,8 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers = {
   Query: {
-    ships: async (_, { gameId }, { get, ability, userId }) => {
-      const ships = await get(Game, gameId).then(
+    ships: async (_, { gameId }, { ability, userId }) => {
+      const ships = await getInstance(Game, gameId).then(
         (game) => game.ships.$resolveAll,
       );
 

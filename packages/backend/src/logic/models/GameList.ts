@@ -1,9 +1,8 @@
+import { Model, Promised, promisedInstance } from '@rouby/event-sourcing';
 import type { AppEvent } from '../events';
-import { Base } from './Base';
 import type { Game } from './Game';
-import { proxies, type Promised } from './proxies';
 
-export class GameList extends Base {
+export class GameList extends Model {
   readonly kind = 'GameList';
 
   public constructor() {
@@ -14,7 +13,7 @@ export class GameList extends Base {
 
   protected applyEvent(event: AppEvent) {
     if (event.type === 'createGame') {
-      this.list.push(proxies.gameProxy(event.payload.id));
+      this.list.push(promisedInstance('Game', { id: event.payload.id }));
     }
 
     if (event.type === 'deleteGame') {

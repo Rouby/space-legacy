@@ -1,13 +1,16 @@
+import {
+  Model,
+  Promised,
+  promisedInstance,
+  registerModel,
+} from '@rouby/event-sourcing';
 import type { AppEvent } from '../events';
-import { Base } from './Base';
 import type { Combat } from './Combat';
-import type { Fleet } from './Fleet';
 import type { Player } from './Player';
-import { Promised, proxies } from './proxies';
 import type { Ship } from './Ship';
 import type { StarSystem } from './StarSystem';
 
-export class Game extends Base {
+export class Game extends Model {
   readonly kind = 'Game';
 
   public constructor(public id: string) {
@@ -16,7 +19,7 @@ export class Game extends Base {
 
   public name = '';
   public maxPlayers = 0;
-  public creator = proxies.userProxy('');
+  public creator = promisedInstance('User', { id: '' });
   public state = 'NON_EXISTENT' as
     | 'NON_EXISTENT'
     | 'CREATED'
@@ -26,7 +29,6 @@ export class Game extends Base {
   public players = [] as Promised<Player>[];
   public starSystems = [] as Promised<StarSystem>[];
   public ships = [] as Promised<Ship>[];
-  public fleets = [] as Promised<Fleet>[];
   public combats = [] as Promised<Combat>[];
 
   protected applyEvent(event: AppEvent) {
@@ -34,7 +36,7 @@ export class Game extends Base {
       this.state = 'CREATED';
       this.name = event.payload.name;
       this.maxPlayers = event.payload.maxPlayers;
-      this.creator = proxies.userProxy(event.payload.creatorId);
+      this.creator = promisedInstance('User', { id: event.payload.creatorId });
       this.round = 1;
     }
 
@@ -43,7 +45,12 @@ export class Game extends Base {
     }
 
     if (event.type === 'joinGame' && event.payload.gameId === this.id) {
-      this.players.push(proxies.playerProxy(this.id, event.payload.userId));
+      this.players.push(
+        promisedInstance('Player', {
+          gameId: this.id,
+          userId: event.payload.userId,
+        }),
+      );
     }
 
     if (event.type === 'startGame' && event.payload.gameId === this.id) {
@@ -54,13 +61,13 @@ export class Game extends Base {
       this.round = this.round + 1;
     }
 
-    if (event.type === 'createStarSystem' && event.payload.gameId === this.id) {
-      this.starSystems.push(proxies.starSystemProxy(event.payload.id));
-    }
+    // if (event.type === 'createStarSystem' && event.payload.gameId === this.id) {
+    //   this.starSystems.push(proxies.starSystemProxy(event.payload.id));
+    // }
 
-    if (event.type === 'launchShip' && event.payload.gameId === this.id) {
-      this.ships.push(proxies.shipProxy(event.payload.id));
-    }
+    // if (event.type === 'launchShip' && event.payload.gameId === this.id) {
+    //   this.ships.push(proxies.shipProxy(event.payload.id));
+    // }
 
     if (event.type === 'destroyShip' && event.payload.gameId === this.id) {
       this.ships = this.ships.filter(
@@ -68,9 +75,9 @@ export class Game extends Base {
       );
     }
 
-    if (event.type === 'engageCombat' && event.payload.gameId === this.id) {
-      this.combats.push(proxies.combatProxy(event.payload.id));
-    }
+    // if (event.type === 'engageCombat' && event.payload.gameId === this.id) {
+    //   this.combats.push(proxies.combatProxy(event.payload.id));
+    // }
 
     if (event.type === 'endCombat' && event.payload.gameId === this.id) {
       this.combats = this.combats.filter(
@@ -79,3 +86,11 @@ export class Game extends Base {
     }
   }
 }
+
+declare module '@rouby/event-sourcing' {
+  interface RegisteredModels {
+    Game: Game;
+  }
+}
+
+registerModel('Game', Game);

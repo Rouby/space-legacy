@@ -1,20 +1,23 @@
+import {
+  Model,
+  Promised,
+  promisedInstance,
+  registerModel,
+} from '@rouby/event-sourcing';
 import { Vector } from '../../util';
 import { CombatCardId } from '../combat';
 import type { AppEvent } from '../events';
-import { Base } from './Base';
-
 import type { Player } from './Player';
-import { Promised, proxies } from './proxies';
 import type { Ship } from './Ship';
 
-export class Combat extends Base {
+export class Combat extends Model {
   readonly kind = 'Combat';
 
   public constructor(public id: string) {
     super();
   }
 
-  public game = proxies.gameProxy('');
+  public game = promisedInstance('Game', { id: '' });
   public round = 0;
   public inProgress = false;
   public coordinates = new Vector();
@@ -47,14 +50,24 @@ export class Combat extends Base {
 
   protected applyEvent(event: AppEvent) {
     if (event.type === 'engageCombat' && event.payload.id === this.id) {
-      this.game = proxies.gameProxy(event.payload.gameId);
+      this.game = promisedInstance('Game', { id: event.payload.gameId });
       this.coordinates = new Vector(event.payload.coordinates);
       this.parties = event.payload.parties.map((party) => ({
-        player: proxies.playerProxy(event.payload.gameId, party.userId),
-        ships: party.shipIds.map((shipId) => proxies.shipProxy(shipId)),
+        player: promisedInstance('Player', {
+          gameId: event.payload.gameId,
+          userId: party.userId,
+        }),
+        ships: party.shipIds.map((shipId) =>
+          promisedInstance('Ship', { id: shipId }),
+        ),
         versus: party.versus.map((versus) => ({
-          player: proxies.playerProxy(event.payload.gameId, versus.userId),
-          ships: versus.shipIds.map((shipId) => proxies.shipProxy(shipId)),
+          player: promisedInstance('Player', {
+            gameId: event.payload.gameId,
+            userId: versus.userId,
+          }),
+          ships: versus.shipIds.map((shipId) =>
+            promisedInstance('Ship', { id: shipId }),
+          ),
         })),
         cardsInHand: party.cardIdsInHand,
         cardsInDeck: party.cardIdsInDeck,
@@ -140,8 +153,8 @@ export class Combat extends Base {
 
     if (event.type === 'damageShip' && event.payload.combatId === this.id) {
       this.log.at(this.round)!.damageReports.push({
-        ship: proxies.shipProxy(event.payload.shipId),
-        source: proxies.shipProxy(event.payload.sourceShipId),
+        ship: promisedInstance('Ship', { id: event.payload.shipId }),
+        source: promisedInstance('Ship', { id: event.payload.sourceShipId }),
         damage: event.payload.damage,
       });
     }
@@ -159,3 +172,11 @@ export class Combat extends Base {
     }
   }
 }
+
+declare module '@rouby/event-sourcing' {
+  interface RegisteredModels {
+    Combat: Combat;
+  }
+}
+
+registerModel('Combat', Combat);

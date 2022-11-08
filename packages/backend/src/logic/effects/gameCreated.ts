@@ -1,12 +1,8 @@
-import { GameEvent } from '@prisma/client';
+import { registerEffect } from '@rouby/event-sourcing';
 import { pubSub } from '../../graphql/context';
 import { logger } from '../../logger';
-import { AppEvent } from '../events';
 
-export async function gameCreated(
-  event: Omit<GameEvent, 'payload'> & AppEvent,
-  scheduleEvent: <TEvent extends AppEvent>(event: TEvent) => TEvent,
-) {
+registerEffect(async function gameCreated(event, scheduleEvent) {
   if (event.type === 'createGame') {
     logger.info('Effect "gameCreated" triggered');
 
@@ -14,4 +10,4 @@ export async function gameCreated(
       pubSub.publish('gameCreated', { id: event.payload.id });
     };
   }
-}
+});

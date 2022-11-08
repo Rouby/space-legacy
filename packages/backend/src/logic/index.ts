@@ -1,27 +1,41 @@
-import { GameList } from './models';
-import { proxies } from './models/proxies';
-import { combatProxy } from './models/proxies/combat';
-import { fleetProxy } from './models/proxies/fleet';
-import { gameProxy } from './models/proxies/game';
-import { playerProxy } from './models/proxies/player';
-import { shipProxy } from './models/proxies/ship';
-import { shipComponentProxy } from './models/proxies/shipComponent';
-import { shipDesignProxy } from './models/proxies/shipDesign';
-import { starSystemProxy } from './models/proxies/starSystem';
-import { userProxy } from './models/proxies/user';
-import { visibilityProxy } from './models/proxies/visibility';
-
 export * as models from './models';
-export { publishEvent } from './publishEvent';
 
-proxies.combatProxy = combatProxy;
-proxies.fleetProxy = fleetProxy;
-proxies.gameProxy = gameProxy;
-proxies.gameListProxy = GameList;
-proxies.playerProxy = playerProxy;
-proxies.shipProxy = shipProxy;
-proxies.shipComponentProxy = shipComponentProxy;
-proxies.shipDesignProxy = shipDesignProxy;
-proxies.starSystemProxy = starSystemProxy;
-proxies.userProxy = userProxy;
-proxies.visibilityProxy = visibilityProxy;
+import { EventStore } from '@rouby/event-sourcing';
+import { getDbClient } from '../util';
+
+EventStore.setupStore({
+  async getEvents(since?) {
+    const prisma = await getDbClient();
+
+    const events = await prisma.gameEvent.findMany({
+      where: {
+        createdAt: {
+          gt: since,
+        },
+      },
+    });
+
+    return events.map((event) => ({
+      ...event,
+      payload: event.payload && JSON.parse(event.payload),
+    }));
+  },
+  async storeEvent(event) {
+    const prisma = await getDbClient();
+
+    const gameEvent = await prisma.gameEvent.create({
+      data: {
+        ...event,
+        payload:
+          'payload' in event && event.payload
+            ? JSON.stringify(event.payload)
+            : undefined,
+      },
+    });
+
+    return {
+      ...gameEvent,
+      payload: gameEvent.payload && JSON.parse(gameEvent.payload),
+    };
+  },
+});
