@@ -1,12 +1,16 @@
+import { EventStore, getInstance } from '@rouby/event-sourcing';
 import { describe, expect, it, vi } from 'vitest';
-import { mockGameEvents } from '../../../util/__mocks__/db';
 import { issueFollowOrder, issueMoveOrder, launchShip } from '../../events';
 import '../../index';
 import { Ship } from '../../models';
-import { get } from '../../models/loader';
 import { moveShips } from './shipMovement';
 
-vi.mock('../../../util/db');
+const mockGameEvents = vi.fn(async () => [] as any[]);
+
+EventStore.setupStore({
+  getEvents: mockGameEvents,
+  storeEvent: vi.fn(),
+});
 
 describe('shipMovement', () => {
   it('should schedule a movement for a ship with an order', async () => {
@@ -28,7 +32,7 @@ describe('shipMovement', () => {
     const scheduleEvent = vi.fn();
 
     await moveShips(
-      [await get(Ship, '1')],
+      [await getInstance(Ship, '1')],
       { payload: { gameId: '', userId: '' } } as any,
       scheduleEvent,
     );
@@ -74,7 +78,7 @@ describe('shipMovement', () => {
     const scheduleEvent = vi.fn();
 
     await moveShips(
-      [await get(Ship, '1'), await get(Ship, '2')],
+      [await getInstance(Ship, '1'), await getInstance(Ship, '2')],
       { payload: { gameId: '', userId: '' } } as any,
       scheduleEvent,
     );
@@ -129,7 +133,7 @@ describe('shipMovement', () => {
     const scheduleEvent = vi.fn();
 
     await moveShips(
-      [await get(Ship, '1'), await get(Ship, '2')],
+      [await getInstance(Ship, '1'), await getInstance(Ship, '2')],
       { payload: { gameId: '', userId: '' } } as any,
       scheduleEvent,
     );

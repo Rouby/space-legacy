@@ -7,6 +7,6 @@
   "typescript.tsdk": ".yarn/sdks/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "prettier.trailingComma": "all",
-  "vitest.commandLine": "yarn workspace backend test",
+  "vitest.commandLine": "yarn vitest",
   "vitest.enable": true
 }

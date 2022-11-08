@@ -10,7 +10,9 @@
   "devDependencies": {
     "concurrently": "^7.5.0",
     "prettier": "^2.7.1",
-    "typescript": "^4.8.4"
+    "typescript": "^4.8.4",
+    "vite": "^3.2.2",
+    "vitest": "^0.24.5"
   },
   "dependenciesMeta": {
     "@prisma/client@4.1.1": {
