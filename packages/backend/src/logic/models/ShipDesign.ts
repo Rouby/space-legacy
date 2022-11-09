@@ -25,6 +25,13 @@ export class ShipDesign extends Model {
   public sensorRange = 0;
   public components = [] as Promised<ShipComponent>[];
 
+  get ftlSpeed() {
+    return Promise.resolve().then(async () => {
+      const components = await this.components.$resolveAll;
+      return components.reduce((acc, component) => acc + component.ftlSpeed, 0);
+    });
+  }
+
   protected applyEvent(event: AppEvent) {
     if (event.type === 'createShipDesign' && event.payload.id === this.id) {
       this.name = event.payload.name;

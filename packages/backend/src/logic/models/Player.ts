@@ -44,23 +44,25 @@ export class Player extends Model {
       this.turnEnded = false;
     }
 
-    // if (
-    //   event.type === 'createShipDesign' &&
-    //   event.payload.gameId === this.gameId &&
-    //   event.payload.userId === this.userId
-    // ) {
-    //   this.availableShipDesigns.push(proxies.shipDesignProxy(event.payload.id));
-    // }
+    if (
+      event.type === 'createShipDesign' &&
+      event.payload.gameId === this.gameId &&
+      event.payload.userId === this.userId
+    ) {
+      this.availableShipDesigns.push(
+        promisedInstance('ShipDesign', { id: event.payload.id }),
+      );
+    }
 
-    // if (
-    //   event.type === 'createShipComponent' &&
-    //   event.payload.gameId === this.gameId &&
-    //   event.payload.userId === this.userId
-    // ) {
-    //   this.availableShipComponents.push(
-    //     proxies.shipComponentProxy(event.payload.id),
-    //   );
-    // }
+    if (
+      event.type === 'createShipComponent' &&
+      event.payload.gameId === this.gameId &&
+      event.payload.userId === this.userId
+    ) {
+      this.availableShipComponents.push(
+        promisedInstance('ShipComponent', { id: event.payload.id }),
+      );
+    }
   }
 }
 

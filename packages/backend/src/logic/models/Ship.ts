@@ -53,7 +53,9 @@ export class Ship extends Model {
         // just move to the coordinates the other ship is currently at
       ) {
         const followingShipMovement =
-          followingShip.movementVector?.multiply(10) ?? new Vector(); // TODO get ship speed?
+          followingShip.movementVector?.multiply(
+            await followingShip.design.ftlSpeed,
+          ) ?? new Vector();
         let movingTo = new Vector(followingShip.coordinates).add(
           followingShipMovement,
         );
@@ -84,7 +86,7 @@ export class Ship extends Model {
       return null;
     }
 
-    const speed = 10; // TODO calc based on design
+    const speed = await this.design.ftlSpeed;
 
     const movement = targetVector.subtract(this.coordinates);
     const distance = movement.magnitude();

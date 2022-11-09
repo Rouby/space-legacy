@@ -45,7 +45,9 @@ export const resolvers: Resolvers = {
 
       if (ability.cannot('view', subject('Ship', ship), 'movingTo')) {
         return new Vector(ship.coordinates).add(
-          new Vector(ship.movementVector ?? new Vector()).multiply(10), // TODO get ship speed?
+          new Vector(ship.movementVector ?? new Vector()).multiply(
+            await ship.design.ftlSpeed,
+          ),
         );
       }
 

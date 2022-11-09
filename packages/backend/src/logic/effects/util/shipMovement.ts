@@ -69,7 +69,7 @@ export async function moveShips(
       : ship.movingTo;
 
     if (targetVector) {
-      const speed = 10; // TODO calc based on ship design
+      const speed = await ship.design.ftlSpeed;
 
       const movement = new Vector(targetVector).subtract(ship.coordinates);
       const distance = movement.magnitude();

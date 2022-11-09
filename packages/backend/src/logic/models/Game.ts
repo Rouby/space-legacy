@@ -61,13 +61,15 @@ export class Game extends Model {
       this.round = this.round + 1;
     }
 
-    // if (event.type === 'createStarSystem' && event.payload.gameId === this.id) {
-    //   this.starSystems.push(proxies.starSystemProxy(event.payload.id));
-    // }
+    if (event.type === 'createStarSystem' && event.payload.gameId === this.id) {
+      this.starSystems.push(
+        promisedInstance('StarSystem', { id: event.payload.id }),
+      );
+    }
 
-    // if (event.type === 'launchShip' && event.payload.gameId === this.id) {
-    //   this.ships.push(proxies.shipProxy(event.payload.id));
-    // }
+    if (event.type === 'launchShip' && event.payload.gameId === this.id) {
+      this.ships.push(promisedInstance('Ship', { id: event.payload.id }));
+    }
 
     if (event.type === 'destroyShip' && event.payload.gameId === this.id) {
       this.ships = this.ships.filter(
@@ -75,9 +77,9 @@ export class Game extends Model {
       );
     }
 
-    // if (event.type === 'engageCombat' && event.payload.gameId === this.id) {
-    //   this.combats.push(proxies.combatProxy(event.payload.id));
-    // }
+    if (event.type === 'engageCombat' && event.payload.gameId === this.id) {
+      this.combats.push(promisedInstance('Combat', { id: event.payload.id }));
+    }
 
     if (event.type === 'endCombat' && event.payload.gameId === this.id) {
       this.combats = this.combats.filter(
