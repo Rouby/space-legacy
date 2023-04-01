@@ -2,12 +2,20 @@ import {
   ActionIcon,
   Avatar,
   Box,
+  Center,
   Group,
   Paper,
-  Progress,
+  RingProgress,
+  SimpleGrid,
   Text,
 } from '@mantine/core';
-import { IconMinus, IconPlus } from '@tabler/icons';
+import {
+  IconBolt,
+  IconHeartbeat,
+  IconMinus,
+  IconPlus,
+  IconUsers,
+} from '@tabler/icons';
 import { useMatch } from '@tanstack/react-location';
 import { useState } from 'react';
 import {
@@ -151,62 +159,133 @@ export function ShipDesignBuilder() {
     <>
       build me up {id} {availableShipComponents.data?.shipComponents.length}
       {availableShipComponents.data?.shipComponents.map((component) => (
-        <Group key={component.id}>
-          <ActionIcon
+        <div key={component.id}>
+          <ShipComponent
+            name={component.name}
+            powerDraw={component.powerDraw}
+            crewRequirements={component.crewRequirements}
+            powerGeneration={
+              component.__typename === 'GeneratorShipComponent'
+                ? component.powerGeneration
+                : undefined
+            }
+            crewCapacity={
+              component.__typename === 'AugmentationShipComponent'
+                ? component.crewCapacity
+                : undefined
+            }
+            lifeSupport={
+              component.__typename === 'AugmentationShipComponent'
+                ? component.lifeSupport
+                : undefined
+            }
             onClick={() =>
               setNewComponents((components) => [...components, component])
             }
-          >
-            <IconPlus />
-          </ActionIcon>
-          <Avatar />
-          <Box>
-            <Text>{component.name}</Text>
-          </Box>
-        </Group>
+          />
+        </div>
       ))}
-      <Paper withBorder p="md" radius="md">
-        <Progress
-          sections={[
-            {
-              color: 'green',
-              value: Math.max(0, powerGeneration - powerDraw),
-            },
-            {
-              color: 'red',
-              value: Math.max(0, powerDraw - powerGeneration),
-            },
-          ]}
-        />
-      </Paper>
-      <Paper withBorder p="md" radius="md">
-        <Progress
-          sections={[
-            {
-              color: 'green',
-              value: Math.max(0, crewCapacity - crewRequirements),
-            },
-            {
-              color: 'red',
-              value: Math.max(0, crewRequirements - crewCapacity),
-            },
-          ]}
-        />
-      </Paper>
-      <Paper withBorder p="md" radius="md">
-        <Progress
-          sections={[
-            {
-              color: 'green',
-              value: Math.max(0, lifeSupportProvided - lifeSupportRequired),
-            },
-            {
-              color: 'red',
-              value: Math.max(0, lifeSupportRequired - lifeSupportProvided),
-            },
-          ]}
-        />
-      </Paper>
+      <SimpleGrid cols={5}>
+        <Paper withBorder radius="md" p="xs">
+          <Group>
+            <RingProgress
+              size={80}
+              roundCaps
+              thickness={8}
+              sections={[
+                {
+                  color: 'green',
+                  value: Math.max(0, powerGeneration - powerDraw),
+                },
+                {
+                  color: 'red',
+                  value: Math.max(0, powerDraw - powerGeneration),
+                },
+              ]}
+              label={
+                <Center>
+                  <IconBolt size={22} stroke={1.5} />
+                </Center>
+              }
+            />
+
+            <div>
+              <Text color="dimmed" size="xs" transform="uppercase" weight={700}>
+                Power
+              </Text>
+              <Text weight={700} size="xl">
+                {powerGeneration - powerDraw}
+              </Text>
+            </div>
+          </Group>
+        </Paper>
+        <Paper withBorder radius="md" p="xs">
+          <Group>
+            <RingProgress
+              size={80}
+              roundCaps
+              thickness={8}
+              sections={[
+                {
+                  color: 'green',
+                  value: Math.max(0, crewCapacity - crewRequirements),
+                },
+                {
+                  color: 'red',
+                  value: Math.max(0, crewRequirements - crewCapacity),
+                },
+              ]}
+              label={
+                <Center>
+                  <IconUsers size={22} stroke={1.5} />
+                </Center>
+              }
+            />
+
+            <div>
+              <Text color="dimmed" size="xs" transform="uppercase" weight={700}>
+                Crew Capacity
+              </Text>
+              <Text weight={700} size="xl">
+                {crewCapacity - crewRequirements}
+              </Text>
+            </div>
+          </Group>
+        </Paper>
+        <Paper withBorder radius="md" p="xs">
+          <Group>
+            <RingProgress
+              size={80}
+              roundCaps
+              thickness={8}
+              sections={[
+                {
+                  color: 'green',
+                  value: Math.max(0, lifeSupportProvided - lifeSupportRequired),
+                },
+                {
+                  color: 'red',
+                  value: Math.max(0, lifeSupportRequired - lifeSupportProvided),
+                },
+              ]}
+              label={
+                <Center>
+                  <IconHeartbeat size={22} stroke={1.5} />
+                </Center>
+              }
+            />
+
+            <div>
+              <Text color="dimmed" size="xs" transform="uppercase" weight={700}>
+                Life Support
+              </Text>
+              <Text weight={700} size="xl">
+                {lifeSupportProvided - lifeSupportRequired}
+              </Text>
+            </div>
+          </Group>
+        </Paper>
+      </SimpleGrid>
       Components:
       {(shipDesign.data?.shipDesign?.components ?? newComponents).map(
         (component, idx) => (
@@ -230,5 +309,66 @@ export function ShipDesignBuilder() {
         ),
       )}
     </>
+  );
+}
+
+function ShipComponent({
+  name,
+  powerDraw,
+  crewRequirements,
+  powerGeneration,
+  crewCapacity,
+  lifeSupport,
+  onClick,
+}: {
+  name: string;
+  powerDraw: number;
+  crewRequirements: number;
+  powerGeneration?: number;
+  crewCapacity?: number;
+  lifeSupport?: number;
+  onClick: () => void;
+}) {
+  return (
+    <Paper withBorder p="xs" my="xs" radius="md">
+      <Group spacing="xs">
+        <ActionIcon onClick={onClick}>
+          <IconPlus />
+        </ActionIcon>
+        {name}
+      </Group>
+      <Group>
+        {powerDraw && (
+          <Text color="red" sx={{ display: 'flex', alignItems: 'center' }}>
+            {powerDraw}
+            <IconBolt size="1em" />
+          </Text>
+        )}
+        {crewRequirements && (
+          <Text color="red" sx={{ display: 'flex', alignItems: 'center' }}>
+            {crewRequirements}
+            <IconUsers size="1em" />
+          </Text>
+        )}
+        {powerGeneration && (
+          <Text color="green" sx={{ display: 'flex', alignItems: 'center' }}>
+            {powerGeneration}
+            <IconBolt size="1em" />
+          </Text>
+        )}
+        {crewCapacity && (
+          <Text color="green" sx={{ display: 'flex', alignItems: 'center' }}>
+            {crewCapacity}
+            <IconUsers size="1em" />
+          </Text>
+        )}
+        {lifeSupport && (
+          <Text color="green" sx={{ display: 'flex', alignItems: 'center' }}>
+            {lifeSupport}
+            <IconHeartbeat size="1em" />
+          </Text>
+        )}
+      </Group>
+    </Paper>
   );
 }
