@@ -1,5 +1,4 @@
-import { createPubSub } from '@graphql-yoga/node';
-import { publishEvent } from '@rouby/event-sourcing';
+import { createPubSub, GraphQLYogaError } from '@graphql-yoga/node';
 import { CookieSerializeOptions, serialize } from 'cookie';
 import { IncomingMessage, ServerResponse } from 'http';
 import { decode, JwtPayload, verify } from 'jsonwebtoken';
@@ -33,13 +32,17 @@ export async function context({
     try {
       decodedToken = decode(token, { complete: true });
     } catch {
-      throw new Error('invalid_token');
+      throw new GraphQLYogaError('The provided token is invalid', {
+        token: 'invalid',
+      });
     }
 
     try {
       verify(token, process.env.SESSION_SECRET!);
     } catch {
-      throw new Error('invalid_token');
+      throw new GraphQLYogaError('The provided token is invalid', {
+        token: 'invalid',
+      });
     }
 
     // TODO check if token was revoked
@@ -51,7 +54,6 @@ export async function context({
     prisma,
     userId: user?.id ?? '',
     ability: user ? new AppAbility(user.permissions) : createDefaultAbility(),
-    publishEvent,
     pubSub,
     http: {
       setCookie: (

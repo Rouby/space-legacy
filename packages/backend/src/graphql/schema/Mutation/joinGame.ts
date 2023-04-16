@@ -1,6 +1,6 @@
 import { ForbiddenError } from '@casl/ability';
 import { GraphQLYogaError } from '@graphql-yoga/common';
-import { getInstance } from '@rouby/event-sourcing';
+import { getInstance, publishEvent } from '@rouby/event-sourcing';
 import { joinGame } from '../../../logic/events';
 import { Game } from '../../../logic/models';
 import { Resolvers } from '../../generated';
@@ -17,11 +17,7 @@ export const typeDefs = /* GraphQL */ `
 
 export const resolvers: Resolvers = {
   Mutation: {
-    joinGame: async (
-      _,
-      { input: { id } },
-      { publishEvent, userId, ability },
-    ) => {
+    joinGame: async (_, { input: { id } }, { userId, ability }) => {
       const game = await getInstance(Game, id);
 
       if (!game) {

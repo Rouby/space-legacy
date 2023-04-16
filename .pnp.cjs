@@ -866,6 +866,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         "npm:4.0.0"\
       ],\
       [\
+        "@types/pino",\
+        "npm:7.0.5"\
+      ],\
+      [\
         "@types/prop-types",\
         "npm:15.7.5"\
       ],\
@@ -2359,7 +2363,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
       ],\
       [\
         "pino",\
-        "npm:8.7.0"\
+        "npm:8.11.0"\
       ],\
       [\
         "pino-abstract-transport",\
@@ -7087,8 +7091,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageDependencies": [\
             ["@rouby/event-sourcing", "workspace:packages/event-sourcing"],\
             ["@types/node", "npm:18.11.9"],\
+            ["@types/pino", "npm:7.0.5"],\
             ["async-await-queue", "npm:1.2.1"],\
             ["cuid", "npm:2.1.8"],\
+            ["pino", "npm:8.11.0"],\
             ["typescript", "patch:typescript@npm%3A4.8.4#~builtin<compat/typescript>::version=4.8.4&hash=701156"],\
             ["vitest", "virtual:5357af2f6886af6fdc86f67af4441a90769d29d32a052f9eb955990f69cd51c3f90821677f5c41525397dd7671fea092cda3df01717a44aca149cc02f474b830#npm:0.24.5"]\
           ],\
@@ -7533,6 +7539,16 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@types-parse-json-npm-4.0.0-298522afa6-fd6bce2b67.zip/node_modules/@types/parse-json/",\
           "packageDependencies": [\
             ["@types/parse-json", "npm:4.0.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@types/pino", [\
+        ["npm:7.0.5", {\
+          "packageLocation": "./.yarn/cache/@types-pino-npm-7.0.5-3a1468bc70-f1c59f7d9a.zip/node_modules/@types/pino/",\
+          "packageDependencies": [\
+            ["@types/pino", "npm:7.0.5"],\
+            ["pino", "npm:8.11.0"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -12446,6 +12462,24 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["pino", [\
+        ["npm:8.11.0", {\
+          "packageLocation": "./.yarn/cache/pino-npm-8.11.0-8f5941659a-1bcc2b9b44.zip/node_modules/pino/",\
+          "packageDependencies": [\
+            ["pino", "npm:8.11.0"],\
+            ["atomic-sleep", "npm:1.0.0"],\
+            ["fast-redact", "npm:3.1.1"],\
+            ["on-exit-leak-free", "npm:2.1.0"],\
+            ["pino-abstract-transport", "npm:1.0.0"],\
+            ["pino-std-serializers", "npm:6.0.0"],\
+            ["process-warning", "npm:2.0.0"],\
+            ["quick-format-unescaped", "npm:4.0.4"],\
+            ["real-require", "npm:0.2.0"],\
+            ["safe-stable-stringify", "npm:2.3.1"],\
+            ["sonic-boom", "npm:3.2.0"],\
+            ["thread-stream", "npm:2.0.1"]\
+          ],\
+          "linkType": "HARD"\
+        }],\
         ["npm:8.7.0", {\
           "packageLocation": "./.yarn/cache/pino-npm-8.7.0-4f4e3195e7-4aa2e320aa.zip/node_modules/pino/",\
           "packageDependencies": [\

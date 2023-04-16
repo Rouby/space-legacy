@@ -1,5 +1,5 @@
 import { ForbiddenError } from '@casl/ability';
-import { getInstance } from '@rouby/event-sourcing';
+import { getInstance, publishEvent } from '@rouby/event-sourcing';
 import { createGame, joinGame } from '../../../logic/events';
 import { Game } from '../../../logic/models';
 import { Resolvers } from '../../generated';
@@ -20,7 +20,7 @@ export const resolvers: Resolvers = {
     createGame: async (
       _,
       { input: { name, maxPlayers } },
-      { publishEvent, userId, ability },
+      { userId, ability },
     ) => {
       ForbiddenError.from(ability).throwUnlessCan('create', 'Game');
 

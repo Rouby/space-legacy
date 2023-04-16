@@ -1,8 +1,9 @@
 import { devtoolsExchange } from '@urql/devtools';
 import { authExchange } from '@urql/exchange-auth';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { useMemo } from 'react';
 import {
+  CombinedError,
   createClient,
   dedupExchange,
   fetchExchange,
@@ -16,6 +17,7 @@ import schema from './generated';
 
 export function useClient() {
   const token = useAtomValue(tokenAtom);
+  const setToken = useSetAtom(tokenAtom);
 
   return useMemo(
     () =>
@@ -59,6 +61,18 @@ export function useClient() {
                   },
                 },
               });
+            },
+            didAuthError: ({ error }) => {
+              if (error instanceof CombinedError) {
+                const invalidToken = error.graphQLErrors.some(
+                  (err) => err.extensions.token === 'invalid',
+                );
+                if (invalidToken) {
+                  setToken(null);
+                  return true;
+                }
+              }
+              return false;
             },
           }),
           fetchExchange,

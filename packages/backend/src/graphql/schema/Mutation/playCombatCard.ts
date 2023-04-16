@@ -1,5 +1,5 @@
 import { ForbiddenError } from '@casl/ability';
-import { getInstance } from '@rouby/event-sourcing';
+import { getInstance, publishEvent } from '@rouby/event-sourcing';
 import { playCombatCard } from '../../../logic/events';
 import { Combat } from '../../../logic/models';
 import { Resolvers } from '../../generated';
@@ -21,7 +21,7 @@ export const resolvers: Resolvers = {
     playCombatCard: async (
       _,
       { input: { gameId, combatId, card } },
-      { publishEvent, ability, userId },
+      { ability, userId },
     ) => {
       const combat = await getInstance(Combat, combatId);
 

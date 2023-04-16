@@ -1,15 +1,9 @@
 import { createServer } from '@graphql-yoga/node';
-import { PrismaClient } from '@prisma/client';
 import { EventStore } from '@rouby/event-sourcing';
 import { context, schema } from './graphql';
 import { logger } from './logger';
+import './logic/effects';
 import { getDbClient } from './util';
-
-declare global {
-  var __db__: PrismaClient;
-}
-
-let prisma: PrismaClient;
 
 EventStore.setupStore({
   async getEvents(since?) {
@@ -62,7 +56,10 @@ process.once('SIGINT', gracefulShutdown);
 process.once('SIGTERM', gracefulShutdown);
 
 function gracefulShutdown(signal: any) {
-  Promise.all([prisma?.$disconnect(), server.stop()]).finally(() => {
+  Promise.all([
+    getDbClient().then((client) => client.$disconnect()),
+    server.stop(),
+  ]).finally(() => {
     process.kill(process.pid, signal);
   });
 }

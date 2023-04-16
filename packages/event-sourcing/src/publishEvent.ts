@@ -2,6 +2,7 @@ import Queue from 'async-await-queue';
 import cuid from 'cuid';
 import { EventStore } from '.';
 import { AppEvent } from './AppEvent';
+import { logger } from './EventStore';
 import { handleEffects } from './handleEffects';
 
 export const eventQueue = new Queue();
@@ -24,6 +25,8 @@ export async function publishEvent<
     version: event.version,
     payload: event.payload,
   });
+
+  logger.info('Event %s published', gameEvent.type);
 
   eventQueue.run(() => handleEffects(gameEvent));
 

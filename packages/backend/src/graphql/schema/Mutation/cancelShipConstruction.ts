@@ -1,6 +1,6 @@
 import { ForbiddenError } from '@casl/ability';
 import { GraphQLYogaError } from '@graphql-yoga/common';
-import { getInstance } from '@rouby/event-sourcing';
+import { getInstance, publishEvent } from '@rouby/event-sourcing';
 import { cancelShipConstruction } from '../../../logic/events';
 import { StarSystem } from '../../../logic/models';
 import { Resolvers } from '../../generated';
@@ -25,7 +25,7 @@ export const resolvers: Resolvers = {
     cancelShipConstruction: async (
       _,
       { input: { gameId, systemId, shipyardIndex, queueIndex } },
-      { publishEvent, ability },
+      { ability },
     ) => {
       const starSystem = await getInstance(StarSystem, systemId);
       if (!starSystem) {
