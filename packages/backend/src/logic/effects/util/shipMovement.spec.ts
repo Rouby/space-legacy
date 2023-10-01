@@ -1,6 +1,12 @@
 import { EventStore, getInstance } from '@rouby/event-sourcing';
 import { describe, expect, it, vi } from 'vitest';
-import { issueFollowOrder, issueMoveOrder, launchShip } from '../../events';
+import {
+  createShipComponent,
+  createShipDesign,
+  issueFollowOrder,
+  issueMoveOrder,
+  launchShip,
+} from '../../events';
 import '../../index';
 import { Ship } from '../../models';
 import { moveShips } from './shipMovement';
@@ -12,13 +18,41 @@ EventStore.setupStore({
   storeEvent: vi.fn(),
 });
 
+const eventsForShipDesignWithFTL10 = [
+  createShipComponent({
+    gameId: '',
+    id: '1',
+    type: 'ftl',
+    ftlSpeed: 10,
+    crewRequirements: 0,
+    fuelConsumption: 0,
+    name: '',
+    powerDraw: 0,
+    resourceCosts: 0,
+    structuralStrength: 0,
+    userId: '',
+  }),
+  createShipDesign({
+    gameId: '',
+    name: '',
+    id: '1',
+    componentIds: ['1'],
+    sensorRange: 0,
+    structuralHealth: 0,
+    userId: '',
+    weapons: [],
+  }),
+];
+
 describe('shipMovement', () => {
   it('should schedule a movement for a ship with an order', async () => {
     mockGameEvents.mockImplementation(async () => [
+      ...eventsForShipDesignWithFTL10,
+
       launchShip({
         id: '1',
         gameId: '',
-        designId: '',
+        designId: '1',
         userId: '',
         coordinates: { x: 0, y: 0 },
       }),
@@ -48,10 +82,12 @@ describe('shipMovement', () => {
 
   it('should stop movement for hostile crossing ships', async () => {
     mockGameEvents.mockImplementation(async () => [
+      ...eventsForShipDesignWithFTL10,
+
       launchShip({
         id: '1',
         gameId: '',
-        designId: '',
+        designId: '1',
         userId: '',
         coordinates: { x: 5, y: 0 },
       }),
@@ -64,7 +100,7 @@ describe('shipMovement', () => {
       launchShip({
         id: '2',
         gameId: '',
-        designId: '',
+        designId: '1',
         userId: '',
         coordinates: { x: -5, y: 0 },
       }),
@@ -101,10 +137,12 @@ describe('shipMovement', () => {
 
   it('should move ships that follow each other straight at each other', async () => {
     mockGameEvents.mockImplementation(async () => [
+      ...eventsForShipDesignWithFTL10,
+
       launchShip({
         id: '1',
         gameId: '',
-        designId: '',
+        designId: '1',
         userId: '',
         coordinates: { x: 5, y: 0 },
       }),
@@ -118,7 +156,7 @@ describe('shipMovement', () => {
       launchShip({
         id: '2',
         gameId: '',
-        designId: '',
+        designId: '1',
         userId: '',
         coordinates: { x: -5, y: 0 },
       }),

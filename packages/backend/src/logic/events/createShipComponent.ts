@@ -10,13 +10,14 @@ export function createShipComponent(
     structuralStrength: number;
     resourceCosts: number;
     previousComponentId?: string;
+    id?: string;
   } & Component,
 ) {
   return {
     type: 'createShipComponent' as const,
     version: 1 as const,
     payload: {
-      id: cuid(),
+      id: options.id ?? cuid(),
       ...options,
     },
   };

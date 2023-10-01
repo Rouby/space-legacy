@@ -9,12 +9,13 @@ export function createShipDesign(options: {
   sensorRange: number;
   weapons: { name: string; damage: string; initiative: number }[];
   previousDesignId?: string;
+  id?: string;
 }) {
   return {
     type: 'createShipDesign' as const,
     version: 1 as const,
     payload: {
-      id: cuid(),
+      id: options.id ?? cuid(),
       gameId: options.gameId,
       userId: options.userId,
       name: options.name,
